@@ -26,11 +26,11 @@ function getNombresAmbiente(idAmbienteSalon) {
     }
 }
 
-const handleEspacioChange = async () => {
+const cambioFiltroEspacio = async () => {
     console.log(espacioselec)
 }
 
-const handleServicioChange = async () => {
+const cambioFiltroServicio = async () => {
     console.log("Cambió servicio")
 }
 
@@ -146,14 +146,13 @@ onMounted(() => {
                         </div>
                         <!-- Lista de Espacios con Checkboxes -->
                         <div v-if="ocultarEspacio">
-                            <q-list class="q-pl-md">
-                                <q-item v-for="espacio in espacios" :key="espacio.value">
-                                    <q-item-section>
-                                        <q-checkbox v-model="espacioselec" :val="espacio.value" :label="espacio.label"
-                                            @update:model-value="handleEspacioChange" />
-                                    </q-item-section>
-                                </q-item>
-                            </q-list>
+                            <ul class="q-pl-md">
+                                <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
+                                    <input type="checkbox" v-model="espacioselec" :value="espacio.value"
+                                        @change="cambioFiltroEspacio">
+                                    <label>{{ espacio.label }}</label>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -167,14 +166,13 @@ onMounted(() => {
                         </div>
                         <!-- Lista de Espacios con Checkboxes -->
                         <div v-if="ocultarServicio">
-                            <q-list class="q-pl-md">
-                                <q-item v-for="servicio in servicios" :key="servicio.value">
-                                    <q-item-section>
-                                        <q-checkbox v-model="servicioselec" :val="servicio.value" :label="servicio.label"
-                                            @update:model-value="handleServicioChange" />
-                                    </q-item-section>
-                                </q-item>
-                            </q-list>
+                            <ul class="q-pl-md">
+                                <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
+                                    <input type="checkbox" v-model="servicioselec" :value="servicio.value"
+                                        @change="cambioFiltroServicio">
+                                    <label>{{ servicio.label }}</label>
+                                </li>
+                            </ul>
                         </div>
 
                     </div>
@@ -274,31 +272,81 @@ onMounted(() => {
     height: auto;
     /* Ajusta el alto de la imagen automáticamente */
     object-fit: cover;
-    /* Ajusta la imagen para que se muestre completa */
-
+    border-radius: 8px;
 }
 
 .card-details {
-    flex: 4;
-    /* Ajusta el ancho de la información */
-    padding: 20px;
+    flex: 5.5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 20px;
 }
 
-.text-h6 {
+.card-image-container {
+    flex: 1;
+}
+
+.card-details-container {
+    flex: 2;
+    padding-left: 20px;
+}
+
+
+
+ul.q-pl-md {
+    list-style-type: none;
+    /* Quita el punto de cada ítem */
+    padding-left: 0;
+    /* Elimina el padding izquierdo */
+}
+
+.list-item {
+    margin-bottom: 10px;
+    margin-left: 20px;
+    /* Aumenta el espacio entre los elementos */
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #fff;
+    border: 2px solid #adb5bd;
+    border-radius: 4px;
+    width: 25px;
+    /* Aumenta el tamaño del checkbox */
+    height: 25px;
+    /* Aumenta el tamaño del checkbox */
+    cursor: pointer;
+    outline: none;
+    margin-right: 10px;
+    /* Agrega un espacio entre el checkbox y el label */
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: rgb(112, 27, 240);
+    border-color: rgb(112, 27, 240);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+label {
     font-size: 18px;
-    font-weight: bold;
-}
-
-.text-subtitle2 {
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-.custom-slider {
-    --q-slider-handle-size: 20px;
-    --q-slider-handle-color: var(--q-primary);
-    --q-slider-handle-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    --q-slider-track-height: 8px;
-    --q-slider-track-color: var(--q-grey-4);
+    /* Aumenta el tamaño del texto */
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    margin-left: 0;
 }
 </style>

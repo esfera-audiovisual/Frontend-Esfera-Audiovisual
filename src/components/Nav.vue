@@ -39,7 +39,7 @@ async function getAmbientes() {
 const getCiudadesFiltradas = (ciudades) => {
     return ciudades.map((c) => ({
         label: c.estado === 0 ? `${c.nombre_ciud} ${c.idDepart.nombre_depart} - Inactiva` : `${c.nombre_ciud}, ${c.idDepart.nombre_depart}`,
-        value: c._id,
+        value: c,
         disable: c.estado === 0,
     }));
 };
@@ -98,7 +98,7 @@ function buscar() {
 }
 
 watch(ciudad,()=>{
-    console.log(ciudad.value.value);
+    console.log(ciudad.value.value.idDepart._id);
 })
 
 onMounted(() => {
