@@ -16,6 +16,8 @@ const salonFiltroPrecio = ref([]);
 const salonFiltroEspacio = ref([]);
 const salonFiltroServicio = ref([]);
 const salonesFiltrados = ref([]);
+const detalleSalon = ref("");
+const loading = ref(false);
 
 export const useStoreSalon = defineStore(
   modelo,
@@ -140,6 +142,8 @@ export const useStoreSalon = defineStore(
       salonFiltroEspacio,
       salonFiltroServicio,
       salonesFiltrados,
+      loading,
+      detalleSalon,
     };
   },
   {

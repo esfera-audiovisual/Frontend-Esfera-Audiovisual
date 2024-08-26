@@ -8,12 +8,12 @@ import { router } from '../routes/routes.js';
 const useCiudad = useStoreCiudad();
 const useAmbiente = useStoreAmbienteSalon();
 const useSalon = useStoreSalon();
-const fecha = ref('');
+const fecha = ref("");
 const ciudades = ref([]);
 const ambientes = ref([]);
-const c_personas = ref('');
-const ciudad = ref();
-const ambiente = ref();
+const c_personas = ref("");
+const ciudad = ref("");
+const ambiente = ref("");
 
 async function getCiudades() {
   try {
@@ -122,19 +122,24 @@ const filtrarAmbientes = (val, update) => {
   });
 };
 
-
-
 const filtrarSalones = async () => {
+  useSalon.loading = true;
   const filters = {
     idCiudSalonEvento: ciudad.value?.value?._id || null,
     idAmbienteSalon: ambiente.value?.value || null,
     capacidad_sal: c_personas.value || null,
   };
 
-  const filteredSalones = await useSalon.getSalonesFiltrados(filters);
-  useSalon.salonesFiltrados = filteredSalones;
-  router.push('/busqueda')
-  console.log('Salones filtrados:', filteredSalones);
+  try {
+    const filteredSalones = await useSalon.getSalonesFiltrados(filters);
+    useSalon.salonesFiltrados = filteredSalones;
+    router.push('busqueda')
+    console.log('Salones filtrados:', filteredSalones);
+  } catch (error) {
+    console.error("Error al filtrar salones:", error);
+  } finally {
+    useSalon.loading = false;
+  }
 };
 
 watch(ciudad, () => {
@@ -160,13 +165,12 @@ watch(fecha, () => {
   // Puedes agregar la lógica de filtrado según la fecha si es necesario
 });
 
-function Home() {
+function limpiar() {
   ciudad.value = "";
   ambiente.value = "";
   c_personas.value = "";
-  useSalon.salonesFiltrados = "";
-  router.push('/home')
 }
+
 
 onMounted(() => {
   getCiudades();
@@ -178,10 +182,12 @@ onMounted(() => {
   <div>
     <q-layout view="hHh lpR fFf">
       <q-header elevated>
-        <q-toolbar>
+        <q-toolbar class="custom-toolbar">
           <!-- Esfera Logo y Nombre -->
           <div class="logo-container">
-            <q-btn flat round icon="public" class="right-btn" @click="Home()" />
+            <router-link to="/home" class="boton-home">
+              <q-btn flat round icon="public" class="right-btn" @click="limpiar()"  />
+            </router-link>
             <h6 class="logo-title">Esfera Audiovisual</h6>
           </div>
 
@@ -221,6 +227,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.custom-toolbar {
+  background-color: #ffffff !important;
+}
+
 .logo-container {
   display: flex;
   align-items: center;

@@ -1,22 +1,11 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
-import { useStoreEspacioSalon } from '../stores/espacio.js';
-import { useStoreServicioSalon } from '../stores/servicio.js';
 
 const useSalon = useStoreSalon();
-const useEspacio = useStoreEspacioSalon();
-const useServicio = useStoreServicioSalon();
 const salones = ref([]);
-const espacios = ref([]);
-const servicios = ref([]);
-const espacioselec = ref([]);
-const servicioselec = ref([]);
 const loading = ref(false);
-const ocultarPrecio = ref(true);
-const ocultarEspacio = ref(true);
-const ocultarServicio = ref(true);
-const precioMax = ref(0);
+
 
 function getNombresAmbiente(idAmbienteSalon) {
     if (idAmbienteSalon && idAmbienteSalon.length > 0) {
@@ -26,13 +15,6 @@ function getNombresAmbiente(idAmbienteSalon) {
     }
 }
 
-const cambioFiltroEspacio = async () => {
-    console.log(espacioselec);
-};
-
-const cambioFiltroServicio = async () => {
-    console.log(servicioselec);
-};
 
 async function getSalones() {
     loading.value = true;
@@ -49,73 +31,9 @@ async function getSalones() {
     }
 }
 
-async function getEspacios() {
-    try {
-        const response = await useEspacio.getAll();
-        if (useEspacio.estatus === 200) {
-            espacios.value = response.map(espacio => ({
-                label: espacio.nombre_esp,
-                value: espacio._id
-            }));
-        }
-        console.log(response);
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-async function getServicios() {
-    try {
-        const response = await useServicio.getAll();
-        if (useServicio.estatus === 200) {
-            servicios.value = response.map(servicio => ({
-                label: servicio.nombre_serv,
-                value: servicio._id
-            }));
-        }
-        console.log(response);
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-const mostrarPrecio = () => {
-    ocultarPrecio.value = !ocultarPrecio.value;
-};
-
-const mostrarEspacio = () => {
-    ocultarEspacio.value = !ocultarEspacio.value;
-};
-
-const mostrarServicio = () => {
-    ocultarServicio.value = !ocultarServicio.value;
-};
-
-const iconoPrecio = computed(() => {
-    return ocultarPrecio.value ? 'arrow_drop_down' : 'arrow_right';
-});
-
-const iconoEspacio = computed(() => {
-    return ocultarEspacio.value ? 'arrow_drop_down' : 'arrow_right';
-});
-
-const iconoServicio = computed(() => {
-    return ocultarServicio.value ? 'arrow_drop_down' : 'arrow_right';
-});
-
-// Computed para mostrar los salones correctos
-const salonesAMostrar = computed(() => {
-    return useSalon.salonesFiltrados.length > 0 ? useSalon.salonesFiltrados : salones.value;
-});
-
-watch(precioMax, () => {
-    console.log(precioMax.value);
-});
 
 onMounted(() => {
     getSalones();
-    getEspacios();
-    getServicios();
 });
 </script>
 
@@ -127,71 +45,75 @@ onMounted(() => {
             <p>Cargando salones...</p>
         </div>
         <div v-else class="q-gutter-md" style="display: flex; width: 100%;">
-        
+
 
             <!-- Botón para mostrar/ocultar filtros -->
             <!-- <div style="display: flex; flex-direction: column;">
-                <div class="filtros">
-                    <div>
-                        <div style="display: flex; align-items: center; margin: 0;">
-                            <h6 class="text-bold" style="margin-left: 20px;">Precio máximo</h6>
-                            <q-btn flat round :icon="iconoPrecio" @click="mostrarPrecio"
-                                style="height: 15px; width: 15px;" />
-                        </div>
-                        <div class="filtroprecio" v-if="ocultarPrecio">
-                            <q-input v-model="precioMax" class="q-ml-md">{{ precioMax }}</q-input>
-                            <div class="precio-range q-ml-md">
-                                <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
-                                    track-color="grey-4" class="custom-slider" />
+                            <div class="filtros">
+                                <div>
+                                    <div style="display: flex; align-items: center; margin: 0;">
+                                        <h6 class="text-bold" style="margin-left: 20px;">Precio máximo</h6>
+                                        <q-btn flat round :icon="iconoPrecio" @click="mostrarPrecio"
+                                            style="height: 15px; width: 15px;" />
+                                    </div>
+                                    <div class="filtroprecio" v-if="ocultarPrecio">
+                                        <q-input v-model="precioMax" class="q-ml-md">{{ precioMax }}</q-input>
+                                        <div class="precio-range q-ml-md">
+                                            <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
+                                                track-color="grey-4" class="custom-slider" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="filtroespacio">
+                                    <div style="display: flex; align-items: center; margin: 0;">
+                                        <h6 class="text-bold" style="margin-left: 20px;">Espacios</h6>
+                                        <q-btn flat round :icon="iconoEspacio" @click="mostrarEspacio"
+                                            style="height: 15px; width: 15px;" />
+                                    </div>
+                                    Lista de Espacios con Checkboxes 
+                                    <div v-if="ocultarEspacio">
+                                        <ul class="q-pl-md">
+                                            <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
+                                                <input type="checkbox" v-model="espacioselec" :value="espacio.value"
+                                                    @change="cambioFiltroEspacio">
+                                                <label>{{ espacio.label }}</label>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="filtroservicio">
+                                    <div style="display: flex; align-items: center; margin: 0;">
+                                        <h6 class="text-bold" style="margin-left: 20px;">Servicios</h6>
+                                        <q-btn flat round :icon="iconoServicio" @click="mostrarServicio"
+                                            style="height: 15px; width: 15px;" />
+                                    </div>
+                                     Lista de Espacios con Checkboxes 
+                                    <div v-if="ocultarServicio">
+                                        <ul class="q-pl-md">
+                                            <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
+                                                <input type="checkbox" v-model="servicioselec" :value="servicio.value"
+                                                    @change="cambioFiltroServicio">
+                                                <label>{{ servicio.label }}</label>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="filtroespacio">
-                        <div style="display: flex; align-items: center; margin: 0;">
-                            <h6 class="text-bold" style="margin-left: 20px;">Espacios</h6>
-                            <q-btn flat round :icon="iconoEspacio" @click="mostrarEspacio"
-                                style="height: 15px; width: 15px;" />
-                        </div>
-                        Lista de Espacios con Checkboxes 
-                        <div v-if="ocultarEspacio">
-                            <ul class="q-pl-md">
-                                <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
-                                    <input type="checkbox" v-model="espacioselec" :value="espacio.value"
-                                        @change="cambioFiltroEspacio">
-                                    <label>{{ espacio.label }}</label>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="filtroservicio">
-                        <div style="display: flex; align-items: center; margin: 0;">
-                            <h6 class="text-bold" style="margin-left: 20px;">Servicios</h6>
-                            <q-btn flat round :icon="iconoServicio" @click="mostrarServicio"
-                                style="height: 15px; width: 15px;" />
-                        </div>
-                         Lista de Espacios con Checkboxes 
-                        <div v-if="ocultarServicio">
-                            <ul class="q-pl-md">
-                                <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
-                                    <input type="checkbox" v-model="servicioselec" :value="servicio.value"
-                                        @change="cambioFiltroServicio">
-                                    <label>{{ servicio.label }}</label>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </div>
-                </div>
-            </div> -->
+                        </div> -->
 
             <!-- Salones a la derecha -->
-            <div class="salones">
+            <div v-if="useSalon.loading" class="loading-container2">
+                <q-spinner color="dark" size="3em" />
+                <p>Cargando salones...</p>
+            </div>
+            <div v-else class="salones">
                 <h2 class="text-center" style="font-weight: bold;">SALONES</h2>
                 <div v-for="salon in salones" :key="salon._id" class="salon-card">
                     <q-card class="my-card">
@@ -240,6 +162,15 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     height: 100vh;
+}
+
+.loading-container2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
 }
 
 .q-spinner {

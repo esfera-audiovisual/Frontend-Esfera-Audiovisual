@@ -14,12 +14,15 @@ const espacios = ref([]);
 const servicios = ref([]);
 const espacioselec = ref([]);
 const servicioselec = ref([]);
-const loading = ref(false);
 const ocultarPrecio = ref(true);
 const ocultarEspacio = ref(true);
 const ocultarServicio = ref(true);
 const precioMax = ref(0);
+const loadingEspacios = ref(false);
+const loadingServicios = ref(false);
 let debounceTimeout = ref(null);
+
+
 
 function debounce(fn, delay) {
   return (...args) => {
@@ -55,10 +58,11 @@ const getSalones = async () => {
     console.log(response);
   } catch (error) {
     console.log(error);
-  } 
+  }
 };
 
 const getEspacios = async () => {
+  loadingEspacios.value = true;
   try {
     const response = await useEspacio.getAll();
     if (useEspacio.estatus === 200) {
@@ -70,10 +74,13 @@ const getEspacios = async () => {
     console.log(response);
   } catch (error) {
     console.log(error);
+  } finally {
+    loadingEspacios.value = false;
   }
 };
 
 const getServicios = async () => {
+  loadingServicios.value = true;
   try {
     const response = await useServicio.getAll();
     if (useServicio.estatus === 200) {
@@ -85,6 +92,8 @@ const getServicios = async () => {
     console.log(response);
   } catch (error) {
     console.log(error);
+  } finally {
+    loadingServicios.value = false;
   }
 };
 
@@ -112,8 +121,15 @@ const iconoServicio = computed(() => {
   return ocultarServicio.value ? 'arrow_drop_down' : 'arrow_right';
 });
 
+
+function verDetalleSalon(salon) {
+  useSalon.detalleSalon = salon;
+  router.push('detalle-salon')
+  console.log(useSalon.detalleSalon)
+}
+
 const filtrarSalones = async () => {
-  loading.value = true; // Mostrar loading antes de filtrar
+  useSalon.loading = true;
   const filters = {
     idCiudSalonEvento: useSalon.salonFiltroCiudad || null,
     idAmbienteSalon: useSalon.salonFiltroAmbiente || null,
@@ -131,13 +147,13 @@ const filtrarSalones = async () => {
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
-    loading.value = false; // Ocultar loading después de filtrar
+    useSalon.loading = false;
   }
 };
 
 
 
-const debouncedFiltrarSalones = debounce(filtrarSalones, 300);
+const debouncedFiltrarSalones = debounce(filtrarSalones, 500);
 
 watch(precioMax, () => {
   console.log(precioMax.value);
@@ -167,11 +183,7 @@ onMounted(() => {
 
 <template>
   <div class="">
-    <div v-if="loading" class="loading-container">
-      <q-spinner color="dark" size="3em" />
-      <p>Cargando salones...</p>
-    </div>
-    <div v-else class="q-gutter-md" style="display: flex; width: 100%;">
+    <div class="q-gutter-md" style="display: flex; width: 100%;">
 
       <!-- Botón para mostrar/ocultar filtros -->
       <div style="display: flex; flex-direction: column;">
@@ -182,7 +194,7 @@ onMounted(() => {
               <q-btn flat round :icon="iconoPrecio" @click="mostrarPrecio" style="height: 15px; width: 15px;" />
             </div>
             <div class="filtroprecio" v-if="ocultarPrecio">
-              <q-input v-model="precioMax" class="q-ml-md">{{ precioMax }}</q-input>
+              <q-input v-model="precioMax" class="q-ml-md"></q-input>
               <div class="precio-range q-ml-md">
                 <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
                   track-color="grey-4" class="custom-slider" />
@@ -197,8 +209,13 @@ onMounted(() => {
               <h6 class="text-bold" style="margin-left: 20px;">Espacios</h6>
               <q-btn flat round :icon="iconoEspacio" @click="mostrarEspacio" style="height: 15px; width: 15px;" />
             </div>
+            <!-- Loading Espacios -->
+            <div v-if="loadingEspacios" class="loading-container">
+              <q-spinner color="dark" size="2em" />
+              <p>Cargando espacios...</p>
+            </div>
             <!-- Lista de Espacios con Checkboxes -->
-            <div v-if="ocultarEspacio">
+            <div v-if="ocultarEspacio && !loadingEspacios">
               <ul class="q-pl-md">
                 <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
                   <input type="checkbox" v-model="espacioselec" :value="espacio.value" @change="cambioFiltroEspacio">
@@ -215,8 +232,13 @@ onMounted(() => {
               <h6 class="text-bold" style="margin-left: 20px;">Servicios</h6>
               <q-btn flat round :icon="iconoServicio" @click="mostrarServicio" style="height: 15px; width: 15px;" />
             </div>
-            <!-- Lista de Espacios con Checkboxes -->
-            <div v-if="ocultarServicio">
+            <!-- Loading Servicios -->
+            <div v-if="loadingServicios" class="loading-container">
+              <q-spinner color="dark" size="2em" />
+              <p>Cargando servicios...</p>
+            </div>
+            <!-- Lista de Servicios con Checkboxes -->
+            <div v-if="ocultarServicio && !loadingServicios">
               <ul class="q-pl-md">
                 <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
                   <input type="checkbox" v-model="servicioselec" :value="servicio.value" @change="cambioFiltroServicio">
@@ -224,52 +246,58 @@ onMounted(() => {
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
       </div>
 
+
       <!-- Salones a la derecha -->
       <div class="salones">
-        <div v-if="useSalon.salonesFiltrados.length === 0" class="no-salones">
-          <q-icon name="sentiment_dissatisfied" size="5em" color="grey" />
-          <p>No se encontraron salones</p>
+        <div v-if="useSalon.loading" class="loading-container">
+          <q-spinner color="dark" size="3em" />
+          <p>Cargando salones...</p>
         </div>
-
         <div v-else>
-          <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
-            <q-card class="my-card">
-              <div class="card-content">
-                <q-img :src="salon.galeria_sal[0].url" class="card-image" />
-                <q-card-section class="card-details">
-                  <div class="text-h6">{{ salon.nombre_sal }}</div>
-                  <div class="text-subtitle2">
-                    <q-icon name="location_on" size="18px" />
-                    {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
-                      salon.idCiudSalonEvento.idDepart.nombre_depart }}
-                  </div>
-                  <div class="text-subtitle2">
-                    <q-icon name="architecture" size="18px" />
-                    {{ getNombresAmbiente(salon.idAmbienteSalon) }}
-                  </div>
-                  <div class="text-subtitle2">
-                    <q-icon name="description" size="18px" />
-                    {{ salon.descripcion_sal }}
-                  </div>
-                  <div class="text-subtitle2">
-                    <q-icon name="attach_money" size="18px" />
-                    {{ salon.precio_sal }}
-                  </div>
-                  <div class="text-subtitle2">
-                    <q-icon name="groups" size="18px" />
-                    {{ salon.capacidad_sal }}
-                  </div>
-                  <div class="row justify-end">
-                    <q-btn color="dark" label="Ver información..." size="sm" />
-                  </div>
-                </q-card-section>
-              </div>
-            </q-card>
+          <div v-if="useSalon.salonesFiltrados.length === 0" class="no-salones">
+            <q-icon name="sentiment_dissatisfied" size="5em" color="grey" />
+            <p>No se encontraron salones</p>
+          </div>
+
+          <div v-else>
+            <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
+              <q-card class="my-card">
+                <div class="card-content">
+                  <q-img :src="salon.galeria_sal[0].url" class="card-image" />
+                  <q-card-section class="card-details">
+                    <div class="text-h6">{{ salon.nombre_sal }}</div>
+                    <div class="text-subtitle2">
+                      <q-icon name="location_on" size="18px" />
+                      {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
+                        salon.idCiudSalonEvento.idDepart.nombre_depart }}
+                    </div>
+                    <div class="text-subtitle2">
+                      <q-icon name="architecture" size="18px" />
+                      {{ getNombresAmbiente(salon.idAmbienteSalon) }}
+                    </div>
+                    <div class="text-subtitle2">
+                      <q-icon name="description" size="18px" />
+                      {{ salon.descripcion_sal }}
+                    </div>
+                    <div class="text-subtitle2">
+                      <q-icon name="attach_money" size="18px" />
+                      {{ salon.precio_sal }}
+                    </div>
+                    <div class="text-subtitle2">
+                      <q-icon name="groups" size="18px" />
+                      {{ salon.capacidad_sal }}
+                    </div>
+                    <div class="row justify-end">
+                      <q-btn color="dark" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
+                    </div>
+                  </q-card-section>
+                </div>
+              </q-card>
+            </div>
           </div>
         </div>
       </div>
@@ -284,7 +312,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  width: 100%;
 }
 
 .q-spinner {
