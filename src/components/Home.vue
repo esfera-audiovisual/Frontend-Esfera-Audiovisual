@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreEspacioSalon } from '../stores/espacio.js';
 import { useStoreServicioSalon } from '../stores/servicio.js';
@@ -27,12 +27,12 @@ function getNombresAmbiente(idAmbienteSalon) {
 }
 
 const cambioFiltroEspacio = async () => {
-    console.log(espacioselec)
-}
+    console.log(espacioselec);
+};
 
 const cambioFiltroServicio = async () => {
-    console.log("Cambió servicio")
-}
+    console.log(servicioselec);
+};
 
 async function getSalones() {
     loading.value = true;
@@ -103,12 +103,22 @@ const iconoServicio = computed(() => {
     return ocultarServicio.value ? 'arrow_drop_down' : 'arrow_right';
 });
 
+// Computed para mostrar los salones correctos
+const salonesAMostrar = computed(() => {
+    return useSalon.salonesFiltrados.length > 0 ? useSalon.salonesFiltrados : salones.value;
+});
+
+watch(precioMax, () => {
+    console.log(precioMax.value);
+});
+
 onMounted(() => {
     getSalones();
     getEspacios();
     getServicios();
 });
 </script>
+
 
 <template>
     <div class="">
@@ -117,9 +127,10 @@ onMounted(() => {
             <p>Cargando salones...</p>
         </div>
         <div v-else class="q-gutter-md" style="display: flex; width: 100%;">
+        
 
             <!-- Botón para mostrar/ocultar filtros -->
-            <div style="display: flex; flex-direction: column;">
+            <!-- <div style="display: flex; flex-direction: column;">
                 <div class="filtros">
                     <div>
                         <div style="display: flex; align-items: center; margin: 0;">
@@ -144,7 +155,7 @@ onMounted(() => {
                             <q-btn flat round :icon="iconoEspacio" @click="mostrarEspacio"
                                 style="height: 15px; width: 15px;" />
                         </div>
-                        <!-- Lista de Espacios con Checkboxes -->
+                        Lista de Espacios con Checkboxes 
                         <div v-if="ocultarEspacio">
                             <ul class="q-pl-md">
                                 <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
@@ -164,7 +175,7 @@ onMounted(() => {
                             <q-btn flat round :icon="iconoServicio" @click="mostrarServicio"
                                 style="height: 15px; width: 15px;" />
                         </div>
-                        <!-- Lista de Espacios con Checkboxes -->
+                         Lista de Espacios con Checkboxes 
                         <div v-if="ocultarServicio">
                             <ul class="q-pl-md">
                                 <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
@@ -177,13 +188,11 @@ onMounted(() => {
 
                     </div>
                 </div>
-            </div>
-
-            <!-- Filtros a la izquierda -->
-
+            </div> -->
 
             <!-- Salones a la derecha -->
             <div class="salones">
+                <h2 class="text-center" style="font-weight: bold;">SALONES</h2>
                 <div v-for="salon in salones" :key="salon._id" class="salon-card">
                     <q-card class="my-card">
                         <div class="card-content">
@@ -222,6 +231,7 @@ onMounted(() => {
         </div>
     </div>
 </template>
+
 
 <style scoped>
 .loading-container {

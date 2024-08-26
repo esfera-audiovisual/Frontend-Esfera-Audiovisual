@@ -9,6 +9,13 @@ const nuevoSalon = ref("");
 const idSalon = ref("");
 const salonSeleccionado = ref("");
 const editarSalonSelec = ref("");
+const salonFiltroCiudad = ref([]);
+const salonFiltroAmbiente = ref([]);
+const salonFiltroPersona = ref([]);
+const salonFiltroPrecio = ref([]);
+const salonFiltroEspacio = ref([]);
+const salonFiltroServicio = ref([]);
+const salonesFiltrados = ref([]);
 
 export const useStoreSalon = defineStore(
   modelo,
@@ -19,6 +26,19 @@ export const useStoreSalon = defineStore(
       try {
         const response = await axios.get(`${modelo}/all`);
         salones.value = response.data;
+        estatus.value = response.status;
+        return response.data;
+      } catch (error) {
+        console.log(error);
+        estatus.value = error.response.status;
+      }
+    };
+
+    const getSalonesFiltrados = async (filters) => {
+      try {
+        const response = await axios.get(`${modelo}/salones`, {
+          params: filters,
+        });
         estatus.value = response.status;
         return response.data;
       } catch (error) {
@@ -99,6 +119,7 @@ export const useStoreSalon = defineStore(
 
     return {
       getAll,
+      getSalonesFiltrados,
       getPorId,
       getPorCiudad,
       agregar,
@@ -112,6 +133,13 @@ export const useStoreSalon = defineStore(
       idSalon,
       salonSeleccionado,
       editarSalonSelec,
+      salonFiltroCiudad,
+      salonFiltroAmbiente,
+      salonFiltroPersona,
+      salonFiltroPrecio,
+      salonFiltroEspacio,
+      salonFiltroServicio,
+      salonesFiltrados,
     };
   },
   {

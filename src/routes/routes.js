@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Nav from "../components/Nav.vue"; 
 import Home from "../components/Home.vue";
+import SalonFiltrado from "../components/SalonesFiltrados.vue"
 
 const routes = [
   {
@@ -11,6 +12,10 @@ const routes = [
       {
         path: "home",
         component: Home,
+      },
+      {
+        path: "busqueda",
+        component: SalonFiltrado,
       },
     ],
   },
