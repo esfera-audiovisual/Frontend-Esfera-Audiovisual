@@ -1,11 +1,14 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
+import { useRouter } from 'vue-router'
 
 const useSalon = useStoreSalon();
+const router = useRouter();
 const salones = ref([]);
+const salonesNuevos = ref([]);
 const loading = ref(false);
-
+const imageIndices = ref({}); // Object to track the current image index for each salon
 
 function getNombresAmbiente(idAmbienteSalon) {
     if (idAmbienteSalon && idAmbienteSalon.length > 0) {
@@ -15,15 +18,17 @@ function getNombresAmbiente(idAmbienteSalon) {
     }
 }
 
-
 async function getSalones() {
     loading.value = true;
     try {
         const response = await useSalon.getAll();
         if (useSalon.estatus === 200) {
-            salones.value = response;
+            salones.value = [...response];
+            salonesNuevos.value = response.reverse();
+            salones.value.forEach(salon => {
+                imageIndices.value[salon._id] = 0; // Initialize the image index for each salon
+            });
         }
-        console.log(response);
     } catch (error) {
         console.log(error);
     } finally {
@@ -31,6 +36,24 @@ async function getSalones() {
     }
 }
 
+function irDetalleSalon(salon) {
+    useSalon.detalleSalon = salon;
+    router.push('detalle-salon')
+}
+
+function nextImage(salonId) {
+    const salon = salones.value.find(salon => salon._id === salonId);
+    if (salon) {
+        imageIndices.value[salonId] = (imageIndices.value[salonId] + 1) % salon.galeria_sal.length;
+    }
+}
+
+function prevImage(salonId) {
+    const salon = salones.value.find(salon => salon._id === salonId);
+    if (salon) {
+        imageIndices.value[salonId] = (imageIndices.value[salonId] - 1 + salon.galeria_sal.length) % salon.galeria_sal.length;
+    }
+}
 
 onMounted(() => {
     getSalones();
@@ -39,121 +62,135 @@ onMounted(() => {
 
 
 <template>
-    <div class="">
-        <div v-if="loading" class="loading-container">
-            <q-spinner color="dark" size="3em" />
-            <p>Cargando salones...</p>
-        </div>
-        <div v-else class="q-gutter-md" style="display: flex; width: 100%;">
+    <div class="home-container">
 
+        <!-- Sección de Salones Destacados -->
 
-            <!-- Botón para mostrar/ocultar filtros -->
-            <!-- <div style="display: flex; flex-direction: column;">
-                            <div class="filtros">
-                                <div>
-                                    <div style="display: flex; align-items: center; margin: 0;">
-                                        <h6 class="text-bold" style="margin-left: 20px;">Precio máximo</h6>
-                                        <q-btn flat round :icon="iconoPrecio" @click="mostrarPrecio"
-                                            style="height: 15px; width: 15px;" />
-                                    </div>
-                                    <div class="filtroprecio" v-if="ocultarPrecio">
-                                        <q-input v-model="precioMax" class="q-ml-md">{{ precioMax }}</q-input>
-                                        <div class="precio-range q-ml-md">
-                                            <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
-                                                track-color="grey-4" class="custom-slider" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr>
-
-                                <div class="filtroespacio">
-                                    <div style="display: flex; align-items: center; margin: 0;">
-                                        <h6 class="text-bold" style="margin-left: 20px;">Espacios</h6>
-                                        <q-btn flat round :icon="iconoEspacio" @click="mostrarEspacio"
-                                            style="height: 15px; width: 15px;" />
-                                    </div>
-                                    Lista de Espacios con Checkboxes 
-                                    <div v-if="ocultarEspacio">
-                                        <ul class="q-pl-md">
-                                            <li v-for="espacio in espacios" :key="espacio.value" class="list-item">
-                                                <input type="checkbox" v-model="espacioselec" :value="espacio.value"
-                                                    @change="cambioFiltroEspacio">
-                                                <label>{{ espacio.label }}</label>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <hr>
-
-                                <div class="filtroservicio">
-                                    <div style="display: flex; align-items: center; margin: 0;">
-                                        <h6 class="text-bold" style="margin-left: 20px;">Servicios</h6>
-                                        <q-btn flat round :icon="iconoServicio" @click="mostrarServicio"
-                                            style="height: 15px; width: 15px;" />
-                                    </div>
-                                     Lista de Espacios con Checkboxes 
-                                    <div v-if="ocultarServicio">
-                                        <ul class="q-pl-md">
-                                            <li v-for="servicio in servicios" :key="servicio.value" class="list-item">
-                                                <input type="checkbox" v-model="servicioselec" :value="servicio.value"
-                                                    @change="cambioFiltroServicio">
-                                                <label>{{ servicio.label }}</label>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div> -->
-
-            <!-- Salones a la derecha -->
-            <div v-if="useSalon.loading" class="loading-container2">
-                <q-spinner color="dark" size="3em" />
+        <section class="featured-salons">
+            <h2>Salones Destacados</h2>
+            <div v-if="loading" class="loading-container">
+                <q-spinner color="dark" size="2em" />
                 <p>Cargando salones...</p>
             </div>
-            <div v-else class="salones">
-                <h2 class="text-center" style="font-weight: bold;">SALONES</h2>
-                <div v-for="salon in salones" :key="salon._id" class="salon-card">
-                    <q-card class="my-card">
-                        <div class="card-content">
-                            <q-img :src="salon.galeria_sal[0].url" class="card-image" />
-                            <q-card-section class="card-details">
-                                <div class="text-h6">{{ salon.nombre_sal }}</div>
-                                <div class="text-subtitle2">
-                                    <q-icon name="location_on" size="18px" />
-                                    {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
-                                        salon.idCiudSalonEvento.idDepart.nombre_depart }}
-                                </div>
-                                <div class="text-subtitle2">
-                                    <q-icon name="architecture" size="18px" />
-                                    {{ getNombresAmbiente(salon.idAmbienteSalon) }}
-                                </div>
-                                <div class="text-subtitle2">
-                                    <q-icon name="description" size="18px" />
-                                    {{ salon.descripcion_sal }}
-                                </div>
-                                <div class="text-subtitle2">
-                                    <q-icon name="attach_money" size="18px" />
-                                    {{ salon.precio_sal }}
-                                </div>
-                                <div class="text-subtitle2">
-                                    <q-icon name="groups" size="18px" />
-                                    {{ salon.capacidad_sal }}
-                                </div>
-                                <div class="row justify-end">
-                                    <q-btn color="dark" label="Ver información..." size="sm" />
-                                </div>
-                            </q-card-section>
+            <div v-else class="featured-salons-container">
+                <div v-for="salon in salones" :key="salon._id" class="featured-salon-card">
+                    <q-card class="featured-card">
+                        <div class="image-carousel">
+                            <q-btn round icon="chevron_left" flat @click="prevImage(salon._id)" class="carousel-arrow" />
+                            <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
+                            <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
                         </div>
+                        <q-card-section class="featured-details">
+                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                            <div class="text-subtitle2">{{ salon.idCiudSalonEvento.nombre_ciud }}, {{
+                                salon.idCiudSalonEvento.idDepart.nombre_depart }}</div>
+                            <div style="display: flex; justify-content: end;">
+                                <q-btn flat icon="add" style="background-color: black; color: white;"
+                                    @click.stop="irDetalleSalon(salon)" class="add-button" />
+                            </div>
+                        </q-card-section>
                     </q-card>
                 </div>
+            </div>
+
+        </section>
+
+        <!-- Sección de Galería -->
+
+        <section class="gallery-section">
+            <h2>Eventos Recientes</h2>
+            <div v-if="loading" class="loading-container">
+                <q-spinner color="dark" size="2em" />
+                <p>Cargando salones...</p>
+            </div>
+            <div v-else class="featured-salons-container">
+                <div v-for="salon in salonesNuevos" :key="salon._id" class="featured-salon-card">
+                    <q-card class="featured-card">
+                        <div class="image-carousel">
+                            <q-btn round icon="chevron_left" flat @click="prevImage(salon._id)" class="carousel-arrow" />
+                            <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
+                            <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
+                        </div>
+                        <q-card-section class="featured-details">
+                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                            <div class="text-subtitle2">{{ salon.idCiudSalonEvento.nombre_ciud }}, {{
+                                salon.idCiudSalonEvento.idDepart.nombre_depart }}</div>
+                            <div style="display: flex; justify-content: end;">
+                                <q-btn flat icon="add" style="background-color: black; color: white;"
+                                    @click.stop="irDetalleSalon(salon)" class="add-button" />
+                            </div>
+                        </q-card-section>
+                    </q-card>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Testimonios -->
+        <section class="testimonials-section">
+            <h2>Testimonios de Clientes</h2>
+            <div class="testimonials-container">
+                <q-card class="testimonial-card">
+                    <q-card-section>
+                        <q-icon name="format_quote" size="24px" />
+                        <p>¡Excelente servicio! El salón fue perfecto para nuestra boda. Todo fue tal como lo prometieron.
+                        </p>
+                        <p class="client-name">- Carlos M.</p>
+                    </q-card-section>
+                </q-card>
+                <q-card class="testimonial-card">
+                    <q-card-section>
+                        <q-icon name="format_quote" size="24px" />
+                        <p>La experiencia fue maravillosa. Definitivamente alquilaré con ellos nuevamente.</p>
+                        <p class="client-name">- Andrea G.</p>
+                    </q-card-section>
+                </q-card>
+            </div>
+        </section>
+
+        <!-- Sección de Salones -->
+        <h1 class="text-center">Nuestros salones</h1>
+        <div v-if="loading" class="loading-container">
+            <q-spinner color="dark" size="2em" />
+            <p>Cargando espacios...</p>
+        </div>
+        <div v-else class="salones">
+            <div v-for="salon in salones" :key="salon._id" class="salon-card">
+                <q-card class="my-card">
+                    <div class="card-content">
+                        <q-img :src="salon.galeria_sal[0].url" class="card-image" />
+                        <q-card-section class="card-details">
+                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                            <div class="text-subtitle2">
+                                <q-icon name="location_on" size="18px" />
+                                {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
+                                    salon.idCiudSalonEvento.idDepart.nombre_depart }}
+                            </div>
+                            <div class="text-subtitle2">
+                                <q-icon name="architecture" size="18px" />
+                                {{ getNombresAmbiente(salon.idAmbienteSalon) }}
+                            </div>
+                            <div class="text-subtitle2">
+                                <q-icon name="description" size="18px" />
+                                {{ salon.descripcion_sal }}
+                            </div>
+                            <div class="text-subtitle2">
+                                <q-icon name="attach_money" size="18px" />
+                                {{ salon.precio_sal }}
+                            </div>
+                            <div class="text-subtitle2">
+                                <q-icon name="groups" size="18px" />
+                                {{ salon.capacidad_sal }}
+                            </div>
+                            <div class="row justify-end">
+                                <q-btn color="dark" label="Ver información..." size="sm" />
+                            </div>
+                        </q-card-section>
+                    </div>
+                </q-card>
             </div>
         </div>
     </div>
 </template>
-
 
 <style scoped>
 .loading-container {
@@ -161,24 +198,185 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    width: 100%;
 }
 
-.loading-container2 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100vh;
+h2{
+font-family:'Times New Roman', Times, serif;
 }
 
-.q-spinner {
-    margin-bottom: 20px;
+.image-carousel {
+    display: flex;
+    align-items: center;
+    position: relative;
 }
 
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    color: #333;
+    /* Dark color for the icon */
+    border-radius: 50%;
+    /* Rounded corners */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    /* Subtle shadow */
+    padding: 10px;
+    /* Ensure the arrow has enough padding */
+    font-size: 18px;
+    /* Adjust the icon size */
+}
+
+.carousel-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    /* Slightly less transparent on hover */
+    color: #000;
+    /* Darker icon color on hover */
+    cursor: pointer;
+    /* Change cursor on hover */
+}
+
+.carousel-arrow:first-of-type {
+    left: 10px;
+    /* Adjust positioning */
+}
+
+.carousel-arrow:last-of-type {
+    right: 10px;
+    /* Adjust positioning */
+}
+
+
+.featured-image {
+    height: 150px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.home-container {
+    padding: 20px;
+}
+
+/* Estilo para la sección de salones destacados */
+.featured-salons {
+    margin-bottom: 40px;
+}
+
+.featured-salons-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: scroll;
+    padding-bottom: 15px;
+    scroll-behavior: smooth;
+    /* Asegura una transición suave */
+    scroll-snap-type: x mandatory;
+    /* Hace que el scroll se ajuste al inicio de cada elemento */
+}
+
+.featured-salon-card {
+    min-width: 250px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    /* Alinea cada elemento al inicio del contenedor al hacer scroll */
+}
+
+
+.featured-salons-container::-webkit-scrollbar {
+    height: 8px;
+    /* Ajusta la altura del scrollbar */
+}
+
+.featured-salons-container::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* Color del fondo del scrollbar */
+    border-radius: 10px;
+    /* Bordes redondeados */
+}
+
+.featured-salons-container::-webkit-scrollbar-thumb {
+    background-color: #4d4d4d;
+    /* Color del thumb (la parte que se mueve) */
+    border-radius: 10px;
+    /* Bordes redondeados */
+    border: 2px solid #f1f1f1;
+    /* Bordes alrededor del thumb */
+}
+
+.featured-salons-container::-webkit-scrollbar-thumb:hover {
+    background-color: #333;
+    /* Cambia el color al pasar el cursor */
+}
+
+/* Personalizar el scrollbar en Firefox */
+.featured-salons-container {
+    scrollbar-width: thin;
+    /* Anchura del scrollbar */
+    scrollbar-color: #4d4d4d #f1f1f1;
+    /* Colores del thumb y la pista */
+}
+
+.featured-salon-card {
+    min-width: 250px;
+    flex-shrink: 0;
+}
+
+.featured-card {
+    width: 100%;
+}
+
+.featured-image {
+    height: 150px;
+    object-fit: cover;
+}
+
+.featured-details {
+    padding: 10px;
+}
+
+/* Estilo para la galería */
+.gallery-section {
+    margin-bottom: 40px;
+}
+
+.gallery-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: scroll;
+}
+
+.gallery-image {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Estilo para la sección de testimonios */
+.testimonials-section {
+    margin-bottom: 40px;
+}
+
+.testimonials-container {
+    display: flex;
+    gap: 20px;
+}
+
+.testimonial-card {
+    flex: 1;
+    padding: 20px;
+    background-color: #f7f7f7;
+}
+
+.client-name {
+    margin-top: 10px;
+    font-weight: bold;
+    font-style: italic;
+    color: #555;
+}
+
+/* Estilo para la sección de salones */
 .salones {
-    flex: 3;
     display: flex;
     flex-direction: column;
     margin-top: 80px;
@@ -190,7 +388,6 @@ onMounted(() => {
 .salon-card {
     width: 100%;
     max-width: 800px;
-    /* Ajusta el ancho máximo de la tarjeta */
     display: flex;
     justify-content: start;
 }
@@ -209,9 +406,7 @@ onMounted(() => {
 
 .card-image {
     flex: 4.5;
-    /* Ajusta el ancho de la imagen */
     height: auto;
-    /* Ajusta el alto de la imagen automáticamente */
     object-fit: cover;
     border-radius: 8px;
 }
@@ -222,72 +417,4 @@ onMounted(() => {
     flex-direction: column;
     justify-content: space-between;
     padding-left: 20px;
-}
-
-.card-image-container {
-    flex: 1;
-}
-
-.card-details-container {
-    flex: 2;
-    padding-left: 20px;
-}
-
-
-
-ul.q-pl-md {
-    list-style-type: none;
-    /* Quita el punto de cada ítem */
-    padding-left: 0;
-    /* Elimina el padding izquierdo */
-}
-
-.list-item {
-    margin-bottom: 10px;
-    margin-left: 20px;
-    /* Aumenta el espacio entre los elementos */
-}
-
-input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    background-color: #fff;
-    border: 2px solid #adb5bd;
-    border-radius: 4px;
-    width: 25px;
-    /* Aumenta el tamaño del checkbox */
-    height: 25px;
-    /* Aumenta el tamaño del checkbox */
-    cursor: pointer;
-    outline: none;
-    margin-right: 10px;
-    /* Agrega un espacio entre el checkbox y el label */
-    position: relative;
-}
-
-input[type="checkbox"]:checked {
-    background-color: rgb(112, 27, 240);
-    border-color: rgb(112, 27, 240);
-}
-
-input[type="checkbox"]:checked::after {
-    content: '';
-    position: absolute;
-    top: 5px;
-    left: 8px;
-    width: 6px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-label {
-    font-size: 18px;
-    /* Aumenta el tamaño del texto */
-    font-weight: 500;
-    color: #495057;
-    cursor: pointer;
-    margin-left: 0;
-}
-</style>
+}</style>

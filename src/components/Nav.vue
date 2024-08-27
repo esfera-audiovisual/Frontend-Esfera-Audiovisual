@@ -14,6 +14,8 @@ const ambientes = ref([]);
 const c_personas = ref("");
 const ciudad = ref("");
 const ambiente = ref("");
+const showLoadingModal = ref(false);
+
 
 async function getCiudades() {
   try {
@@ -66,7 +68,7 @@ const getCiudadesFiltradas = (ciudades) => {
     }
   });
 
-  return opciones;
+  return opciones.slice(0, 5);
 };
 
 
@@ -123,35 +125,39 @@ const filtrarAmbientes = (val, update) => {
 };
 
 const filtrarSalones = async () => {
+  showLoadingModal.value = true; // Show the loading modal
   useSalon.loading = true;
+  console.log("filtro ciudad", ciudad.value?.value?._id  )
   const filters = {
-    idCiudSalonEvento: ciudad.value?.value?._id || null,
-    idAmbienteSalon: ambiente.value?.value || null,
-    capacidad_sal: c_personas.value || null,
+    idCiudSalonEvento: ciudad.value?.value?._id  || null,
+    idAmbienteSalon: ambiente.value?.value || useSalon.salonFiltroAmbiente || null,
+    capacidad_sal: c_personas.value || useSalon.salonFiltroPersona || null,
   };
 
   try {
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones;
-    router.push('busqueda')
+    router.push('busqueda');
     console.log('Salones filtrados:', filteredSalones);
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
+    showLoadingModal.value = false; // Hide the loading modal
     useSalon.loading = false;
   }
 };
 
+
 watch(ciudad, () => {
   if (ciudad?.value?.value && ciudad.value.value._id) {
-    useSalon.salonFiltroCiudad = ciudad.value.value._id;
+    useSalon.salonFiltroCiudad = ciudad.value?.value._id;
     filtrarSalones();  // Llama a la función de filtrado cuando cambia la ciudad
   }
 });
 
 
 watch(ambiente, () => {
-  useSalon.salonFiltroAmbiente = ambiente.value?.value
+  useSalon.salonFiltroAmbiente = ambiente.value?.value;
   filtrarSalones();  // Llama a la función de filtrado cuando cambia el ambiente
 });
 
@@ -181,12 +187,21 @@ onMounted(() => {
 <template>
   <div>
     <q-layout view="hHh lpR fFf">
+      <q-dialog v-model="showLoadingModal" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-spinner color="primary" size="30px" />
+            <span class="q-ml-sm">Cargando salones...</span>
+            <span class="q-ml-sm">Espere por favor</span>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
       <q-header elevated>
         <q-toolbar class="custom-toolbar">
           <!-- Esfera Logo y Nombre -->
           <div class="logo-container">
             <router-link to="/home" class="boton-home">
-              <q-btn flat round icon="public" class="right-btn" @click="limpiar()"  />
+              <q-btn flat round icon="public" class="right-btn" @click="limpiar()" />
             </router-link>
             <h6 class="logo-title">Esfera Audiovisual</h6>
           </div>
@@ -198,7 +213,7 @@ onMounted(() => {
               class="input-item" />
 
             <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
-              :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Ambiente salón"
+              :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento"
               class="input-item" />
 
             <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
@@ -229,6 +244,15 @@ onMounted(() => {
 <style scoped>
 .custom-toolbar {
   background-color: #ffffff !important;
+}
+
+.loading-modal {
+  min-width: 300px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-container {

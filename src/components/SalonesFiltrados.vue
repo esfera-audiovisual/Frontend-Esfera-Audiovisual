@@ -3,24 +3,37 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreEspacioSalon } from '../stores/espacio.js';
 import { useStoreServicioSalon } from '../stores/servicio.js';
+import { useStoreTipoSalon } from '../stores/tipo.js';
+import { useStoreUbicacionSalon } from '../stores/ubicacion.js';
 import { useRouter } from 'vue-router';
 
 const useSalon = useStoreSalon();
 const useEspacio = useStoreEspacioSalon();
 const useServicio = useStoreServicioSalon();
+const useTipo = useStoreTipoSalon();
+const useUbicacion = useStoreUbicacionSalon();
 const router = useRouter();
 const salones = ref([]);
 const espacios = ref([]);
 const servicios = ref([]);
+const tiposSalon = ref([]);
+const ubicacionesSalon = ref([]);
 const espacioselec = ref([]);
 const servicioselec = ref([]);
+const tiposelec = ref([]);
+const ubicacionselec = ref([]);
 const ocultarPrecio = ref(true);
 const ocultarEspacio = ref(true);
 const ocultarServicio = ref(true);
+const ocultarTipo = ref(true);
+const ocultarUbicacion = ref(true);
 const precioMax = ref(0);
+const loading = ref(false);
 const loadingEspacios = ref(false);
 const loadingServicios = ref(false);
-let debounceTimeout = ref(null);
+const loadingTiposSalon = ref(false);
+const loadingUbicacionesSalon = ref(false);
+const debounceTimeout = ref(null);
 
 
 
@@ -97,6 +110,42 @@ const getServicios = async () => {
   }
 };
 
+const getTiposSalon = async () => {
+  loadingTiposSalon.value = true;
+  try {
+    const response = await useTipo.getAll();
+    if (useTipo.estatus === 200) {
+      tiposSalon.value = response.map((tipo) => ({
+        label: tipo.nombre_tip,
+        value: tipo._id,
+      }));
+    }
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loadingTiposSalon.value = false;
+  }
+};
+
+const getUbicacionesSalon = async () => {
+  loadingUbicacionesSalon.value = true;
+  try {
+    const response = await useUbicacion.getAll();
+    if (useUbicacion.estatus === 200) {
+      ubicacionesSalon.value = response.map((ubicacion) => ({
+        label: ubicacion.nombre_ubi,
+        value: ubicacion._id,
+      }));
+    }
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loadingUbicacionesSalon.value = false;
+  }
+};
+
 const mostrarPrecio = () => {
   ocultarPrecio.value = !ocultarPrecio.value;
 };
@@ -107,6 +156,14 @@ const mostrarEspacio = () => {
 
 const mostrarServicio = () => {
   ocultarServicio.value = !ocultarServicio.value;
+};
+
+const mostrarTipo = () => {
+  ocultarTipo.value = !ocultarTipo.value;
+};
+
+const mostrarUbicacion = () => {
+  ocultarUbicacion.value = !ocultarUbicacion.value;
 };
 
 const iconoPrecio = computed(() => {
@@ -121,6 +178,14 @@ const iconoServicio = computed(() => {
   return ocultarServicio.value ? 'arrow_drop_down' : 'arrow_right';
 });
 
+const iconoTipo = computed(() => {
+  return ocultarTipo.value ? 'arrow_drop_down' : 'arrow_right';
+});
+
+const iconoUbicacion = computed(() => {
+  return ocultarUbicacion.value ? 'arrow_drop_down' : 'arrow_right';
+});
+
 
 function verDetalleSalon(salon) {
   useSalon.detalleSalon = salon;
@@ -129,14 +194,16 @@ function verDetalleSalon(salon) {
 }
 
 const filtrarSalones = async () => {
-  useSalon.loading = true;
+  console.log("ciudad filtro", useSalon.salonFiltroCiudad)
+  loading.value = true;
   const filters = {
     idCiudSalonEvento: useSalon.salonFiltroCiudad || null,
     idAmbienteSalon: useSalon.salonFiltroAmbiente || null,
     capacidad_sal: useSalon.salonFiltroPersona || null,
-    precio_sal: precioMax.value || null,
     idEspaciosSalon: espacioselec.value.length > 0 ? espacioselec.value.join(',') : null,
     idServiciosSalon: servicioselec.value.length > 0 ? servicioselec.value.join(',') : null,
+    idTipoSalon: tiposelec.value.length > 0 ? tiposelec.value.join(',') : null,
+    idUbicacionSalon: ubicacionselec.value.length > 0 ? ubicacionselec.value.join(',') : null,
   };
 
   try {
@@ -147,7 +214,7 @@ const filtrarSalones = async () => {
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
-    useSalon.loading = false;
+    loading.value = false;
   }
 };
 
@@ -173,10 +240,24 @@ watch(servicioselec, () => {
   filtrarSalones();
 });
 
+watch(tiposelec, () => {
+  console.log(tiposelec.value);
+  useSalon.salonFiltroTipo = tiposelec.value;
+  filtrarSalones();
+});
+
+watch(ubicacionselec, () => {
+  console.log(ubicacionselec.value);
+  useSalon.salonFiltroUbicacion = ubicacionselec.value;
+  filtrarSalones();
+});
+
 onMounted(() => {
   getSalones();
   getEspacios();
   getServicios();
+  getTiposSalon();
+  getUbicacionesSalon();
 });
 </script>
 
@@ -184,7 +265,7 @@ onMounted(() => {
 <template>
   <div class="">
     <div class="q-gutter-md" style="display: flex; width: 100%;">
-
+      
       <!-- Botón para mostrar/ocultar filtros -->
       <div style="display: flex; flex-direction: column;">
         <div class="filtros">
@@ -199,6 +280,52 @@ onMounted(() => {
                 <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
                   track-color="grey-4" class="custom-slider" />
               </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="filtrotipo">
+            <div style="display: flex; align-items: center; margin: 0;">
+              <h6 class="text-bold" style="margin-left: 20px;">Tipo salón</h6>
+              <q-btn flat round :icon="iconoTipo" @click="mostrarTipo" style="height: 15px; width: 15px;" />
+            </div>
+            <!-- Loading Espacios -->
+            <div v-if="loadingTiposSalon" class="loading-container">
+              <q-spinner color="dark" size="2em" />
+              <p>Cargando tipos salon...</p>
+            </div>
+            <!-- Lista de Espacios con Checkboxes -->
+            <div v-if="ocultarTipo && !loadingTiposSalon">
+              <ul class="q-pl-md">
+                <li v-for="tipo in tiposSalon" :key="tipo.value" class="list-item">
+                  <input type="checkbox" v-model="tiposelec" :value="tipo.value">
+                  <label>{{ tipo.label }}</label>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="filtroubicacion">
+            <div style="display: flex; align-items: center; margin: 0;">
+              <h6 class="text-bold" style="margin-left: 20px;">Ubicación salon</h6>
+              <q-btn flat round :icon="iconoUbicacion" @click="mostrarUbicacion" style="height: 15px; width: 15px;" />
+            </div>
+            <!-- Loading Espacios -->
+            <div v-if="loadingUbicacionesSalon" class="loading-container">
+              <q-spinner color="dark" size="2em" />
+              <p>Cargando ubicaciones salon...</p>
+            </div>
+            <!-- Lista de Espacios con Checkboxes -->
+            <div v-if="ocultarUbicacion && !loadingUbicacionesSalon">
+              <ul class="q-pl-md">
+                <li v-for="ubicacion in ubicacionesSalon" :key="ubicacion.value" class="list-item">
+                  <input type="checkbox" v-model="ubicacionselec" :value="ubicacion.value">
+                  <label>{{ ubicacion.label }}</label>
+                </li>
+              </ul>
             </div>
           </div>
 
@@ -253,7 +380,7 @@ onMounted(() => {
 
       <!-- Salones a la derecha -->
       <div class="salones">
-        <div v-if="useSalon.loading" class="loading-container">
+        <div v-if="loading" class="loading-container">
           <q-spinner color="dark" size="3em" />
           <p>Cargando salones...</p>
         </div>

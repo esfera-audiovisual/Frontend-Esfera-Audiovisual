@@ -15,6 +15,8 @@ const salonFiltroPersona = ref([]);
 const salonFiltroPrecio = ref([]);
 const salonFiltroEspacio = ref([]);
 const salonFiltroServicio = ref([]);
+const salonFiltroTipo = ref([]);
+const salonFiltroUbicacion = ref([])
 const salonesFiltrados = ref([]);
 const detalleSalon = ref("");
 const loading = ref(false);
@@ -141,6 +143,8 @@ export const useStoreSalon = defineStore(
       salonFiltroPrecio,
       salonFiltroEspacio,
       salonFiltroServicio,
+      salonFiltroTipo,
+      salonFiltroUbicacion,
       salonesFiltrados,
       loading,
       detalleSalon,
