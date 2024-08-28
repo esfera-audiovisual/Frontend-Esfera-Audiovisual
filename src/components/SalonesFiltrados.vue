@@ -34,6 +34,7 @@ const loadingServicios = ref(false);
 const loadingTiposSalon = ref(false);
 const loadingUbicacionesSalon = ref(false);
 const debounceTimeout = ref(null);
+const showLoadingModal = ref(false);
 
 
 
@@ -189,17 +190,19 @@ const iconoUbicacion = computed(() => {
 
 function verDetalleSalon(salon) {
   useSalon.detalleSalon = salon;
-  router.push('detalle-salon')
+  router.push('/detalle-salon')
   console.log(useSalon.detalleSalon)
 }
 
 const filtrarSalones = async () => {
-  console.log("ciudad filtro", useSalon.salonFiltroCiudad)
+  showLoadingModal.value = true;
   loading.value = true;
+
   const filters = {
     idCiudSalonEvento: useSalon.salonFiltroCiudad || null,
     idAmbienteSalon: useSalon.salonFiltroAmbiente || null,
     capacidad_sal: useSalon.salonFiltroPersona || null,
+    precio_sal: precioMax.value || null,
     idEspaciosSalon: espacioselec.value.length > 0 ? espacioselec.value.join(',') : null,
     idServiciosSalon: servicioselec.value.length > 0 ? servicioselec.value.join(',') : null,
     idTipoSalon: tiposelec.value.length > 0 ? tiposelec.value.join(',') : null,
@@ -207,6 +210,7 @@ const filtrarSalones = async () => {
   };
 
   try {
+    console.log("soy salones-filtros.vue", filters)
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones;
 
@@ -214,45 +218,47 @@ const filtrarSalones = async () => {
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
+    showLoadingModal.value = false;
     loading.value = false;
   }
 };
 
 
 
-const debouncedFiltrarSalones = debounce(filtrarSalones, 500);
+const debouncedFiltrarSalones = debounce(filtrarSalones, 800);
 
 watch(precioMax, () => {
-  console.log(precioMax.value);
   useSalon.salonFiltroPrecio = precioMax.value;
   debouncedFiltrarSalones();
 });
 
 watch(espacioselec, () => {
-  console.log(espacioselec.value);
   useSalon.salonFiltroEspacio = espacioselec.value;
-  filtrarSalones();
+  debouncedFiltrarSalones();
 });
 
 watch(servicioselec, () => {
-  console.log(servicioselec.value);
   useSalon.salonFiltroServicio = servicioselec.value;
-  filtrarSalones();
+  debouncedFiltrarSalones();
 });
 
 watch(tiposelec, () => {
-  console.log(tiposelec.value);
   useSalon.salonFiltroTipo = tiposelec.value;
-  filtrarSalones();
+  debouncedFiltrarSalones();
 });
 
 watch(ubicacionselec, () => {
-  console.log(ubicacionselec.value);
   useSalon.salonFiltroUbicacion = ubicacionselec.value;
-  filtrarSalones();
+  debouncedFiltrarSalones();
 });
 
 onMounted(() => {
+  precioMax.value = useSalon.salonFiltroPrecio ;
+  espacioselec.value = useSalon.salonFiltroEspacio ;
+  servicioselec.value = useSalon.salonFiltroServicio ;
+  tiposelec.value = useSalon.salonFiltroTipo ;
+  ubicacionselec.value = useSalon.salonFiltroUbicacion ;
+
   getSalones();
   getEspacios();
   getServicios();
@@ -265,7 +271,15 @@ onMounted(() => {
 <template>
   <div class="">
     <div class="q-gutter-md" style="display: flex; width: 100%;">
-      
+      <q-dialog v-model="showLoadingModal" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-spinner color="primary" size="30px" />
+            <span class="q-ml-sm">Cargando salones...</span>
+            <span class="q-ml-sm">Espere por favor</span>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
       <!-- Botón para mostrar/ocultar filtros -->
       <div style="display: flex; flex-direction: column;">
         <div class="filtros">
@@ -380,16 +394,11 @@ onMounted(() => {
 
       <!-- Salones a la derecha -->
       <div class="salones">
-        <div v-if="loading" class="loading-container">
-          <q-spinner color="dark" size="3em" />
-          <p>Cargando salones...</p>
-        </div>
-        <div v-else>
+        <div>
           <div v-if="useSalon.salonesFiltrados.length === 0" class="no-salones">
             <q-icon name="sentiment_dissatisfied" size="5em" color="grey" />
             <p>No se encontraron salones</p>
           </div>
-
           <div v-else>
             <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
               <q-card class="my-card">
@@ -419,7 +428,7 @@ onMounted(() => {
                       {{ salon.capacidad_sal }}
                     </div>
                     <div class="row justify-end">
-                      <q-btn color="dark" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
+                      <q-btn color="primary" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
                     </div>
                   </q-card-section>
                 </div>
@@ -540,6 +549,8 @@ onMounted(() => {
 }
 
 input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
   margin-right: 10px;
   margin-left: 10px;
 }

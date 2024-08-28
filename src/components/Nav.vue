@@ -17,6 +17,8 @@ const ambiente = ref("");
 const showLoadingModal = ref(false);
 
 
+
+
 async function getCiudades() {
   try {
     const response = await useCiudad.getAll();
@@ -125,24 +127,30 @@ const filtrarAmbientes = (val, update) => {
 };
 
 const filtrarSalones = async () => {
-  showLoadingModal.value = true; // Show the loading modal
+  showLoadingModal.value = true;
   useSalon.loading = true;
-  console.log("filtro ciudad", ciudad.value?.value?._id  )
+
   const filters = {
-    idCiudSalonEvento: ciudad.value?.value?._id  || null,
-    idAmbienteSalon: ambiente.value?.value || useSalon.salonFiltroAmbiente || null,
-    capacidad_sal: c_personas.value || useSalon.salonFiltroPersona || null,
+    idCiudSalonEvento: ciudad.value?.value?._id || null,
+    idAmbienteSalon: ambiente.value?.value || null,
+    capacidad_sal: c_personas.value || null,
+    precio_sal: useSalon.salonFiltroPrecio || null,
+    idEspaciosSalon: useSalon.salonFiltroEspacio.length > 0 ? useSalon.salonFiltroEspacio.join(',') : null,
+    idServiciosSalon: useSalon.salonFiltroServicio.length > 0 ? useSalon.salonFiltroServicio.join(',') : null,
+    idTipoSalon: useSalon.salonFiltroTipo.length > 0 ? useSalon.salonFiltroTipo.join(',') : null,
+    idUbicacionSalon: useSalon.salonFiltroUbicacion.length > 0 ? useSalon.salonFiltroUbicacion.join(',') : null,
   };
 
   try {
+    console.log("filtros nav ", filters)
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones;
-    router.push('busqueda');
+    router.push('/busqueda');
     console.log('Salones filtrados:', filteredSalones);
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
-    showLoadingModal.value = false; // Hide the loading modal
+    showLoadingModal.value = false;
     useSalon.loading = false;
   }
 };
@@ -151,36 +159,55 @@ const filtrarSalones = async () => {
 watch(ciudad, () => {
   if (ciudad?.value?.value && ciudad.value.value._id) {
     useSalon.salonFiltroCiudad = ciudad.value?.value._id;
-    filtrarSalones();  // Llama a la función de filtrado cuando cambia la ciudad
+    useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
+    filtrarSalones();
   }
 });
 
 
 watch(ambiente, () => {
+  console.log(ambiente)
   useSalon.salonFiltroAmbiente = ambiente.value?.value;
-  filtrarSalones();  // Llama a la función de filtrado cuando cambia el ambiente
+  useSalon.salonFiltroAmbienteNombre = ambiente.value.label;
+  filtrarSalones();
 });
 
 watch(c_personas, () => {
   useSalon.salonFiltroPersona = c_personas.value;
-  filtrarSalones();  // Llama a la función de filtrado cuando cambia la cantidad de personas
+  filtrarSalones();
 });
 
 watch(fecha, () => {
   console.log(fecha.value);
-  // Puedes agregar la lógica de filtrado según la fecha si es necesario
 });
 
 function limpiar() {
   ciudad.value = "";
   ambiente.value = "";
   c_personas.value = "";
+  useSalon.salonFiltroCiudadNombre = "";
+  useSalon.salonFiltroCiudad = "";
+  useSalon.salonFiltroAmbienteNombre = "";
+  useSalon.salonFiltroAmbiente = "";
+  useSalon.salonFiltroPersona = "";
+  useSalon.salonFiltroPrecio = "";
+  useSalon.salonFiltroEspacio = [];
+  useSalon.salonFiltroServicio = [];
+  useSalon.salonFiltroTipo = [];
+  useSalon.salonFiltroUbicacion = [];
 }
 
 
 onMounted(() => {
+  ciudad.value = useSalon.salonFiltroCiudadNombre;
+  ambiente.value = useSalon.salonFiltroAmbienteNombre;
+  c_personas.value = useSalon.salonFiltroPersona;
+
+
   getCiudades();
   getAmbientes();
+
+
 });
 </script>
 
@@ -201,7 +228,7 @@ onMounted(() => {
           <!-- Esfera Logo y Nombre -->
           <div class="logo-container">
             <router-link to="/home" class="boton-home">
-              <q-btn flat round icon="public" class="right-btn" @click="limpiar()" />
+              <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar()" />
             </router-link>
             <h6 class="logo-title">Esfera Audiovisual</h6>
           </div>
@@ -222,14 +249,16 @@ onMounted(() => {
 
             <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
 
-            <q-btn flat round icon="search" class="search-btn" @click="filtrarSalones" />
+            <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" />
           </div>
 
           <!-- Right Side Links -->
           <q-space />
           <div class="right-side">
-            <q-btn flat label="Pon tu salón" class="right-btn" />
-            <q-btn flat round icon="account_circle" class="right-btn" />
+            <q-btn flat label="Pon tu salón" class="right-btn bg-primary" />
+            <router-link to="/login" class="boton-home">
+              <q-btn flat round icon="login" class="right-btn bg-primary" />
+            </router-link>
           </div>
         </q-toolbar>
       </q-header>
@@ -246,14 +275,6 @@ onMounted(() => {
   background-color: #ffffff !important;
 }
 
-.loading-modal {
-  min-width: 300px;
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
 
 .logo-container {
   display: flex;
@@ -284,7 +305,6 @@ onMounted(() => {
 .search-btn {
   height: 35px;
   width: 35px;
-  background-color: rgb(112, 27, 240);
   color: white;
 }
 
@@ -295,7 +315,6 @@ onMounted(() => {
 }
 
 .right-btn {
-  background-color: rgb(112, 27, 240);
   color: white;
 }
 </style>

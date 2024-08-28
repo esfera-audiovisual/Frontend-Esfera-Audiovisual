@@ -9,10 +9,12 @@ const nuevoSalon = ref("");
 const idSalon = ref("");
 const salonSeleccionado = ref("");
 const editarSalonSelec = ref("");
-const salonFiltroCiudad = ref([]);
-const salonFiltroAmbiente = ref([]);
-const salonFiltroPersona = ref([]);
-const salonFiltroPrecio = ref([]);
+const salonFiltroCiudad = ref("");
+const salonFiltroCiudadNombre = ref("")
+const salonFiltroAmbiente = ref("");
+const salonFiltroAmbienteNombre = ref("");
+const salonFiltroPersona = ref("");
+const salonFiltroPrecio = ref("");
 const salonFiltroEspacio = ref([]);
 const salonFiltroServicio = ref([]);
 const salonFiltroTipo = ref([]);
@@ -138,7 +140,9 @@ export const useStoreSalon = defineStore(
       salonSeleccionado,
       editarSalonSelec,
       salonFiltroCiudad,
+      salonFiltroCiudadNombre,
       salonFiltroAmbiente,
+      salonFiltroAmbienteNombre,
       salonFiltroPersona,
       salonFiltroPrecio,
       salonFiltroEspacio,

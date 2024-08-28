@@ -9,7 +9,7 @@ const router = useRouter();
 const detalleSalon = ref(useSalon.detalleSalon)
 
 const goBack = () => {
-    router.push('busqueda');
+    router.push('/busqueda');
 };
 </script>
 

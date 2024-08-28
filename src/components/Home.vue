@@ -38,7 +38,7 @@ async function getSalones() {
 
 function irDetalleSalon(salon) {
     useSalon.detalleSalon = salon;
-    router.push('detalle-salon')
+    router.push('/detalle-salon')
 }
 
 function nextImage(salonId) {
@@ -63,11 +63,12 @@ onMounted(() => {
 
 <template>
     <div class="home-container">
-
         <!-- Sección de Salones Destacados -->
+        <section class="featured-salons" style="">
+            <div class="bg-primary-deg">
+                <h2>Salones Destacados</h2>
+            </div>
 
-        <section class="featured-salons">
-            <h2>Salones Destacados</h2>
             <div v-if="loading" class="loading-container">
                 <q-spinner color="dark" size="2em" />
                 <p>Cargando salones...</p>
@@ -80,13 +81,24 @@ onMounted(() => {
                             <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
                             <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
                         </div>
-                        <q-card-section class="featured-details">
-                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                        <q-card-section class="featured-details" @click="irDetalleSalon(salon)">
+                            <VMenu class="vmenu">
+                                <div class="text-h6 salon-name">{{ salon.nombre_sal }}</div>
+                                <template #popper>
+                                    <div class="descripVmenu">{{ salon.nombre_sal }}</div>
+                                </template>
+                            </VMenu>
                             <div class="text-subtitle2">{{ salon.idCiudSalonEvento.nombre_ciud }}, {{
                                 salon.idCiudSalonEvento.idDepart.nombre_depart }}</div>
-                            <div style="display: flex; justify-content: end;">
-                                <q-btn flat icon="add" style="background-color: black; color: white;"
-                                    @click.stop="irDetalleSalon(salon)" class="add-button" />
+                            <div style="display: flex; gap: 20px;">
+                                <div class="text-subtitle2">
+                                    <q-icon name="groups" size="18px" />
+                                    {{ salon.capacidad_sal }}
+                                </div>
+                                <div class="text-subtitle2">
+                                    <q-icon name="attach_money" size="18px" />
+                                    {{ salon.precio_sal }}
+                                </div>
                             </div>
                         </q-card-section>
                     </q-card>
@@ -98,7 +110,9 @@ onMounted(() => {
         <!-- Sección de Galería -->
 
         <section class="gallery-section">
-            <h2>Eventos Recientes</h2>
+            <div class="bg-primary-deg">
+                <h2>Salones Recientes</h2>
+            </div>
             <div v-if="loading" class="loading-container">
                 <q-spinner color="dark" size="2em" />
                 <p>Cargando salones...</p>
@@ -111,13 +125,24 @@ onMounted(() => {
                             <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
                             <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
                         </div>
-                        <q-card-section class="featured-details">
-                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                        <q-card-section class="featured-details" @click="irDetalleSalon(salon)">
+                            <VMenu class="vmenu">
+                                <div class="text-h6 salon-name">{{ salon.nombre_sal }}</div>
+                                <template #popper>
+                                    <div class="descripVmenu">{{ salon.nombre_sal }}</div>
+                                </template>
+                            </VMenu>
                             <div class="text-subtitle2">{{ salon.idCiudSalonEvento.nombre_ciud }}, {{
                                 salon.idCiudSalonEvento.idDepart.nombre_depart }}</div>
-                            <div style="display: flex; justify-content: end;">
-                                <q-btn flat icon="add" style="background-color: black; color: white;"
-                                    @click.stop="irDetalleSalon(salon)" class="add-button" />
+                            <div style="display: flex; gap: 20px;">
+                                <div class="text-subtitle2">
+                                    <q-icon name="groups" size="18px" />
+                                    {{ salon.capacidad_sal }}
+                                </div>
+                                <div class="text-subtitle2">
+                                    <q-icon name="attach_money" size="18px" />
+                                    {{ salon.precio_sal }}
+                                </div>
                             </div>
                         </q-card-section>
                     </q-card>
@@ -127,7 +152,9 @@ onMounted(() => {
 
         <!-- Sección de Testimonios -->
         <section class="testimonials-section">
-            <h2>Testimonios de Clientes</h2>
+            <div class="bg-primary-deg">
+                <h2>Testimonios de clientes</h2>
+            </div>
             <div class="testimonials-container">
                 <q-card class="testimonial-card">
                     <q-card-section>
@@ -151,7 +178,7 @@ onMounted(() => {
         <h1 class="text-center">Nuestros salones</h1>
         <div v-if="loading" class="loading-container">
             <q-spinner color="dark" size="2em" />
-            <p>Cargando espacios...</p>
+            <p>Cargando salones...</p>
         </div>
         <div v-else class="salones">
             <div v-for="salon in salones" :key="salon._id" class="salon-card">
@@ -193,6 +220,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.bg-primary-deg {
+    background-image: linear-gradient(to right, #000000, #FFFFFF);
+    width: 100%;
+    padding: 15px;
+}
+
 .loading-container {
     display: flex;
     flex-direction: column;
@@ -201,8 +234,11 @@ onMounted(() => {
     width: 100%;
 }
 
-h2{
-font-family:'Times New Roman', Times, serif;
+h2 {
+    color: rgb(255, 255, 255);
+    margin: 0;
+    font-weight: bolder;
+    font-family: 'Times New Roman', Times, serif;
 }
 
 .image-carousel {
@@ -254,12 +290,11 @@ font-family:'Times New Roman', Times, serif;
     width: 100%;
 }
 
-.home-container {
-    padding: 20px;
-}
+
 
 /* Estilo para la sección de salones destacados */
 .featured-salons {
+    width: 100%;
     margin-bottom: 40px;
 }
 
@@ -269,16 +304,20 @@ font-family:'Times New Roman', Times, serif;
     overflow-x: scroll;
     padding-bottom: 15px;
     scroll-behavior: smooth;
-    /* Asegura una transición suave */
     scroll-snap-type: x mandatory;
-    /* Hace que el scroll se ajuste al inicio de cada elemento */
+    width: 100%;
 }
 
 .featured-salon-card {
-    min-width: 250px;
     flex-shrink: 0;
     scroll-snap-align: start;
-    /* Alinea cada elemento al inicio del contenedor al hacer scroll */
+    width: 250px;
+}
+
+.salon-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 
@@ -310,15 +349,11 @@ font-family:'Times New Roman', Times, serif;
 
 /* Personalizar el scrollbar en Firefox */
 .featured-salons-container {
+    padding: 40px;
     scrollbar-width: thin;
     /* Anchura del scrollbar */
     scrollbar-color: #4d4d4d #f1f1f1;
     /* Colores del thumb y la pista */
-}
-
-.featured-salon-card {
-    min-width: 250px;
-    flex-shrink: 0;
 }
 
 .featured-card {
@@ -332,6 +367,18 @@ font-family:'Times New Roman', Times, serif;
 
 .featured-details {
     padding: 10px;
+}
+
+.vmenu {
+    max-height: 50px;
+}
+
+.descripVmenu {
+    padding: 1rem;
+    word-wrap: break-word;
+    height: fit-content;
+    max-height: 300px;
+    max-width: 300px;
 }
 
 /* Estilo para la galería */
@@ -360,6 +407,7 @@ font-family:'Times New Roman', Times, serif;
 .testimonials-container {
     display: flex;
     gap: 20px;
+    padding: 40px;
 }
 
 .testimonial-card {
@@ -384,6 +432,8 @@ font-family:'Times New Roman', Times, serif;
     width: 90%;
     margin-left: 80px;
 }
+
+
 
 .salon-card {
     width: 100%;
@@ -417,4 +467,5 @@ font-family:'Times New Roman', Times, serif;
     flex-direction: column;
     justify-content: space-between;
     padding-left: 20px;
-}</style>
+}
+</style>
