@@ -83,11 +83,11 @@ const getAmbientesFiltrados = (ambientes) => {
 };
 
 const cantidad_personas = [
-  '0 - 50',
-  '51 - 100',
-  '101 - 150',
-  '151 - 200',
-  '201 - 300',
+  '0 - 99',
+  '100 - 199',
+  '200 - 299',
+  '300 - 350',
+  '400',
 ];
 
 const filtrarPersonas = (val, update) => {
@@ -173,6 +173,7 @@ watch(ambiente, () => {
 });
 
 watch(c_personas, () => {
+  console.log("soy c persona", c_personas.value)
   useSalon.salonFiltroPersona = c_personas.value;
   filtrarSalones();
 });
@@ -228,7 +229,7 @@ onMounted(() => {
           <!-- Esfera Logo y Nombre -->
           <div class="logo-container">
             <router-link to="/home" class="boton-home">
-              <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar()" />
+              <q-btn flat round type="button" icon="public" class="right-btn bg-primary"  />
             </router-link>
             <h6 class="logo-title">Esfera Audiovisual</h6>
           </div>
@@ -292,7 +293,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
   flex: 20;
   /* Para que tome el espacio necesario */
 }

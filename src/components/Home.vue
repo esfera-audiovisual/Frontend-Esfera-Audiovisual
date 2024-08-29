@@ -93,7 +93,7 @@ onMounted(() => {
                             <div style="display: flex; gap: 20px;">
                                 <div class="text-subtitle2">
                                     <q-icon name="groups" size="18px" />
-                                    {{ salon.capacidad_sal }}
+                                    {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                                 </div>
                                 <div class="text-subtitle2">
                                     <q-icon name="attach_money" size="18px" />
@@ -137,7 +137,7 @@ onMounted(() => {
                             <div style="display: flex; gap: 20px;">
                                 <div class="text-subtitle2">
                                     <q-icon name="groups" size="18px" />
-                                    {{ salon.capacidad_sal }}
+                                    {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                                 </div>
                                 <div class="text-subtitle2">
                                     <q-icon name="attach_money" size="18px" />
@@ -186,7 +186,7 @@ onMounted(() => {
                     <div class="card-content">
                         <q-img :src="salon.galeria_sal[0].url" class="card-image" />
                         <q-card-section class="card-details">
-                            <div class="text-h6">{{ salon.nombre_sal }}</div>
+                            <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
                             <div class="text-subtitle2">
                                 <q-icon name="location_on" size="18px" />
                                 {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
@@ -206,7 +206,7 @@ onMounted(() => {
                             </div>
                             <div class="text-subtitle2">
                                 <q-icon name="groups" size="18px" />
-                                {{ salon.capacidad_sal }}
+                                {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                             </div>
                             <div class="row justify-end">
                                 <q-btn color="dark" label="Ver información..." size="sm" />
@@ -315,6 +315,7 @@ h2 {
 }
 
 .salon-name {
+    font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

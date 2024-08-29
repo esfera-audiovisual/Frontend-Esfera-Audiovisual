@@ -51,7 +51,7 @@ const goBack = () => {
             <q-banner class="q-mb-md banner-info">
               <h1 class="title">{{ detalleSalon.nombre_sal }}</h1>
               <q-item-label class="precio">Precio: {{ detalleSalon.precio_sal }}</q-item-label>
-              <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_sal }} personas</q-item-label>
+              <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_max }} personas</q-item-label>
               <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
             </q-banner>
           </div>

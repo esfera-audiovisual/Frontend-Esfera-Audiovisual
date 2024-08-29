@@ -10,7 +10,7 @@ const routes = [
     path: "/",
     component: Nav,
     children: [
-      { path: "", redirect: "/home" }, // Redirige la ruta raíz a "/home"
+      { path: "", redirect: "/home" },
       {
         path: "/home",
         component: Home,

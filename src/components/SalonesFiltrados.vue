@@ -405,11 +405,10 @@ onMounted(() => {
                 <div class="card-content">
                   <q-img :src="salon.galeria_sal[0].url" class="card-image" />
                   <q-card-section class="card-details">
-                    <div class="text-h6">{{ salon.nombre_sal }}</div>
+                    <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
                     <div class="text-subtitle2">
                       <q-icon name="location_on" size="18px" />
-                      {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
-                        salon.idCiudSalonEvento.idDepart.nombre_depart }}
+                      {{ salon.idCiudSalonEvento.nombre_ciud }}, {{ salon.idCiudSalonEvento.idDepart.nombre_depart }}
                     </div>
                     <div class="text-subtitle2">
                       <q-icon name="architecture" size="18px" />
@@ -425,7 +424,7 @@ onMounted(() => {
                     </div>
                     <div class="text-subtitle2">
                       <q-icon name="groups" size="18px" />
-                      {{ salon.capacidad_sal }}
+                      {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                     </div>
                     <div class="row justify-end">
                       <q-btn color="primary" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
