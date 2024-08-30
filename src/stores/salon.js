@@ -14,6 +14,7 @@ const salonFiltroCiudadNombre = ref("")
 const salonFiltroAmbiente = ref("");
 const salonFiltroAmbienteNombre = ref("");
 const salonFiltroPersona = ref("");
+const salonFiltroFecha = ref("");
 const salonFiltroPrecio = ref(0);
 const salonFiltroEspacio = ref([]);
 const salonFiltroServicio = ref([]);
@@ -144,6 +145,7 @@ export const useStoreSalon = defineStore(
       salonFiltroAmbiente,
       salonFiltroAmbienteNombre,
       salonFiltroPersona,
+      salonFiltroFecha,
       salonFiltroPrecio,
       salonFiltroEspacio,
       salonFiltroServicio,

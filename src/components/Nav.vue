@@ -155,37 +155,16 @@ const filtrarSalones = async () => {
   }
 };
 
-
-watch(ciudad, () => {
-  if (ciudad?.value?.value && ciudad.value.value._id) {
-    useSalon.salonFiltroCiudad = ciudad.value?.value._id;
-    useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
-    filtrarSalones();
-  }
-});
-
-
-watch(ambiente, () => {
-  console.log(ambiente)
-  useSalon.salonFiltroAmbiente = ambiente.value?.value;
-  useSalon.salonFiltroAmbienteNombre = ambiente.value.label;
-  filtrarSalones();
-});
-
-watch(c_personas, () => {
-  console.log("soy c persona", c_personas.value)
-  useSalon.salonFiltroPersona = c_personas.value;
-  filtrarSalones();
-});
-
-watch(fecha, () => {
-  console.log(fecha.value);
-});
+const isCleaning = ref(false);
 
 function limpiar() {
+  // Desactivar temporalmente los watchers
+  isCleaning.value = true;
+
   ciudad.value = "";
   ambiente.value = "";
   c_personas.value = "";
+  fecha.value = "";
   useSalon.salonFiltroCiudadNombre = "";
   useSalon.salonFiltroCiudad = "";
   useSalon.salonFiltroAmbienteNombre = "";
@@ -196,13 +175,53 @@ function limpiar() {
   useSalon.salonFiltroServicio = [];
   useSalon.salonFiltroTipo = [];
   useSalon.salonFiltroUbicacion = [];
+
+  // Reactivar los watchers después de limpiar
+  setTimeout(() => {
+    isCleaning.value = false;
+  }, 0);
 }
+
+// Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
+watch(ciudad, () => {
+  if (isCleaning && ciudad?.value?.value && ciudad.value.value._id) {
+    useSalon.salonFiltroCiudad = ciudad.value?.value._id;
+    useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
+    filtrarSalones();
+  }
+});
+
+watch(ambiente, () => {
+  if (isCleaning && ambiente.value?.value) {
+    useSalon.salonFiltroAmbiente = ambiente.value?.value;
+    useSalon.salonFiltroAmbienteNombre = ambiente.value.label;
+    filtrarSalones();
+  }
+});
+
+watch(c_personas, () => {
+  if (isCleaning && c_personas.value) {
+    useSalon.salonFiltroPersona = c_personas.value;
+    filtrarSalones();
+  }
+});
+
+watch(fecha, () => {
+  if (isCleaning && fecha.value) {
+    useSalon.salonFiltroFecha = fecha.value;
+    filtrarSalones();
+  }
+});
+
+
+
 
 
 onMounted(() => {
   ciudad.value = useSalon.salonFiltroCiudadNombre;
   ambiente.value = useSalon.salonFiltroAmbienteNombre;
   c_personas.value = useSalon.salonFiltroPersona;
+  fecha.value = useSalon.salonFiltroFecha;
 
 
   getCiudades();
@@ -229,7 +248,7 @@ onMounted(() => {
           <!-- Esfera Logo y Nombre -->
           <div class="logo-container">
             <router-link to="/home" class="boton-home">
-              <q-btn flat round type="button" icon="public" class="right-btn bg-primary"  />
+              <q-btn flat round type="button" icon="public" class="right-btn bg-primary" @click="limpiar" />
             </router-link>
             <h6 class="logo-title">Esfera Audiovisual</h6>
           </div>
