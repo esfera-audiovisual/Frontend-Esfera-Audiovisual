@@ -225,7 +225,7 @@ const filtrarSalones = async () => {
 
 
 
-const debouncedFiltrarSalones = debounce(filtrarSalones, 800);
+const debouncedFiltrarSalones = debounce(filtrarSalones, 1200);
 
 watch(precioMax, () => {
   useSalon.salonFiltroPrecio = precioMax.value;
@@ -266,7 +266,6 @@ onMounted(() => {
   getUbicacionesSalon();
 });
 </script>
-
 
 <template>
   <div class="">
