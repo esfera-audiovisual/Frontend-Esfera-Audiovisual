@@ -22,6 +22,7 @@ const salonFiltroTipo = ref([]);
 const salonFiltroUbicacion = ref([]);
 const salonesFiltrados = ref([]);
 const detalleSalon = ref("");
+const devolverHomeDetalle = ref(false);
 const loading = ref(false);
 
 export const useStoreSalon = defineStore(
@@ -154,6 +155,7 @@ export const useStoreSalon = defineStore(
       salonesFiltrados,
       loading,
       detalleSalon,
+      devolverHomeDetalle,
     };
   },
   {

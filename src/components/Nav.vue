@@ -15,6 +15,7 @@ const c_personas = ref("");
 const ciudad = ref("");
 const ambiente = ref("");
 const showLoadingModal = ref(false);
+const isCleaning = ref(false);
 
 
 
@@ -127,40 +128,60 @@ const filtrarAmbientes = (val, update) => {
 };
 
 const filtrarSalones = async () => {
-  showLoadingModal.value = true;
-  useSalon.loading = true;
+  // Verificar si la variable `fecha` tiene algún valor
+  const hasFecha = fecha.value !== null && fecha.value !== "";
 
-  const filters = {
-    idCiudSalonEvento: ciudad.value?.value?._id || null,
-    idAmbienteSalon: ambiente.value?.value || null,
-    capacidad_sal: c_personas.value || null,
-    precio_sal: useSalon.salonFiltroPrecio || null,
-    idEspaciosSalon: useSalon.salonFiltroEspacio.length > 0 ? useSalon.salonFiltroEspacio.join(',') : null,
-    idServiciosSalon: useSalon.salonFiltroServicio.length > 0 ? useSalon.salonFiltroServicio.join(',') : null,
-    idTipoSalon: useSalon.salonFiltroTipo.length > 0 ? useSalon.salonFiltroTipo.join(',') : null,
-    idUbicacionSalon: useSalon.salonFiltroUbicacion.length > 0 ? useSalon.salonFiltroUbicacion.join(',') : null,
-  };
+  // Solo filtrar si alguno de los filtros tiene un valor o si `fecha` tiene un valor
+  if (
+    hasFecha ||
+    ciudad.value?.value?._id ||
+    ambiente.value?.value ||
+    c_personas.value ||
+    useSalon.salonFiltroPrecio ||
+    useSalon.salonFiltroEspacio.length > 0 ||
+    useSalon.salonFiltroServicio.length > 0 ||
+    useSalon.salonFiltroTipo.length > 0 ||
+    useSalon.salonFiltroUbicacion.length > 0
+  ) {
+    showLoadingModal.value = true;
+    useSalon.loading = true;
 
-  try {
-    console.log("filtros nav ", filters)
-    const filteredSalones = await useSalon.getSalonesFiltrados(filters);
-    useSalon.salonesFiltrados = filteredSalones;
-    router.push('/busqueda');
-    console.log('Salones filtrados:', filteredSalones);
-  } catch (error) {
-    console.error("Error al filtrar salones:", error);
-  } finally {
-    showLoadingModal.value = false;
-    useSalon.loading = false;
+    const filters = {
+      idCiudSalonEvento: ciudad.value?.value?._id || null,
+      idAmbienteSalon: ambiente.value?.value || null,
+      capacidad_sal: c_personas.value || null,
+      precio_sal: useSalon.salonFiltroPrecio || null,
+      idEspaciosSalon: useSalon.salonFiltroEspacio.length > 0 ? useSalon.salonFiltroEspacio.join(',') : null,
+      idServiciosSalon: useSalon.salonFiltroServicio.length > 0 ? useSalon.salonFiltroServicio.join(',') : null,
+      idTipoSalon: useSalon.salonFiltroTipo.length > 0 ? useSalon.salonFiltroTipo.join(',') : null,
+      idUbicacionSalon: useSalon.salonFiltroUbicacion.length > 0 ? useSalon.salonFiltroUbicacion.join(',') : null,
+    };
+
+    try {
+      console.log("filtros nav ", filters);
+      const filteredSalones = await useSalon.getSalonesFiltrados(filters);
+      useSalon.salonesFiltrados = filteredSalones;
+      router.push('/busqueda');
+      console.log('Salones filtrados:', filteredSalones);
+    } catch (error) {
+      console.error("Error al filtrar salones:", error);
+    } finally {
+      showLoadingModal.value = false;
+      useSalon.loading = false;
+    }
+  } else {
+    // No hacer nada si no hay filtros aplicados ni `fecha`
+    console.log("No se aplicaron filtros ni fecha, no es necesario redirigir.");
   }
 };
 
-const isCleaning = ref(false);
+
+
+
 
 function limpiar() {
   // Desactivar temporalmente los watchers
   isCleaning.value = true;
-
   ciudad.value = "";
   ambiente.value = "";
   c_personas.value = "";
@@ -170,11 +191,13 @@ function limpiar() {
   useSalon.salonFiltroAmbienteNombre = "";
   useSalon.salonFiltroAmbiente = "";
   useSalon.salonFiltroPersona = "";
+  useSalon.salonFiltroFecha = "";
   useSalon.salonFiltroPrecio = "";
   useSalon.salonFiltroEspacio = [];
   useSalon.salonFiltroServicio = [];
   useSalon.salonFiltroTipo = [];
   useSalon.salonFiltroUbicacion = [];
+  
 
   // Reactivar los watchers después de limpiar
   setTimeout(() => {

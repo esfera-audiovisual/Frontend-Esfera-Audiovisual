@@ -38,6 +38,7 @@ async function getSalones() {
 
 function irDetalleSalon(salon) {
     useSalon.detalleSalon = salon;
+    useSalon.devolverHomeDetalle = true;
     router.push('/detalle-salon')
 }
 
@@ -311,7 +312,7 @@ h2 {
 .featured-salon-card {
     flex-shrink: 0;
     scroll-snap-align: start;
-    width: 250px;
+    width: 280px;
 }
 
 .salon-name {

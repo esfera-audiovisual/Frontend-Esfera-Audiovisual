@@ -1,9 +1,38 @@
 <script setup>
 import { ref } from 'vue';
-import Login from '../assets/login.jpg'
+import Login from '../assets/login.jpg';
+import {useStoreSalon} from '../stores/salon.js';
+import {useRouter} from 'vue-router'
 
 const email = ref("");
 const password = ref("");
+const useSalon = useStoreSalon();
+const router = useRouter();
+const isCleaning = ref(false);
+
+
+function limpiar() {
+  // Desactivar temporalmente los watchers
+  isCleaning.value = true;
+  useSalon.salonFiltroCiudadNombre = "";
+  useSalon.salonFiltroCiudad = "";
+  useSalon.salonFiltroAmbienteNombre = "";
+  useSalon.salonFiltroAmbiente = "";
+  useSalon.salonFiltroPersona = "";
+  useSalon.salonFiltroPrecio = "";
+  useSalon.salonFiltroEspacio = [];
+  useSalon.salonFiltroServicio = [];
+  useSalon.salonFiltroTipo = [];
+  useSalon.salonFiltroUbicacion = [];
+  useSalon.salonFiltroFecha = "";
+
+  // Reactivar los watchers después de limpiar
+  setTimeout(() => {
+    isCleaning.value = false;
+    router.push('/home'); // Redirigir explícitamente a /home después de limpiar
+  }, 0);
+}
+
 </script>
 
 <template>
@@ -12,9 +41,7 @@ const password = ref("");
             <q-img :src="Login"></q-img>
         </div>
         <div class="login-form">
-            <router-link to="/" class="boton-home">
-                <h2 class="site-title text-uppercase text-bold">Esfera Audiovisual</h2>
-            </router-link>
+                <h2 class="site-title text-uppercase text-bold" @click="limpiar">Esfera Audiovisual</h2>
             <q-form class="form">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
                 <div class="input-container">
