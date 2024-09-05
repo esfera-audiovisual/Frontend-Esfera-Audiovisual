@@ -1,12 +1,30 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
+import { useStoreReglamentoSalon } from '../stores/reglamento.js';
 import { useRouter } from 'vue-router';
 
 const useSalon = useStoreSalon();
 const router = useRouter();
-
+const useReglamento = useStoreReglamentoSalon();
 const detalleSalon = ref(useSalon.detalleSalon);
+const reglamento = ref("");
+const dialogoAbierto = ref(false);
+const mensaje = ref('Hola, estamos pensando en celebrar nuestro evento en tus instalaciones. ¿Nos podrías enviar más información acerca de este salón para eventos? Gracias.');
+const nombre = ref('');
+const email = ref('');
+const telefono = ref('');
+const invitados = ref([]);
+
+async function getReglamentoSalon() {
+  try {
+    const response = await useReglamento.getPorSalonEvento(detalleSalon.value._id);
+    reglamento.value = response;
+    console.log(reglamento)
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 const goBack = () => {
   if (useSalon.devolverHomeDetalle === true) {
@@ -16,6 +34,24 @@ const goBack = () => {
     router.push('/busqueda');
   }
 };
+
+
+
+const enviarFormulario = () => {
+  console.log('Formulario enviado:', {
+    mensaje: mensaje.value,
+    nombre: nombre.value,
+    email: email.value,
+    telefono: telefono.value,
+    invitados: invitados.value,
+  })
+
+  dialogoAbierto.value = false
+}
+
+onMounted(() => {
+  getReglamentoSalon();
+})
 </script>
 
 <template>
@@ -32,8 +68,8 @@ const goBack = () => {
           <div v-if="detalleSalon.galeria_sal.length" class="gallery-banner-container">
             <!-- Galería de imágenes -->
             <div class="gallery">
-              <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url" class="gallery-image-large"
-                :alt="detalleSalon.nombre_sal" :ratio="16 / 9" />
+              <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
+                class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" />
               <div class="gallery-column">
                 <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
                   :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" />
@@ -47,7 +83,7 @@ const goBack = () => {
             <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_max }} personas</q-item-label>
             <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
             <div style="display: flex; justify-content: center;">
-              <q-btn class="btn">Pedir información...</q-btn>
+              <q-btn class="btn" @click="dialogoAbierto = true">Pedir información...</q-btn>
             </div>
 
           </q-banner>
@@ -104,10 +140,54 @@ const goBack = () => {
 
         <q-card-section class="reglamento">
           <h2 class="text-bold">Reglamento</h2>
+          <p>{{ reglamento.descripcion_regl }}</p>
         </q-card-section>
 
       </q-card-section>
     </q-card>
+
+
+    <!-- Diálogo con formulario -->
+    <q-dialog v-model="dialogoAbierto" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section class="text-h6">
+          {{ detalleSalon.nombre_sal }}
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-subtitle1 text-bold">Pide más información</div>
+          <p class="text-body2">
+            Rellena este formulario y {{ detalleSalon.nombre_sal }} se pondrá en contacto contigo en breve.
+            Todos los datos que envíes serán tratados de forma confidencial.
+          </p>
+
+          <!-- Formulario -->
+          <q-form @submit="enviarFormulario" class="q-gutter-md">
+            <q-input filled v-model="mensaje" label="Mensaje" type="textarea" :rows="4" />
+            <q-input filled v-model="nombre" label="Nombre y apellidos" />
+            <q-input filled v-model="email" label="E-mail" type="email" />
+            <q-input filled v-model="telefono" label="Teléfono" type="tel" />
+
+            <!-- Selección de invitados con q-checkbox -->
+            <div class="text-body1 q-mt-md">Nº de invitados</div>
+            <div>
+              <q-checkbox v-model="invitados" val="0-99" label="0-99" />
+              <q-checkbox v-model="invitados" val="100-199" label="100-199" />
+              <q-checkbox v-model="invitados" val="200-299" label="200-299" />
+              <q-checkbox v-model="invitados" val="300-399" label="300-399" />
+              <q-checkbox v-model="invitados" val="400" label="400+" />
+            </div>
+
+          </q-form>
+        </q-card-section>
+
+        <!-- Botones del diálogo -->
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" @click="dialogoAbierto = false" />
+          <q-btn label="Enviar" color="primary" @click="enviarFormulario" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -154,6 +234,8 @@ const goBack = () => {
   justify-content: space-between;
   align-items: flex-start;
 }
+
+
 
 .gallery {
   display: flex;
