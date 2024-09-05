@@ -35,8 +35,6 @@ const goBack = () => {
   }
 };
 
-
-
 const enviarFormulario = () => {
   console.log('Formulario enviado:', {
     mensaje: mensaje.value,
@@ -262,9 +260,8 @@ onMounted(() => {
 /* Banner fijo */
 .fixed-banner {
   position: fixed;
-  top: 200px;
-  right: 100px;
-  width: 400px;
+  left: 65%;
+  width: 450px;
   gap: 20px;
   /* Ajusta el ancho según sea necesario */
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);

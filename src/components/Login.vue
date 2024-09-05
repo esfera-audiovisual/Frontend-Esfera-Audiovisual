@@ -1,36 +1,73 @@
 <script setup>
 import { ref } from 'vue';
 import Login from '../assets/login.jpg';
-import {useStoreSalon} from '../stores/salon.js';
-import {useRouter} from 'vue-router'
+import { useStoreSalon } from '../stores/salon.js';
+import { useStoreUsuarios } from '../stores/usuario.js'
+import { useRouter } from 'vue-router';
 
-const email = ref("");
+const cedula = ref("");
 const password = ref("");
 const useSalon = useStoreSalon();
+const useUsuario = useStoreUsuarios();
 const router = useRouter();
 const isCleaning = ref(false);
+const msgValidacion = ref("");
+
+const login = async () => {
+    const data = {
+        cedula: cedula.value,
+        password: password.value,
+    };
+
+    try {
+        const response = await useUsuario.login(data);
+
+        if (useUsuario.estatus === 200) {
+            console.log(response);
+            router.push('/panel-admin')
+        } else if (useUsuario.estatus === 400) {
+            msgValidacion.value = useUsuario.validacion
+            setTimeout(() => {
+                msgValidacion.value = "";
+                return;
+            }, 5000);
+            return;
+        } else if (useUsuario.estatus === 401) {
+            msgValidacion.value = useUsuario.validacion
+            setTimeout(() => {
+                msgValidacion.value = "";
+                return;
+            }, 5000);
+            return;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
 
 
 function limpiar() {
-  // Desactivar temporalmente los watchers
-  isCleaning.value = true;
-  useSalon.salonFiltroCiudadNombre = "";
-  useSalon.salonFiltroCiudad = "";
-  useSalon.salonFiltroAmbienteNombre = "";
-  useSalon.salonFiltroAmbiente = "";
-  useSalon.salonFiltroPersona = "";
-  useSalon.salonFiltroPrecio = "";
-  useSalon.salonFiltroEspacio = [];
-  useSalon.salonFiltroServicio = [];
-  useSalon.salonFiltroTipo = [];
-  useSalon.salonFiltroUbicacion = [];
-  useSalon.salonFiltroFecha = "";
 
-  // Reactivar los watchers después de limpiar
-  setTimeout(() => {
-    isCleaning.value = false;
-    router.push('/home'); // Redirigir explícitamente a /home después de limpiar
-  }, 0);
+    isCleaning.value = true;
+    useSalon.salonFiltroCiudadNombre = "";
+    useSalon.salonFiltroCiudad = "";
+    useSalon.salonFiltroAmbienteNombre = "";
+    useSalon.salonFiltroAmbiente = "";
+    useSalon.salonFiltroPersona = "";
+    useSalon.salonFiltroPrecio = "";
+    useSalon.salonFiltroEspacio = [];
+    useSalon.salonFiltroServicio = [];
+    useSalon.salonFiltroTipo = [];
+    useSalon.salonFiltroUbicacion = [];
+    useSalon.salonFiltroFecha = "";
+
+
+    setTimeout(() => {
+        isCleaning.value = false;
+        router.push('/home');
+    }, 0);
 }
 
 </script>
@@ -41,12 +78,12 @@ function limpiar() {
             <q-img :src="Login"></q-img>
         </div>
         <div class="login-form">
-                <h2 class="site-title text-uppercase text-bold" @click="limpiar">Esfera Audiovisual</h2>
-            <q-form class="form">
+            <h2 class="site-title text-uppercase text-bold" @click="limpiar">Esfera Audiovisual</h2>
+            <q-form class="form" @submit.prevent="login">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
                 <div class="input-container">
-                    <q-input v-model="email" type="email" label="Correo" lazy-rules
-                        :rules="[val => !!val || 'Ingrese su correo']" />
+                    <q-input v-model="cedula" type="number" label="Identificacion" lazy-rules
+                        :rules="[val => !!val || 'Ingrese su cédula']" />
                 </div>
                 <div class="input-container">
                     <q-input v-model="password" type="password" label="Contraseña" lazy-rules
@@ -55,9 +92,10 @@ function limpiar() {
                 <div class="q-pt-md">
                     <q-btn type="submit" color="primary" class="submit">Ingresar</q-btn>
                 </div>
+                <p class="text-bold text-center text-red">{{ msgValidacion }}</p>
             </q-form>
             <p class="signup-link">
-                ¿No tienes cuenta? <a href="#">Regístrate</a>
+                ¿Olvidaste tu contraseña? <a href="#">Haz clic aquí</a>
             </p>
         </div>
     </div>
@@ -68,7 +106,7 @@ function limpiar() {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .login-image {
