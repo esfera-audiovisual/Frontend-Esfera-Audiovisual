@@ -3,11 +3,13 @@ import { ref, onMounted, watch } from 'vue';
 import { useStoreCiudad } from '../stores/ciudad.js';
 import { useStoreAmbienteSalon } from '../stores/ambiente.js';
 import { useStoreSalon } from '../stores/salon.js';
+import { useStoreReserva } from '../stores/reserva.js';
 import { router } from '../routes/routes.js';
 
 const useCiudad = useStoreCiudad();
 const useAmbiente = useStoreAmbienteSalon();
 const useSalon = useStoreSalon();
+const useReserva = useStoreReserva();
 const fecha = ref("");
 const ciudades = ref([]);
 const ambientes = ref([]);
@@ -18,7 +20,10 @@ const showLoadingModal = ref(false);
 const isCleaning = ref(false);
 
 
-
+async function contactarnos() {
+  const enlaceWhatsApp = await useReserva.generarEnlaceWhatsApp();
+  window.open(enlaceWhatsApp, '_blank'); // Abre el enlace en una nueva pestaña
+}
 
 async function getCiudades() {
   try {
@@ -26,7 +31,7 @@ async function getCiudades() {
     if (useCiudad.estatus === 200) {
       ciudades.value = response;
     }
-    console.log(response);
+    console.log("ciudades", response);
   } catch (error) {
     console.log(error);
   }
@@ -197,7 +202,7 @@ function limpiar() {
   useSalon.salonFiltroServicio = [];
   useSalon.salonFiltroTipo = [];
   useSalon.salonFiltroUbicacion = [];
-  
+
 
   // Reactivar los watchers después de limpiar
   setTimeout(() => {
@@ -262,7 +267,6 @@ onMounted(() => {
           <q-card-section class="row items-center">
             <q-spinner color="primary" size="30px" />
             <span class="q-ml-sm">Cargando salones...</span>
-            <span class="q-ml-sm">Espere por favor</span>
           </q-card-section>
         </q-card>
       </q-dialog>
@@ -298,7 +302,7 @@ onMounted(() => {
           <!-- Right Side Links -->
           <q-space />
           <div class="right-side">
-            <q-btn flat label="Pon tu salón" class="right-btn bg-primary" />
+            <q-btn flat label="Contáctanos" class="right-btn bg-primary" @click="contactarnos" />
             <router-link to="/login" class="boton-home">
               <q-btn flat round icon="login" class="right-btn bg-primary" />
             </router-link>

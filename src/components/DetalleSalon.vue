@@ -14,7 +14,8 @@ const mensaje = ref('Hola, estamos pensando en celebrar nuestro evento en tus in
 const nombre = ref('');
 const email = ref('');
 const telefono = ref('');
-const invitados = ref([]);
+const fecha = ref('');
+const invitados = ref('');
 
 async function getReglamentoSalon() {
   try {
@@ -37,11 +38,13 @@ const goBack = () => {
 
 const enviarFormulario = () => {
   console.log('Formulario enviado:', {
-    mensaje: mensaje.value,
-    nombre: nombre.value,
-    email: email.value,
-    telefono: telefono.value,
-    invitados: invitados.value,
+    mensaje_res: mensaje.value,
+    nombre_cliente: nombre.value,
+    correo_cliente: email.value,
+    telefono_cliente: telefono.value,
+    cant_pers_res: invitados.value,
+    fecha_res: fecha.value,
+    idSalonEvento: detalleSalon.value._id
   })
 
   dialogoAbierto.value = false
@@ -57,11 +60,7 @@ onMounted(() => {
     <q-card class="my-card" style="margin-left: 50px;" flat>
       <q-card-section class="q-pa-md">
         <!-- Encabezado con botón de regreso -->
-        <div class="header">
-          <q-btn flat color="dark" class="back-button" @click="goBack">
-            <i class="fas fa-arrow-left fa-2x"></i>
-          </q-btn>
-        </div>
+
         <div style="display: flex; width: 100%; flex-direction: column;">
           <div v-if="detalleSalon.galeria_sal.length" class="gallery-banner-container">
             <!-- Galería de imágenes -->
@@ -161,22 +160,31 @@ onMounted(() => {
 
           <!-- Formulario -->
           <q-form @submit="enviarFormulario" class="q-gutter-md">
-            <q-input filled v-model="mensaje" label="Mensaje" type="textarea" :rows="4" />
-            <q-input filled v-model="nombre" label="Nombre y apellidos" />
-            <q-input filled v-model="email" label="E-mail" type="email" />
-            <q-input filled v-model="telefono" label="Teléfono" type="tel" />
+            <q-input filled v-model="mensaje" label="Mensaje" type="textarea" :rows="4"
+              :rules="[val => !!val || 'El mensaje es obligatorio']" />
+            <q-input filled v-model="nombre" label="Nombre y apellidos"
+              :rules="[val => !!val || 'El nombre es obligatorio']" />
+            <q-input filled v-model="email" label="E-mail" type="email"
+              :rules="[val => !!val || 'El correo es obligatorio', val => /.+@.+\..+/.test(val) || 'Correo no válido']" />
+            <q-input filled v-model="telefono" label="Teléfono" type="tel"
+              :rules="[val => !!val || 'El teléfono es obligatorio']" />
+            <q-input filled v-model="fecha" label="Fecha del evento" type="date"
+              :rules="[val => !!val || 'La fecha es obligatoria']" />
 
-            <!-- Selección de invitados con q-checkbox -->
+            <!-- Selección de invitados con q-radio -->
             <div class="text-body1 q-mt-md">Nº de invitados</div>
             <div>
-              <q-checkbox v-model="invitados" val="0-99" label="0-99" />
-              <q-checkbox v-model="invitados" val="100-199" label="100-199" />
-              <q-checkbox v-model="invitados" val="200-299" label="200-299" />
-              <q-checkbox v-model="invitados" val="300-399" label="300-399" />
-              <q-checkbox v-model="invitados" val="400" label="400+" />
+              <q-radio v-model="invitados" val="0-99" label="0-99"
+                :rules="[val => !!val || 'El número de invitados es obligatorio']" />
+              <q-radio v-model="invitados" val="100-199" label="100-199" />
+              <q-radio v-model="invitados" val="200-299" label="200-299" />
+              <q-radio v-model="invitados" val="300-399" label="300-399" />
+              <q-radio v-model="invitados" val="400" label="400+" />
             </div>
 
+            <!-- Botones del diálogo -->
           </q-form>
+
         </q-card-section>
 
         <!-- Botones del diálogo -->

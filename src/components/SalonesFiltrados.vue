@@ -190,8 +190,21 @@ const iconoUbicacion = computed(() => {
 
 function verDetalleSalon(salon) {
   useSalon.detalleSalon = salon;
-  router.push('/detalle-salon')
   console.log(useSalon.detalleSalon)
+  useSalon.salonFiltroCiudadNombre = "";
+  useSalon.salonFiltroCiudad = "";
+  useSalon.salonFiltroAmbienteNombre = "";
+  useSalon.salonFiltroAmbiente = "";
+  useSalon.salonFiltroPersona = "";
+  useSalon.salonFiltroFecha = "";
+  useSalon.salonFiltroPrecio = "";
+  useSalon.salonFiltroEspacio = [];
+  useSalon.salonFiltroServicio = [];
+  useSalon.salonFiltroTipo = [];
+  useSalon.salonFiltroUbicacion = [];
+  const url = router.resolve({ path: '/detalle-salon' }).href;
+  window.open(url, '_blank');
+
 }
 
 const filtrarSalones = async () => {
@@ -253,11 +266,11 @@ watch(ubicacionselec, () => {
 });
 
 onMounted(() => {
-  precioMax.value = useSalon.salonFiltroPrecio ;
-  espacioselec.value = useSalon.salonFiltroEspacio ;
-  servicioselec.value = useSalon.salonFiltroServicio ;
-  tiposelec.value = useSalon.salonFiltroTipo ;
-  ubicacionselec.value = useSalon.salonFiltroUbicacion ;
+  precioMax.value = useSalon.salonFiltroPrecio;
+  espacioselec.value = useSalon.salonFiltroEspacio;
+  servicioselec.value = useSalon.salonFiltroServicio;
+  tiposelec.value = useSalon.salonFiltroTipo;
+  ubicacionselec.value = useSalon.salonFiltroUbicacion;
 
   getSalones();
   getEspacios();
@@ -275,7 +288,6 @@ onMounted(() => {
           <q-card-section class="row items-center">
             <q-spinner color="primary" size="30px" />
             <span class="q-ml-sm">Cargando salones...</span>
-            <span class="q-ml-sm">Espere por favor</span>
           </q-card-section>
         </q-card>
       </q-dialog>
