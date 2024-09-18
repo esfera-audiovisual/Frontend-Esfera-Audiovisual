@@ -1,10 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreReglamentoSalon } from '../stores/reglamento.js';
+import { useStoreReserva } from '../stores/reserva.js';
 import { useRouter } from 'vue-router';
 
 const useSalon = useStoreSalon();
+const useReserva = useStoreReserva();
+const $q = useQuasar();
 const router = useRouter();
 const useReglamento = useStoreReglamentoSalon();
 const detalleSalon = ref(useSalon.detalleSalon);
@@ -17,6 +21,15 @@ const telefono = ref('');
 const fecha = ref('');
 const invitados = ref('');
 
+function notificar(tipo, msg, posicion = "top") {
+  $q.notify({
+    type: tipo,
+    message: msg,
+    position: posicion,
+  });
+}
+
+
 async function getReglamentoSalon() {
   try {
     const response = await useReglamento.getPorSalonEvento(detalleSalon.value._id);
@@ -27,16 +40,16 @@ async function getReglamentoSalon() {
   }
 }
 
-const goBack = () => {
+/* const goBack = () => {
   if (useSalon.devolverHomeDetalle === true) {
     router.push('/home');
     useSalon.devolverHomeDetalle = false;
   } else {
     router.push('/busqueda');
   }
-};
+}; */
 
-const enviarFormulario = () => {
+/* const enviarFormulario = () => {
   console.log('Formulario enviado:', {
     mensaje_res: mensaje.value,
     nombre_cliente: nombre.value,
@@ -48,7 +61,60 @@ const enviarFormulario = () => {
   })
 
   dialogoAbierto.value = false
+} */
+
+const limpiar = () => {
+  nombre.value = '';
+  email.value = '';
+  telefono.value = '';
+  mensaje.value = 'Hola, estamos pensando en celebrar nuestro evento en tus instalaciones. ¿Nos podrías enviar más información acerca de este salón para eventos? Gracias.';
+  invitados.value = '';
+  fecha.value = '';
 }
+
+const cerrarFormulario = () => {
+  dialogoAbierto.value = false;
+}
+
+const enviarFormulario = async () => {
+  const data = {
+    mensaje_res: mensaje.value,
+    nombre_cliente: nombre.value,
+    correo_cliente: email.value,
+    telefono_cliente: telefono.value,
+    cant_pers_res: invitados.value,
+    fecha_res: fecha.value,
+    idSalonEvento: detalleSalon.value._id
+  };
+
+  // Notificación de loading
+  const loadingNotify = $q.notify({
+    message: 'Enviando formulario...',
+    spinner: true,
+    timeout: 0,
+    position: 'top',
+  });
+
+  try {
+    const response = await useReserva.registro(data);
+    console.log(response);
+
+    // Cierra la notificación de loading
+    loadingNotify();
+
+    if (useReserva.estatus === 200) {
+      notificar('positive', "Reserva enviada con éxito");
+      limpiar();
+    } else if (useReserva.estatus === 400) {
+      notificar('negative', useReserva.validacion);
+    }
+  } catch (error) {
+    console.log(error);
+    loadingNotify();
+    notificar('negative', 'Error al enviar la reserva. Intenta nuevamente.');
+  }
+};
+
 
 onMounted(() => {
   getReglamentoSalon();
@@ -74,16 +140,24 @@ onMounted(() => {
             </div>
           </div>
           <!-- Banner de información -->
-          <q-banner class="q-mb-md banner-info fixed-banner">
-            <h2 class="title text-bold">{{ detalleSalon.nombre_sal }}</h2>
-            <q-item-label class="precio">Precio: {{ detalleSalon.precio_sal }}</q-item-label>
-            <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_max }} personas</q-item-label>
-            <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
-            <div style="display: flex; justify-content: center;">
-              <q-btn class="btn" @click="dialogoAbierto = true">Pedir información...</q-btn>
-            </div>
+          <div class="q-mb-md banner-info fixed-banner">
+            <q-banner
+              style="  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12); padding: 25px;">
+              <h2 class="title text-bold">{{ detalleSalon.nombre_sal }}</h2>
+              <q-item-label class="precio">Precio: {{ detalleSalon.precio_sal }}</q-item-label>
+              <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_max }} personas</q-item-label>
+              <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
+              <div style="display: flex; justify-content: center;">
+                <q-btn class="btn" @click="dialogoAbierto = true">Pedir información...</q-btn>
+              </div>
+            </q-banner>
 
-          </q-banner>
+            <div class="q-pa-md" v-if="detalleSalon.video360"> 
+              <p class="text-h5 text-bold mt-4">Recorrido Virtual</p>
+              <a>{{ detalleSalon.video360 }}</a>
+            </div>
+          </div>
+
         </div>
 
 
@@ -160,26 +234,25 @@ onMounted(() => {
 
           <!-- Formulario -->
           <q-form @submit="enviarFormulario" class="q-gutter-md">
-            <q-input filled v-model="mensaje" label="Mensaje" type="textarea" :rows="4"
-              :rules="[val => !!val || 'El mensaje es obligatorio']" />
+            <q-input filled v-model="mensaje" label="Mensaje" type="textarea" :rows="4" />
             <q-input filled v-model="nombre" label="Nombre y apellidos"
               :rules="[val => !!val || 'El nombre es obligatorio']" />
             <q-input filled v-model="email" label="E-mail" type="email"
               :rules="[val => !!val || 'El correo es obligatorio', val => /.+@.+\..+/.test(val) || 'Correo no válido']" />
-            <q-input filled v-model="telefono" label="Teléfono" type="tel"
+            <q-input filled v-model="telefono" label="Teléfono" type="number"
               :rules="[val => !!val || 'El teléfono es obligatorio']" />
             <q-input filled v-model="fecha" label="Fecha del evento" type="date"
               :rules="[val => !!val || 'La fecha es obligatoria']" />
 
             <!-- Selección de invitados con q-radio -->
-            <div class="text-body1 q-mt-md">Nº de invitados</div>
+            <div class="text-body1 q-mt-md text-bold m-0">Nº de invitados</div>
             <div>
               <q-radio v-model="invitados" val="0-99" label="0-99"
                 :rules="[val => !!val || 'El número de invitados es obligatorio']" />
               <q-radio v-model="invitados" val="100-199" label="100-199" />
               <q-radio v-model="invitados" val="200-299" label="200-299" />
               <q-radio v-model="invitados" val="300-399" label="300-399" />
-              <q-radio v-model="invitados" val="400" label="400+" />
+              <q-radio v-model="invitados" val="400+" label="400+" />
             </div>
 
             <!-- Botones del diálogo -->
@@ -189,7 +262,7 @@ onMounted(() => {
 
         <!-- Botones del diálogo -->
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="primary" @click="dialogoAbierto = false" />
+          <q-btn flat label="Cancelar" color="primary" @click="cerrarFormulario" />
           <q-btn label="Enviar" color="primary" @click="enviarFormulario" />
         </q-card-actions>
       </q-card>
@@ -270,9 +343,9 @@ onMounted(() => {
   position: fixed;
   left: 65%;
   width: 450px;
-  gap: 20px;
+
   /* Ajusta el ancho según sea necesario */
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
+
   z-index: 1000;
 }
 
