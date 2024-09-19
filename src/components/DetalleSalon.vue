@@ -20,6 +20,7 @@ const email = ref('');
 const telefono = ref('');
 const fecha = ref('');
 const invitados = ref('');
+const minDate = ref(getCurrentDate());
 
 function notificar(tipo, msg, posicion = "top") {
   $q.notify({
@@ -115,6 +116,22 @@ const enviarFormulario = async () => {
   }
 };
 
+async function recorrido360() {
+  const enlaceRecorrido = detalleSalon.value.video360
+  console.log(enlaceRecorrido)
+  window.open(enlaceRecorrido, '_blank');
+}
+
+function getCurrentDate() {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+}
+
+const galleryOpen = ref(false);
+
+function openGallery() {
+  galleryOpen.value = true;
+}
 
 onMounted(() => {
   getReglamentoSalon();
@@ -129,16 +146,42 @@ onMounted(() => {
 
         <div style="display: flex; width: 100%; flex-direction: column;">
           <div v-if="detalleSalon.galeria_sal.length" class="gallery-banner-container">
-            <!-- Galería de imágenes -->
-            <div class="gallery">
-              <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
-                class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" />
-              <div class="gallery-column">
-                <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
-                  :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" />
-              </div>
+          <div class="gallery">
+            <!-- Imagen principal -->
+            <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
+              class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" @click="openGallery" />
+
+            <!-- Galería secundaria -->
+            <div class="gallery-column">
+              <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
+                :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9"
+                @click="openGallery">
+
+                <!-- Verificar si es la última imagen de la galería con slice -->
+                <template v-if="index === detalleSalon.galeria_sal.slice(1, 4).length - 1">
+                  <!-- Mostrar mensaje "Ver más..." sobre la última imagen -->
+                  <div class="overlay-text">Ver más...</div>
+                </template>
+              </q-img>
             </div>
           </div>
+        </div>
+
+          <!-- Modal for Image Gallery -->
+          <q-dialog v-model="galleryOpen" full-width>
+            <q-card>
+              <q-card-section>
+                <!-- Close button -->
+                <q-btn flat round icon="close" @click="galleryOpen = false" class="absolute-top-right" />
+
+                <!-- Gallery in Modal -->
+                <div class="gallery-grid">
+                  <q-img v-for="(image, index) in detalleSalon.galeria_sal" :key="image.publicId" :src="image.url"
+                    class="gallery-grid-item" :alt="detalleSalon.nombre_sal" :ratio="1" />
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-dialog>
           <!-- Banner de información -->
           <div class="q-mb-md banner-info fixed-banner">
             <q-banner
@@ -152,9 +195,9 @@ onMounted(() => {
               </div>
             </q-banner>
 
-            <div class="q-pa-md" v-if="detalleSalon.video360"> 
+            <div class="q-pa-md" v-if="detalleSalon.video360">
               <p class="text-h5 text-bold mt-4">Recorrido Virtual</p>
-              <a>{{ detalleSalon.video360 }}</a>
+              <q-btn flat label="Ver recorrido" class=" right-btn bg-primary" @click="recorrido360" />
             </div>
           </div>
 
@@ -241,8 +284,8 @@ onMounted(() => {
               :rules="[val => !!val || 'El correo es obligatorio', val => /.+@.+\..+/.test(val) || 'Correo no válido']" />
             <q-input filled v-model="telefono" label="Teléfono" type="number"
               :rules="[val => !!val || 'El teléfono es obligatorio']" />
-            <q-input filled v-model="fecha" label="Fecha del evento" type="date"
-              :rules="[val => !!val || 'La fecha es obligatoria']" />
+            <q-input filled v-model="fecha" label="Fecha del evento" type="date" :min="minDate"
+              :rules="[val => !!val || 'La fecha es obligatoria', val => (val >= minDate) || 'La fecha no puede ser anterior a la de hoy.']" />
 
             <!-- Selección de invitados con q-radio -->
             <div class="text-body1 q-mt-md text-bold m-0">Nº de invitados</div>
@@ -331,12 +374,57 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 10px;
+  gap: 8px;
 }
 
 .gallery-image-small {
   width: 100%;
 }
+
+.overlay-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 5px;
+  text-align: center;
+  pointer-events: none; /* Elimina la interacción con el texto */
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid */
+  gap: 10px;
+  padding: 20px;
+}
+
+.gallery-grid-item {
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 100%;
+  height: auto;
+}
+
+.gallery-grid-item:hover {
+  transform: scale(1.05); /* Hover zoom effect */
+}
+
+.gallery-image-large {
+  width: 70%;
+}
+
+.gallery-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+
 
 /* Banner fijo */
 .fixed-banner {
@@ -362,5 +450,9 @@ onMounted(() => {
 .reglamento h2 {
   font-size: 1.5rem;
   margin-bottom: 10px;
+}
+
+.right-btn {
+  color: white;
 }
 </style>
