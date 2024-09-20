@@ -4,12 +4,14 @@ import { useStoreCiudad } from '../stores/ciudad.js';
 import { useStoreAmbienteSalon } from '../stores/ambiente.js';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreReserva } from '../stores/reserva.js';
+import { useStoreUsuarios } from '../stores/usuario.js';
 import { router } from '../routes/routes.js';
 
 const useCiudad = useStoreCiudad();
 const useAmbiente = useStoreAmbienteSalon();
 const useSalon = useStoreSalon();
 const useReserva = useStoreReserva();
+const useUsuario = useStoreUsuarios();
 const fecha = ref("");
 const ciudades = ref([]);
 const ambientes = ref([]);
@@ -18,11 +20,28 @@ const ciudad = ref("");
 const ambiente = ref("");
 const showLoadingModal = ref(false);
 const isCleaning = ref(false);
+const showProfileModal = ref(false);
 
 
 async function contactarnos() {
   const enlaceWhatsApp = await useReserva.generarEnlaceWhatsApp();
   window.open(enlaceWhatsApp, '_blank'); // Abre el enlace en una nueva pestaña
+}
+
+function toggleProfileModal() {
+  showProfileModal.value = !showProfileModal.value;
+}
+
+function editarPerfil() {
+  // Navegar a la página de edición de perfil
+  router.push('/editar-perfil');
+}
+
+function cerrarSesion() {
+  useUsuario.token = '';
+  useUsuario.usuario = '';
+  useUsuario.id = '';
+  router.push("/home")
 }
 
 async function getCiudades() {
@@ -299,13 +318,27 @@ onMounted(() => {
             <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" />
           </div>
 
+
+
           <!-- Right Side Links -->
           <q-space />
           <div class="right-side">
-            <q-btn flat label="Contáctanos" class="right-btn bg-primary" @click="contactarnos" />
-            <router-link to="/login" class="boton-home">
-              <q-btn flat round icon="login" class="right-btn bg-primary" />
-            </router-link>
+            <q-btn v-if="!useUsuario.token" flat label="Contáctanos" class="right-btn bg-primary"
+              @click="contactarnos" />
+            <q-btn v-if="useUsuario.token" flat label="Administrar salones" class="right-btn bg-primary"
+              @click="router.push('/panel-admin')" />
+
+            <!-- Mostrar botón dependiendo si el usuario está logeado -->
+            <template v-if="useUsuario.token">
+              <!-- Botón "Ver Perfil" cuando el usuario está logeado -->
+              <q-btn flat round icon="account_circle" class="right-btn bg-primary" @click="toggleProfileModal" />
+            </template>
+            <template v-else>
+              <!-- Botón de login cuando no está logeado -->
+              <router-link to="/login" class="boton-home">
+                <q-btn flat round icon="login" class="right-btn bg-primary" />
+              </router-link>
+            </template>
           </div>
         </q-toolbar>
       </q-header>
@@ -314,6 +347,27 @@ onMounted(() => {
         <router-view />
       </q-page-container>
     </q-layout>
+
+    <q-dialog v-model="showProfileModal">
+      <q-card class="custom-card">
+        <q-card-section class="q-pt-none">
+          <div class="profile-info">
+            <q-avatar size="100px" rounded>
+              <q-icon name="person" />
+            </q-avatar>
+            <div class="profile-details">
+              <h6>{{ useUsuario.usuario.nombre }}</h6>
+              <p>{{ useUsuario.usuario.rol }}</p>
+            </div>
+          </div>
+
+          <q-card-actions align="center" class="q-pt-none q-pb-lg">
+            <q-btn flat label="Editar Perfil" color="primary" class="btn-action" @click="editarPerfil" />
+            <q-btn flat label="Cerrar Sesión" color="negative" class="btn-action" @click="cerrarSesion" />
+          </q-card-actions>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -362,5 +416,54 @@ onMounted(() => {
 
 .right-btn {
   color: white;
+}
+
+.custom-card {
+  width: 300px;
+  border-radius: 20px;
+  background-color: #f4f4f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.avatar-profile {
+  background-color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.icon-profile {
+  font-size: 3rem;
+  color: #ffffff;
+}
+
+.profile-details h6 {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.profile-details p {
+  margin: 5px 0 0;
+  color: #666666;
+}
+
+.btn-action {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
+.q-card-actions {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 10px;
 }
 </style>
