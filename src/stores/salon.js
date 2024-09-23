@@ -22,6 +22,8 @@ const salonFiltroTipo = ref([]);
 const salonFiltroUbicacion = ref([]);
 const salonesFiltrados = ref([]);
 const detalleSalon = ref("");
+const salonCiudLatitud = ref("");
+const salonCiudLongitud = ref("");
 const devolverHomeDetalle = ref(false);
 const loading = ref(false);
 
@@ -48,7 +50,6 @@ export const useStoreSalon = defineStore(
           params: filters,
         });
         estatus.value = response.status;
-        salonesFiltrados.value = response.data;
         return response.data;
       } catch (error) {
         console.log(error);
@@ -156,6 +157,8 @@ export const useStoreSalon = defineStore(
       salonesFiltrados,
       loading,
       detalleSalon,
+      salonCiudLatitud,
+      salonCiudLongitud,
       devolverHomeDetalle,
     };
   },

@@ -89,9 +89,16 @@ const getCiudadesFiltradas = (ciudades) => {
       departamentos.add(c.idDepart.nombre_depart); // Añadimos el nombre del departamento al Set para evitar duplicados
       opciones.push({
         label: c.idDepart.nombre_depart,  // Nombre del departamento para mostrar
-        value: { tipo: 'departamento', _id: c.idDepart._id, nombre_depart: c.idDepart.nombre_depart },  // ID y nombre del departamento como valor
+        value: {
+          tipo: 'departamento',
+          _id: c.idDepart._id,
+          nombre_depart: c.idDepart.nombre_depart,
+          latitud: c.idDepart.latitud,  // Latitud del departamento
+          longitud: c.idDepart.longitud  // Longitud del departamento
+        },
         disable: false,
       });
+
     }
   });
 
@@ -152,13 +159,12 @@ const filtrarAmbientes = (val, update) => {
 };
 
 const filtrarSalones = async () => {
-  // Verificar si la variable `fecha` tiene algún valor
   const hasFecha = fecha.value !== null && fecha.value !== "";
 
-  // Solo filtrar si alguno de los filtros tiene un valor o si `fecha` tiene un valor
+  // Asegúrate de que siempre se utilicen todos los filtros acumulativos
   if (
     hasFecha ||
-    ciudad.value?.value?._id ||
+    ciudad.value?.value?._id || // Preserva la ciudad seleccionada
     ambiente.value?.value ||
     c_personas.value ||
     useSalon.salonFiltroPrecio ||
@@ -171,7 +177,8 @@ const filtrarSalones = async () => {
     useSalon.loading = true;
 
     const filters = {
-      idCiudSalonEvento: ciudad.value?.value?._id || null,
+      // Preserva la ciudad seleccionada en cada filtro
+      idCiudSalonEvento: useSalon.salonFiltroCiudad || ciudad.value?.value?._id || null,
       idAmbienteSalon: ambiente.value?.value || null,
       capacidad_sal: c_personas.value || null,
       precio_sal: useSalon.salonFiltroPrecio || null,
@@ -194,10 +201,10 @@ const filtrarSalones = async () => {
       useSalon.loading = false;
     }
   } else {
-    // No hacer nada si no hay filtros aplicados ni `fecha`
     console.log("No se aplicaron filtros ni fecha, no es necesario redirigir.");
   }
 };
+
 
 
 
@@ -231,10 +238,13 @@ function limpiar() {
 
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
-  if (isCleaning && ciudad?.value?.value && ciudad.value.value._id) {
-    console.log("detalle ciudad", ciudad)
-    useSalon.salonFiltroCiudad = ciudad.value?.value._id;
+  if (isCleaning && ciudad?.value?.value && ciudad.value?.value?._id) {
+    console.log("detalle ciudad", ciudad.value?.value.latitud)
+    console.log("detalle ciudad", ciudad.value?.value.longitud)
+    useSalon.salonFiltroCiudad = ciudad.value?.value?._id;
     useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
+    useSalon.salonCiudLatitud = ciudad.value?.value.latitud;
+    useSalon.salonCiudLongitud = ciudad.value?.value.longitud;
     filtrarSalones();
   }
 });
@@ -242,6 +252,7 @@ watch(ciudad, () => {
 watch(ambiente, () => {
   if (isCleaning && ambiente.value?.value) {
     useSalon.salonFiltroAmbiente = ambiente.value?.value;
+    console.log("se me olvida", ciudad)
     useSalon.salonFiltroAmbienteNombre = ambiente.value.label;
     filtrarSalones();
   }

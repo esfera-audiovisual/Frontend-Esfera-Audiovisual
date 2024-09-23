@@ -454,6 +454,6 @@ function buscarIndexLocal(id) {
     overflow: hidden;
     z-index: 1;
     color: white;
-
+    cursor: pointer;
 }
 </style>

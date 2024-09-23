@@ -36,6 +36,8 @@ const loadingUbicacionesSalon = ref(false);
 const debounceTimeout = ref(null);
 const showLoadingModal = ref(false);
 const map = ref(null);  // Referencia para el mapa
+const markers = ref([]);
+
 
 
 function debounce(fn, delay) {
@@ -69,40 +71,82 @@ const getSalones = async () => {
     if (useSalon.estatus === 200) {
       salones.value = response;
       // Inicializar el mapa
-      initMap();
     }
   } catch (error) {
     console.log(error);
   }
 };
 
+// Función para limpiar los marcadores anteriores
+const clearMarkers = () => {
+  if (markers.value) {
+    markers.value.forEach((marker, index) => {
+      marker.setMap(null);  // Eliminar los marcadores del mapa
+    });
+    markers.value = [];
+  }
+};
+
+const resetMap = () => {
+  if (map.value) {
+    map.value = null;
+    document.getElementById('map').innerHTML = '';  // Elimina el contenido del div del mapa
+  }
+};
+
+
+// Función initMap que actualiza el mapa y los marcadores
 const initMap = () => {
+  resetMap();  // Reinicia el mapa
+
+  const latCiudad = parseFloat(useSalon.salonCiudLatitud) || 0;
+  const lgtCiudad = parseFloat(useSalon.salonCiudLongitud) || 0;
+
   const mapOptions = {
-    center: { lat: 6.554824, lng: -73.13412 },  // Coordenadas iniciales (Medellín)
+    center: { lat: latCiudad, lng: lgtCiudad },
     zoom: 12,
   };
 
-  // Crear el mapa
+  // Crear el mapa nuevamente
   map.value = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-  // Añadir marcadores para los salones
-  useSalon.salonesFiltrados.forEach(salon => {
-    // Convertir latitud y longitud a número con parseFloat
-    const lat = parseFloat(salon.idCiudSalonEvento.latitud);
-    const lng = parseFloat(salon.idCiudSalonEvento.longitud);
+  // Limpiar los marcadores anteriores
+  clearMarkers();
 
-    // Verificar si lat y lng son números válidos
+  // Añadir nuevos marcadores basados en los salones filtrados
+  useSalon.salonesFiltrados.forEach((salon) => {
+    const lat = parseFloat(salon.latitud);
+    const lng = parseFloat(salon.longitud);
+
     if (!isNaN(lat) && !isNaN(lng)) {
       const marker = new google.maps.Marker({
         position: { lat: lat, lng: lng },
-        map: map.value,
-        title: salones.nombre_sal,  // El nombre del salón
+        map: map.value,  // Vincula el marcador al mapa
+        title: salon.nombre_sal,  // Título del marcador
       });
-    } else {
-      console.error(`Invalid coordinates for salon: ${salon.nombre_sal}`);
-    }
+
+      // Crear una InfoWindow con el nombre del salón
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div><strong>${salon.nombre_sal}</strong></div><div><strong>$ ${salon.precio_sal}</strong></div><img src="${salon.galeria_sal[0].url}" style="max-width: 200px; max-height:200px"></img>`,
+      });
+
+      // Añadir evento para mostrar la InfoWindow cuando el usuario haga clic en el marcador
+      marker.addListener('click', () => {
+        infoWindow.open({
+          anchor: marker,
+          map: map.value,
+          shouldFocus: false,
+        });
+      });
+
+      // Añadir el marcador al array `markers`
+      markers.value.push(marker);
+  } else {
+    console.error(`Invalid coordinates for salon: ${salon.nombre_sal}`);
+  }
   });
 };
+
 
 
 const getEspacios = async () => {
@@ -257,7 +301,6 @@ const filtrarSalones = async () => {
     console.log("soy salones-filtros.vue", filters)
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones;
-    initMap();
     console.log('Salones filtrados:', filteredSalones);
   } catch (error) {
     console.error("Error al filtrar salones:", error);
@@ -269,6 +312,25 @@ const filtrarSalones = async () => {
 
 
 const debouncedFiltrarSalones = debounce(filtrarSalones, 1200);
+
+watch(() => useSalon.salonFiltroCiudad, (newCity) => {
+  if (newCity && useSalon.salonCiudLatitud && useSalon.salonCiudLongitud) {
+    // Actualizar el centro del mapa cuando cambia la ciudad
+    const newCenter = {
+      lat: parseFloat(useSalon.salonCiudLatitud),
+      lng: parseFloat(useSalon.salonCiudLongitud)
+    };
+    map.value.setCenter(newCenter);
+    console.log("mapaaa", markers)
+    initMap();
+  }
+});
+
+watch(() => useSalon.salonesFiltrados, (newSalones) => {
+  // Limpiar los marcadores anteriores
+  initMap();
+});
+
 
 
 watch(precioMax, () => {
