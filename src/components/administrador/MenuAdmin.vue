@@ -8,7 +8,9 @@ import EspacioSalon from '../../assets/espacio-salon.png';
 import ServicioSalon from '../../assets/servicio-salon.png';
 import TipoSalon from '../../assets/tipo-salon.png';
 import UbicacionSalon from '../../assets/ubicacion-salon.png';
-import ReglamentoSalon from '../../assets/reglamento-salon.png'
+import ReglamentoSalon from '../../assets/reglamento-salon.png';
+import Reserva from '../../assets/reserva.png';
+import Contacto from '../../assets/contacto.png';
 
 
 const leftDrawerOpen = ref(false);
@@ -23,28 +25,32 @@ function toggleLeftDrawer() {
 
         <q-page-container>
             <div class="lcare">
-                <div class="card-info"><router-link class="router" to="/departamento"><img :src="Departamento"
+                <div class="card-info"><router-link class="router" to="/panel-admin/departamento"><img :src="Departamento"
                             alt=""></router-link>Departamentos</div>
-                <div class="card-info"><router-link class="router" to="/ciudad"><img :src="Ciudad" alt=""></router-link>Ciudades
+                <div class="card-info"><router-link class="router" to="/panel-admin/ciudad"><img :src="Ciudad" alt=""></router-link>Ciudades
                 </div>
-                <div class="card-info"><router-link class="router" to="/salon-evento"><img :src="SalonEvento" alt=""></router-link> Salones de
+                <div class="card-info"><router-link class="router" to="/panel-admin/salon-evento"><img :src="SalonEvento" alt=""></router-link> Salones de
                     eventos
                 </div>
-                <div class="card-info"><router-link class="router" to="/tipo-evento"><img :src="TipoEvento" alt=""></router-link>Tipo
+                <div class="card-info"><router-link class="router" to="/panel-admin/tipo-evento"><img :src="TipoEvento" alt=""></router-link>Tipo
                     Evento
                 </div>
-                <div class="card-info"><router-link class="router" to="/espacio-salon"><img :src="EspacioSalon" alt=""></router-link>Espacios
+                <div class="card-info"><router-link class="router" to="/panel-admin/espacio-salon"><img :src="EspacioSalon" alt=""></router-link>Espacios
                     Salón</div>
-                <div class="card-info"><router-link class="router" to="/servicio-salon"><img :src="ServicioSalon" alt=""></router-link>Servicios
+                <div class="card-info"><router-link class="router" to="/panel-admin/servicio-salon"><img :src="ServicioSalon" alt=""></router-link>Servicios
                     Salón
                 </div>
-                <div class="card-info"><router-link class="router" to="/tipo-salon"><img :src="TipoSalon" alt=""></router-link>Tipo Salón
+                <div class="card-info"><router-link class="router" to="/panel-admin/tipo-salon"><img :src="TipoSalon" alt=""></router-link>Tipo Salón
                 </div>
-                <div class="card-info"><router-link class="router" to="/ubicacion-salon"><img :src="UbicacionSalon" alt=""></router-link>Ubicación
+                <div class="card-info"><router-link class="router" to="/panel-admin/ubicacion-salon"><img :src="UbicacionSalon" alt=""></router-link>Ubicación
                     Salón
                 </div>
-                <div class="card-info"><router-link class="router" to="/reglamento-salon"><img :src="ReglamentoSalon" alt=""></router-link>Reglamento
+                <div class="card-info"><router-link class="router" to="/panel-admin/reglamento-salon"><img :src="ReglamentoSalon" alt=""></router-link>Reglamento
                     Salón
+                </div>
+                <div class="card-info"><router-link class="router" to="/panel-admin/contacto-salon"><img :src="Contacto" alt=""></router-link>Contacto Salón
+                </div>
+                <div class="card-info"><router-link class="router" to="/panel-admin/reserva-salon"><img :src="Reserva" alt=""></router-link> Reservas
                 </div>
             </div>
             <router-view />

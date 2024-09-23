@@ -13,7 +13,7 @@ function toggleLeftDrawer() {
 
 <template>
     <q-layout view="hHh lpR lFf">
-        <q-header bordered class="bg-primary text-white" style="position: fixed; top: 17%;">
+        <q-header bordered class="bg-primary text-white" style="position: fixed; top: 13%;">
             <q-toolbar>
                 <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
                 <q-toolbar-title class="text-center">
@@ -22,7 +22,7 @@ function toggleLeftDrawer() {
             </q-toolbar>
         </q-header>
 
-        <q-drawer v-model="leftDrawerOpen" side="left" elevated >
+        <q-drawer v-model="leftDrawerOpen" side="left" elevated>
             <div class="container-info">
                 <div class="cont" style="display: flex; justify-content: center;">
                     <q-img :src="Perfil" style="max-width: 200px;"></q-img>
@@ -31,15 +31,39 @@ function toggleLeftDrawer() {
                 <p class="user text-h5">Administrativo</p>
             </div>
             <div class="container-button">
-                <button class="btn">Departamentos</button>
-                <button class="btn">Ciudades</button>
-                <button class="btn">Salones</button>
-                <button class="btn">Tipo de evento</button>
-                <button class="btn">Espacios Salón</button>
-                <button class="btn">Servicios Salón</button>
-                <button class="btn">Tipo de Salón</button>
-                <button class="btn">Ubicación de Salón</button>
-                <button class="btn">Reglamento de Salón</button>
+                <div>
+                    <router-link class="router" to="/panel-admin/departamento"> <button class="btn">Departamentos</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/ciudad"> <button class="btn">Ciudades</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/salon-evento"> <button class="btn">Salones</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/tipo-evento"> <button class="btn">Tipo de evento</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/espacio-salon"> <button class="btn">Espacios Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/servicio-salon"> <button class="btn">Servicios Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/tipo-salon"> <button class="btn">Tipo de Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/ubicacion-salon"> <button class="btn">Ubicación de Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/reglamento-salon"> <button class="btn">Reglamento de Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/contacto-salon"> <button class="btn">Contacto Salón</button></router-link>
+                </div>
+                <div>
+                    <router-link class="router" to="/panel-admin/reserva-salon"> <button class="btn">Reservas salón</button></router-link>
+                </div>
             </div>
         </q-drawer>
 
@@ -52,8 +76,6 @@ function toggleLeftDrawer() {
 
 
 <style scoped>
-
-
 .container-button {
     display: flex;
     flex-direction: column;
@@ -120,6 +142,4 @@ function toggleLeftDrawer() {
     height: 100%;
     text-decoration: none;
 }
-
 </style>
-

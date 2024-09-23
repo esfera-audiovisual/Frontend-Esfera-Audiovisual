@@ -19,6 +19,7 @@ export const useStoreReserva = defineStore(
                 const response = await axios.get(`/${modelo}/all`);
                 reservas.value = response.data;
                 estatus.value = response.status;
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 500;
@@ -31,6 +32,7 @@ export const useStoreReserva = defineStore(
                 const response = await axios.get(`/${modelo}/${id}`);
                 reservaSeleccionada.value = response.data;
                 estatus.value = response.status;
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 400;
@@ -43,6 +45,7 @@ export const useStoreReserva = defineStore(
                 const response = await axios.get(`/${modelo}/cliente/${nombre_cliente}`);
                 reservas.value = response.data;
                 estatus.value = response.status;
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 500;
@@ -70,6 +73,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 const index = reservas.value.findIndex(res => res._id === id);
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva en la lista
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 500;
@@ -83,6 +87,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 const index = reservas.value.findIndex(res => res._id === id);
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva activada
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 500;
@@ -96,6 +101,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 const index = reservas.value.findIndex(res => res._id === id);
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva inactivada
+                return response.data;
             } catch (error) {
                 console.error(error);
                 estatus.value = error.response?.status || 500;

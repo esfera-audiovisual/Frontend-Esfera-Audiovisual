@@ -109,7 +109,7 @@ export const useStoreUsuarios = defineStore(
       }
     };
 
-    const agregar = async (data) => {
+    const registro = async (data) => {
       try {
         insertarToken();
         const response = await axios.post(`${modelo}/registro`, data);
@@ -139,7 +139,7 @@ export const useStoreUsuarios = defineStore(
 
     return {
       login,
-      agregar,
+      registro,
       editar,
       token,
       id,

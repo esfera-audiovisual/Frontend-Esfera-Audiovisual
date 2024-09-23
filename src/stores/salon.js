@@ -57,7 +57,7 @@ export const useStoreSalon = defineStore(
 
     const getPorId = async (id) => {
       try {
-        const response = await axios.get(`${modelo}/buscarId/${id}`);
+        const response = await axios.get(`${modelo}/${id}`);
         estatus.value = response.status;
         return response.data;
       } catch (error) {
@@ -79,7 +79,7 @@ export const useStoreSalon = defineStore(
       }
     };
 
-    const agregar = async (data) => {
+    const registro = async (data) => {
       try {
         const response = await axios.post(`${modelo}/registro`, data);
         estatus.value = response.status;
@@ -130,7 +130,7 @@ export const useStoreSalon = defineStore(
       getSalonesFiltrados,
       getPorId,
       getPorCiudad,
-      agregar,
+      registro,
       editar,
       activar,
       inactivar,

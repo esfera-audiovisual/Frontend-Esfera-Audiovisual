@@ -41,7 +41,7 @@ export const useStoreCiudad = defineStore(
     const getCiudadesPorDepartamento = async (idDepartamento) => {
       try {
         const response = await axios.get(
-          `${modelo}/buscarPorDepartamento/${idDepartamento}`
+          `${modelo}/ciudad-por-departamento/${idDepartamento}`
         );
         estatus.value = response.status;
         return response.data;
@@ -62,7 +62,7 @@ export const useStoreCiudad = defineStore(
       }
     };
 
-    const agregar = async (data) => {
+    const registro = async (data) => {
       try {
         const response = await axios.post(`${modelo}/registro`, data);
         estatus.value = response.status;
@@ -113,7 +113,7 @@ export const useStoreCiudad = defineStore(
       getPorId,
       getCiudadesPorDepartamento,
       getPorNombre,
-      agregar,
+      registro,
       editar,
       activar,
       inactivar,
