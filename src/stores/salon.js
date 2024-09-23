@@ -48,6 +48,7 @@ export const useStoreSalon = defineStore(
           params: filters,
         });
         estatus.value = response.status;
+        salonesFiltrados.value = response.data;
         return response.data;
       } catch (error) {
         console.log(error);

@@ -35,7 +35,7 @@ const loadingTiposSalon = ref(false);
 const loadingUbicacionesSalon = ref(false);
 const debounceTimeout = ref(null);
 const showLoadingModal = ref(false);
-
+const map = ref(null);  // Referencia para el mapa
 
 
 function debounce(fn, delay) {
@@ -68,12 +68,42 @@ const getSalones = async () => {
     const response = await useSalon.getAll();
     if (useSalon.estatus === 200) {
       salones.value = response;
+      // Inicializar el mapa
+      initMap();
     }
-    console.log(response);
   } catch (error) {
     console.log(error);
   }
 };
+
+const initMap = () => {
+  const mapOptions = {
+    center: { lat: 6.554824, lng: -73.13412 },  // Coordenadas iniciales (Medellín)
+    zoom: 12,
+  };
+
+  // Crear el mapa
+  map.value = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+  // Añadir marcadores para los salones
+  useSalon.salonesFiltrados.forEach(salon => {
+    // Convertir latitud y longitud a número con parseFloat
+    const lat = parseFloat(salon.idCiudSalonEvento.latitud);
+    const lng = parseFloat(salon.idCiudSalonEvento.longitud);
+
+    // Verificar si lat y lng son números válidos
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const marker = new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map.value,
+        title: salones.nombre_sal,  // El nombre del salón
+      });
+    } else {
+      console.error(`Invalid coordinates for salon: ${salon.nombre_sal}`);
+    }
+  });
+};
+
 
 const getEspacios = async () => {
   loadingEspacios.value = true;
@@ -222,11 +252,12 @@ const filtrarSalones = async () => {
     idUbicacionSalon: ubicacionselec.value.length > 0 ? ubicacionselec.value.join(',') : null,
   };
 
+
   try {
     console.log("soy salones-filtros.vue", filters)
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones;
-
+    initMap();
     console.log('Salones filtrados:', filteredSalones);
   } catch (error) {
     console.error("Error al filtrar salones:", error);
@@ -237,8 +268,8 @@ const filtrarSalones = async () => {
 };
 
 
-
 const debouncedFiltrarSalones = debounce(filtrarSalones, 1200);
+
 
 watch(precioMax, () => {
   useSalon.salonFiltroPrecio = precioMax.value;
@@ -404,46 +435,54 @@ onMounted(() => {
 
 
       <!-- Salones a la derecha -->
-      <div class="salones">
-        <div>
-          <div v-if="useSalon.salonesFiltrados.length === 0" class="no-salones">
-            <q-icon name="sentiment_dissatisfied" size="5em" color="grey" />
-            <p>No se encontraron salones</p>
-          </div>
-          <div v-else>
-            <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
-              <q-card class="my-card">
-                <div class="card-content">
-                  <q-img :src="salon.galeria_sal[0].url" class="card-image" />
-                  <q-card-section class="card-details">
-                    <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
-                    <div class="text-subtitle2">
-                      <q-icon name="location_on" size="18px" />
-                      {{ salon.idCiudSalonEvento.nombre_ciud }}, {{ salon.idCiudSalonEvento.idDepart.nombre_depart }}
-                    </div>
-                    <div class="text-subtitle2">
-                      <q-icon name="architecture" size="18px" />
-                      {{ getNombresAmbiente(salon.idAmbienteSalon) }}
-                    </div>
-                    <div class="text-subtitle2">
-                      <q-icon name="description" size="18px" />
-                      {{ salon.descripcion_sal }}
-                    </div>
-                    <div class="text-subtitle2">
-                      <q-icon name="attach_money" size="18px" />
-                      {{ salon.precio_sal }}
-                    </div>
-                    <div class="text-subtitle2">
-                      <q-icon name="groups" size="18px" />
-                      {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
-                    </div>
-                    <div class="row justify-end">
-                      <q-btn color="primary" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
-                    </div>
-                  </q-card-section>
-                </div>
-              </q-card>
+      <div class="container">
+        <div class="content-wrapper">
+          <!-- Columna izquierda: Cards de los salones -->
+          <div class="salones-container">
+            <div v-if="useSalon.salonesFiltrados.length === 0" class="no-salones">
+              <q-icon name="sentiment_dissatisfied" size="5em" color="grey" />
+              <p>No se encontraron salones</p>
             </div>
+            <div v-else>
+              <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
+                <q-card class="my-card">
+                  <div class="card-content">
+                    <q-img :src="salon.galeria_sal[0].url" class="card-image" />
+                    <q-card-section class="card-details">
+                      <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
+                      <div class="text-subtitle2">
+                        <q-icon name="location_on" size="18px" />
+                        {{ salon.idCiudSalonEvento.nombre_ciud }}, {{ salon.idCiudSalonEvento.idDepart.nombre_depart }}
+                      </div>
+                      <div class="text-subtitle2">
+                        <q-icon name="architecture" size="18px" />
+                        {{ getNombresAmbiente(salon.idAmbienteSalon) }}
+                      </div>
+                      <div class="text-subtitle2">
+                        <q-icon name="description" size="18px" />
+                        {{ salon.descripcion_sal }}
+                      </div>
+                      <div class="text-subtitle2">
+                        <q-icon name="attach_money" size="18px" />
+                        {{ salon.precio_sal }}
+                      </div>
+                      <div class="text-subtitle2">
+                        <q-icon name="groups" size="18px" />
+                        {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
+                      </div>
+                      <div class="row justify-end">
+                        <q-btn color="primary" label="Ver información..." size="md" @click="verDetalleSalon(salon)" />
+                      </div>
+                    </q-card-section>
+                  </div>
+                </q-card>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna derecha: Mapa -->
+          <div class="map-container">
+            <div id="map" style="width: 100%; height: 100%;"></div>
           </div>
         </div>
       </div>
@@ -453,6 +492,53 @@ onMounted(() => {
 
 
 <style scoped>
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100vh;
+  /* Asegura que ocupe toda la altura de la pantalla */
+  gap: 20px;
+}
+
+.salones-container {
+  flex: 1;
+  /* Esto permitirá que el contenedor de salones ocupe la mitad o más del espacio disponible */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Hacer scroll si hay muchas cards */
+}
+
+.map-container {
+  flex: 1;
+  /* Esto permitirá que el mapa ocupe el espacio restante */
+  height: 100%;
+}
+
+.salon-card {
+  margin-bottom: 20px;
+  /* Espacio entre las cards */
+}
+
+/* Estilos responsive: En pantallas pequeñas, el mapa irá debajo de las cards */
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+
+  .map-container {
+    height: 400px;
+    /* Altura fija en pantallas más pequeñas */
+  }
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;

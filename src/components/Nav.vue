@@ -232,6 +232,7 @@ function limpiar() {
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
   if (isCleaning && ciudad?.value?.value && ciudad.value.value._id) {
+    console.log("detalle ciudad", ciudad)
     useSalon.salonFiltroCiudad = ciudad.value?.value._id;
     useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
     filtrarSalones();
