@@ -6,6 +6,7 @@ import DetalleSalon from "../components/DetalleSalon.vue";
 import Login from "../components/Login.vue";
 import PanelAdmin from "../components/administrador/PanelAdmin.vue";
 import MenuAdmin from "../components/administrador/MenuAdmin.vue";
+import EditarPerfil from "../components/administrador/EditarPerfil.vue";
 import Departamento from "../components/administrarTablas/Departamento.vue";
 import Ciudad from "../components/administrarTablas/Ciudad.vue";
 import SalonEvento from "../components/administrarTablas/SalonEvento.vue";
@@ -18,6 +19,7 @@ import ReglamentoSalon from "../components/administrarTablas/ReglamentoSalon.vue
 import ReservaSalon from "../components/administrarTablas/Reservas.vue";
 import ContactoSalon from "../components/administrarTablas/ContactoSalon.vue";
 import FormularioSalon from "../components/Formulario/FormularioSalon.vue";
+import NuevaContraseña from "../components/administrador/NuevaContraseña.vue";
 
 
 
@@ -45,6 +47,8 @@ const routes = [
         children: [
           { path: "", redirect: "/panel-admin/menu-admin" }, 
           { path: "menu-admin", component: MenuAdmin }, 
+          { path: "editar-perfil" , component: EditarPerfil },
+          { path: "nueva-contrasena" , component: NuevaContraseña },
           { path: "departamento", component: Departamento }, 
           { path: "ciudad", component: Ciudad }, 
           { path: "salon-evento", component: SalonEvento },

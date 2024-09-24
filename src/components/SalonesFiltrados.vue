@@ -114,7 +114,7 @@ const initMap = () => {
   clearMarkers();
 
   // Añadir nuevos marcadores basados en los salones filtrados
-  useSalon.salonesFiltrados.forEach((salon) => {
+  useSalon.salonesFiltrados.forEach((salon, index) => {
     const lat = parseFloat(salon.latitud);
     const lng = parseFloat(salon.longitud);
 
@@ -125,9 +125,17 @@ const initMap = () => {
         title: salon.nombre_sal,  // Título del marcador
       });
 
-      // Crear una InfoWindow con el nombre del salón
+      // Crear una InfoWindow con todo el contenido
       const infoWindow = new google.maps.InfoWindow({
-        content: `<div><strong>${salon.nombre_sal}</strong></div><div><strong>$ ${salon.precio_sal}</strong></div><img src="${salon.galeria_sal[0].url}" style="max-width: 200px; max-height:200px"></img>`,
+        content: `
+          <div id="salon-info-${index}" style="cursor: pointer; font-family: Arial, sans-serif; width: 100%; max-width: 250px;">
+            <img src="${salon.galeria_sal[0].url}" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover;" alt="${salon.nombre_sal}">
+            <div style="padding: 10px; text-align: center;">
+              <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">${salon.nombre_sal}</div>
+              <div style="font-size: 14px; color: #333; margin-bottom: 8px;">$ ${salon.precio_sal}</div>
+            </div>
+          </div>
+        `,
       });
 
       // Añadir evento para mostrar la InfoWindow cuando el usuario haga clic en el marcador
@@ -137,17 +145,26 @@ const initMap = () => {
           map: map.value,
           shouldFocus: false,
         });
+
+        // Usar google.maps.event para asegurar que el DOM del InfoWindow esté cargado
+        google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+          // Agregar el event listener para el click en todo el contenido del InfoWindow
+          const infoElement = document.getElementById(`salon-info-${index}`);
+          if (infoElement) {
+            infoElement.addEventListener('click', () => {
+              verDetalleSalon(salon);  // Llamar a la función verDetalleSalon con el salón correspondiente
+            });
+          }
+        });
       });
 
       // Añadir el marcador al array `markers`
       markers.value.push(marker);
-  } else {
-    console.error(`Invalid coordinates for salon: ${salon.nombre_sal}`);
-  }
+    } else {
+      console.error(`Invalid coordinates for salon: ${salon.nombre_sal}`);
+    }
   });
 };
-
-
 
 const getEspacios = async () => {
   loadingEspacios.value = true;

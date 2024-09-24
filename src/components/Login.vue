@@ -82,7 +82,7 @@ function limpiar() {
             <q-form class="form" @submit.prevent="login">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
                 <div class="input-container">
-                    <q-input v-model="cedula" type="number" label="Identificacion" lazy-rules
+                    <q-input v-model="cedula" type="number" label="Usuario" lazy-rules
                         :rules="[val => !!val || 'Ingrese su cédula']" />
                 </div>
                 <div class="input-container">

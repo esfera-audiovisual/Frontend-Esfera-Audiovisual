@@ -34,7 +34,7 @@ function toggleProfileModal() {
 
 function editarPerfil() {
   // Navegar a la página de edición de perfil
-  router.push('/editar-perfil');
+  router.push('/panel-admin/editar-perfil');
 }
 
 function cerrarSesion() {
