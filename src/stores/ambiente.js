@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 const modelo = "ambiente";
 const estatus = ref("");
 const validacion = ref("");
+const nuevoAmb = ref('');
 const nuevoAmbiente = ref("");
 const idAmbiente = ref("");
 const ambienteSeleccionado = ref("");
@@ -55,6 +56,7 @@ export const useStoreAmbienteSalon = defineStore(
     const registro = async (data) => {
       try {
         const response = await axios.post(`${modelo}/registro`, data);
+        nuevoAmb.value = response.data;
         nuevoAmbiente.value = response.data._id;
         estatus.value = response.status;
         return response.data;
@@ -110,6 +112,7 @@ export const useStoreAmbienteSalon = defineStore(
       ambiente,
       estatus,
       validacion,
+      nuevoAmb,
       nuevoAmbiente,
       idAmbiente,
       ambienteSeleccionado,

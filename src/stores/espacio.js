@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 const modelo = "espacio";
 const estatus = ref("");
 const validacion = ref("");
+const nuevoEspacio = ref('');
 const nuevoEspacioSalon = ref("");
 const idEspacioSalon = ref("");
 const espacioSalonSeleccionado = ref("");
@@ -58,6 +59,7 @@ export const useStoreEspacioSalon = defineStore(
         const response = await axios.post(`${modelo}/registro`, data);
         console.log(response);
         estatus.value = response.status;
+        nuevoEspacio.value = response.data;
         nuevoEspacioSalon.value = response.data._id;
         return response.data;
       } catch (error) {
@@ -112,6 +114,7 @@ export const useStoreEspacioSalon = defineStore(
       espaciosSalon,
       estatus,
       validacion,
+      nuevoEspacio,
       nuevoEspacioSalon,
       idEspacioSalon,
       espacioSalonSeleccionado,

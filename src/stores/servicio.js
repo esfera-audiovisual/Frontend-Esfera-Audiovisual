@@ -5,6 +5,7 @@ import { defineStore } from 'pinia';
 const modelo = 'servicio';
 const estatus = ref('');
 const validacion = ref('');
+const nuevoServicio = ref('');
 const nuevoServicioSalon = ref('');
 const idServicioSalon = ref('');
 const servicioSalonSeleccionado = ref('');
@@ -42,6 +43,7 @@ export const useStoreServicioSalon = defineStore(
       try {
         const response = await axios.post(`/${modelo}/registro`, data);
         estatus.value = response.status;
+        nuevoServicio.value = response.data;
         nuevoServicioSalon.value = response.data._id;
         return response.data;
       } catch (error) {
@@ -94,6 +96,7 @@ export const useStoreServicioSalon = defineStore(
       servicioSalones,
       estatus,
       validacion,
+      nuevoServicio,
       nuevoServicioSalon,
       idServicioSalon,
       servicioSalonSeleccionado,

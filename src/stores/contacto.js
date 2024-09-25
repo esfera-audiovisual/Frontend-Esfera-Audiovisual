@@ -10,6 +10,7 @@ export const useStoreContactoSalon = defineStore(
         const contactosSalon = ref([]);
         const estatus = ref('');
         const validacion = ref('');
+        const nuevoContacto = ref('');
         const nuevoContactoSalon = ref('');
         const idContactoSalon = ref('');
         const contactoSalonSeleccionado = ref(null);
@@ -57,6 +58,7 @@ export const useStoreContactoSalon = defineStore(
         const registro = async (data) => {
             try {
                 const response = await axios.post(`/${modelo}/registro`, data);
+                nuevoContacto.value = response.data;
                 nuevoContactoSalon.value = response.data._id;
                 estatus.value = response.status;
                 return response.data;
@@ -114,6 +116,7 @@ export const useStoreContactoSalon = defineStore(
             contactosSalon,
             estatus,
             validacion,
+            nuevoContacto,
             nuevoContactoSalon,
             idContactoSalon,
             contactoSalonSeleccionado,

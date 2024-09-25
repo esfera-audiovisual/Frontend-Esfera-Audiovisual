@@ -29,8 +29,14 @@ const contacto = ref([]);
 const modalCrearServicio = ref(false);
 const loading = ref(false);  // Variable para controlar el estado de carga
 const nuevoServicio = ref('');  // Aquí almacenamos el nombre del nuevo servicio
-
-
+const modalSeleccion = ref(false); // Controla la visibilidad del modal
+const tipoSeleccion = ref(''); // Indica el tipo de selección actual
+const tituloModal = ref(''); // Título dinámico del modal
+const opcionesSeleccion = ref([]); // Opciones que se mostrarán en el modal
+const arraySeleccionado = ref([]); // El array correspondiente a lo seleccionado
+const modalCrear = ref(false); // Controla la visibilidad del modal de creación
+const tipoCrear = ref(''); // Indica el tipo de atributo que se está creando (servicio, tipo_salon, etc.)
+const nuevoElemento = ref(''); // Almacena el nombre del nuevo atributo que se está creando
 
 function notificar(tipo, msg) {
   $q.notify({
@@ -40,16 +46,143 @@ function notificar(tipo, msg) {
   });
 };
 
-const modalServicios = ref(false);
-const modalTiposEventos = ref(false);
-const modalTiposSalon = ref(false);
 const modalEspacios = ref(false);
 const modalUbicaciones = ref(false);
 
 
 const data = ref({
-  idServiciosSalon: []  // Inicializa este campo como un array vacío
+  idServiciosSalon: [], // Para almacenar las IDs de los servicios seleccionados
+  idTipoSalon: [], // Para los tipos de salón
+  idAmbienteSalon: [], // Para los tipos de eventos
+  idEspaciosSalon: [], // Para los espacios del salón
+  idUbicacionSalon: [], // Para las ubicaciones del salón
+  idContactoSalon: [], // Para los contactos del salón
 });
+
+const nombreCampos = {
+  servicios: 'nombre_serv',
+  espacios: 'nombre_esp',
+  ubicaciones: 'nombre_ubi',
+  tipos_evento: 'nombre_amb',
+  tipos_salon: 'nombre_tip',
+  contactos: 'nombre_cont'
+};
+
+
+function abrirModalSeleccion(tipo) {
+  tipoSeleccion.value = tipo;
+  console.log("soy tipo", tipo)
+
+  switch (tipo) {
+    case 'servicios':
+      tituloModal.value = 'Administrar Servicios del Salón';
+      opcionesSeleccion.value = servicio.value; // Cargar los servicios disponibles
+      arraySeleccionado.value = data.value.idServiciosSalon; // Selección previa
+      break;
+    case 'tipos_salon':
+      tituloModal.value = 'Administrar Tipos de Salón';
+      opcionesSeleccion.value = tipoSalon.value;
+      arraySeleccionado.value = data.value.idTipoSalon;
+      break;
+    case 'tipos_evento':
+      tituloModal.value = 'Administrar Tipos de Eventos';
+      opcionesSeleccion.value = tipoEvento.value;
+      arraySeleccionado.value = data.value.idAmbienteSalon;
+      break;
+    case 'espacios':
+      tituloModal.value = 'Administrar Espacios del Salón';
+      opcionesSeleccion.value = espacio.value;
+      arraySeleccionado.value = data.value.idEspaciosSalon;
+      break;
+    case 'ubicaciones':
+      tituloModal.value = 'Administrar Ubicaciones del Salón';
+      opcionesSeleccion.value = ubicacion.value;
+      arraySeleccionado.value = data.value.idUbicacionSalon;
+      break;
+    case 'contactos':
+      tituloModal.value = 'Administrar Contactos del Salón';
+      opcionesSeleccion.value = contacto.value;
+      arraySeleccionado.value = data.value.idContactoSalon;
+      break;
+  }
+
+  modalSeleccion.value = true; // Abre el modal
+}
+
+function abrirModalCrear(tipo) {
+
+  tipoCrear.value = tipo; // Asignamos el tipo de atributo que se está creando
+  nuevoElemento.value = ''; // Reiniciamos el campo de texto
+  modalCrear.value = true; // Abrimos el modal de creación
+}
+
+async function agregarNuevoElemento() {
+  if (nuevoElemento.value.trim() === '') {
+    notificar('negative', `El nombre del ${tipoCrear.value} no puede estar vacío`);
+    return;
+  }
+
+  loading.value = true;
+
+  try {
+    // Usamos el mapa para determinar el nombre del campo correcto
+    const nombreCampo = nombreCampos[tipoCrear.value];
+    const dataElemento = { [nombreCampo]: nuevoElemento.value };  // Creamos el objeto con el campo dinámico
+
+    // Dependiendo del tipo, hacemos la llamada a la API adecuada
+    let response;
+    if (tipoCrear.value === 'servicios') {
+      response = await useServicio.registro(dataElemento);
+      if (useServicio.estatus === 200) {
+        notificar('positive', `Servicio creado y agregado exitosamente`);
+        data.value.idServiciosSalon.push(useServicio.nuevoServicioSalon);
+        opcionesSeleccion.value.push(useServicio.nuevoServicio);
+      }
+    } else if (tipoCrear.value === 'tipos_salon') {
+      response = await useTipoSalon.registro(dataElemento);
+      if (useTipoSalon.estatus === 200) {
+        notificar('positive', `Tipo salón creado y agregado exitosamente`);
+        data.value.idTipoSalon.push(useTipoSalon.nuevoTipoSalon);
+        opcionesSeleccion.value.push(useTipoSalon.nuevoTipo);
+      }
+    } else if (tipoCrear.value === 'tipos_evento') {
+      response = await useTipoEvento.registro(dataElemento);
+      if (useTipoEvento.estatus === 200) {
+        notificar('positive', `Tipo evento creado y agregado exitosamente`);
+        data.value.idAmbienteSalon.push(useTipoEvento.nuevoAmbiente);
+        opcionesSeleccion.value.push(useTipoEvento.nuevoAmb);
+      }
+    } else if (tipoCrear.value === 'espacios') {
+      response = await useEspacio.registro(dataElemento);
+      if (useEspacio.estatus === 200) {
+        notificar('positive', `Espacio creado y agregado exitosamente`);
+        data.value.idEspaciosSalon.push(useEspacio.nuevoEspacioSalon);
+        opcionesSeleccion.value.push(useEspacio.nuevoEspacio);
+      }
+    } else if (tipoCrear.value === 'ubicaciones') {
+      response = await useUbicacion.registro(dataElemento);
+      if (useUbicacion.estatus === 200) {
+        notificar('positive', `Ubicación creada y agregada exitosamente`);
+        data.value.idUbicacionSalon.push(useUbicacion.nuevaUbicacionSalon);
+        opcionesSeleccion.value.push(useUbicacion.nuevaUbicacion);
+      }
+    } else if (tipoCrear.value === 'contactos') {
+      response = await useContactoSalon.registro(dataElemento);
+      if (useContactoSalon.estatus === 200) {
+        notificar('positive', `Contacto creado y agregado exitosamente`);
+        data.value.idContactoSalon.push(useContactoSalon.nuevoContactoSalon);
+        opcionesSeleccion.value.push(useContactoSalon.nuevoContacto);
+      }
+    }
+  } catch (error) {
+    console.error(`Error al agregar ${tipoCrear.value}:`, error);
+    notificar('negative', `Hubo un error al agregar el ${tipoCrear.value}`);
+  } finally {
+    modalCrear.value = false;
+    loading.value = false;
+  }
+}
+
 
 
 async function agregarServicio() {
@@ -157,6 +290,26 @@ async function getContactosSalon() {
   }
 }
 
+function seleccionarElemento(seleccionado, idElemento) {
+  if (!Array.isArray(arraySeleccionado.value)) {
+    arraySeleccionado.value = [];
+  }
+
+  if (seleccionado) {
+    if (!arraySeleccionado.value.includes(idElemento)) {
+      arraySeleccionado.value.push(idElemento);
+    }
+  } else {
+    const index = arraySeleccionado.value.indexOf(idElemento);
+    if (index > -1) {
+      arraySeleccionado.value.splice(index, 1);
+    }
+  }
+
+  console.log("Seleccionados:", arraySeleccionado.value);
+}
+
+
 function seleccionarServicio(seleccionado, servicioId) {
   // Verificamos que el array esté inicializado antes de hacer cualquier operación
   if (!Array.isArray(data.value.idServiciosSalon)) {
@@ -175,8 +328,10 @@ function seleccionarServicio(seleccionado, servicioId) {
       data.value.idServiciosSalon.splice(index, 1);
     }
   }
+}
 
-  console.log("soy data", data)
+function prueba() {
+  console.log("soy prueba", data)
 }
 
 
@@ -264,60 +419,60 @@ onMounted(() => {
         <!-- 11. Selección de tipos de eventos -->
         <div class="form-group">
           <p>Escoger los diferentes tipos de eventos que se pueden realizar en este salón:</p>
-          <q-btn color="primary" @click="modalTiposEventos = true">Ver Tipos de Eventos</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('tipos_evento')">Ver Tipos de Eventos</q-btn>
         </div>
 
         <!-- 12. Selección de tipos de salón -->
         <div class="form-group">
           <p>Escoger los diferentes tipos de salón:</p>
-          <q-btn color="primary" @click="modalTiposSalon = true">Ver Tipos de Salón</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('tipos_salon')">Ver Tipos de Salón</q-btn>
         </div>
 
         <!-- 13. Selección de espacios -->
         <div class="form-group">
           <p>Escoger los diferentes espacios del salón:</p>
-          <q-btn color="primary" @click="modalEspacios = true">Ver Espacios</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('espacios')">Ver Espacios</q-btn>
         </div>
 
         <!-- 14. Selección de servicios -->
         <div class="form-group">
           <p>Escoger los diferentes servicios que ofrece el salón:</p>
-          <q-btn color="primary" @click="modalServicios = true">Ver Servicios</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('servicios')">Ver Servicios</q-btn>
         </div>
 
         <!-- 15. Selección de ubicación -->
         <div class="form-group">
           <p>Escoger la ubicación del salón:</p>
-          <q-btn color="primary" @click="modalUbicaciones = true">Ver Ubicaciones</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('ubicaciones')">Ver Ubicaciones</q-btn>
         </div>
 
         <!-- 16. Asignar contacto del salón -->
         <div class="form-group">
           <p>Asignar contacto del salón:</p>
-          <q-btn color="primary" @click="modalUbicaciones = true">Asignar contacto</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('contactos')">Ver Contactos</q-btn>
         </div>
       </q-card-section>
 
       <q-card-section>
         <div style="display: flex; justify-content: center;">
-          <q-btn color="primary">Agregar Salón</q-btn>
+          <q-btn color="primary" @click="prueba()">Agregar Salón</q-btn>
         </div>
       </q-card-section>
     </q-card>
 
     <!-- Dialog for viewing/adding services -->
-    <q-dialog v-model="modalServicios" persistent>
+    <q-dialog v-model="modalSeleccion" persistent>
       <q-card style="min-width: 600px;">
         <q-card-section>
           <div class="q-pt-sm">
-            <h6>Administrar Servicios del Salón</h6>
-            <p>Seleccione los servicios que tiene el salón:</p>
+            <h6>{{ tituloModal }}</h6>
+            <p>Seleccione las opciones correspondientes:</p>
             <q-list bordered separator>
-              <!-- Listado de servicios con q-checkbox -->
-              <q-item v-for="servicio in servicio" :key="servicio._id" clickable v-ripple>
+              <q-item v-for="opcion in opcionesSeleccion" :key="opcion._id" clickable v-ripple>
                 <q-item-section>
-                  <q-checkbox :model-value="data.idServiciosSalon.includes(servicio._id)"
-                    @update:model-value="val => seleccionarServicio(val, servicio._id)" :label="servicio.nombre_serv" />
+                  <q-checkbox :model-value="arraySeleccionado.includes(opcion._id)"
+                    @update:model-value="val => seleccionarElemento(val, opcion._id)"
+                    :label="opcion.nombre_amb || opcion.nombre_serv || opcion.nombre_tip || opcion.nombre_ubi || opcion.nombre_esp || opcion.nombre_cont" />
                 </q-item-section>
               </q-item>
             </q-list>
@@ -325,8 +480,27 @@ onMounted(() => {
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Aceptar" color="primary" v-close-popup />
-          <!-- Botón para abrir el modal de crear servicio -->
-          <q-btn flat label="Crear servicio" color="secondary" @click="modalCrearServicio = true" />
+          <q-btn flat :label="`Crear ${tipoSeleccion}`" color="secondary" @click="abrirModalCrear(tipoSeleccion)" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="modalCrear" persistent>
+      <q-card style="min-width: 600px;">
+        <q-card-section>
+          <div class="q-pt-sm">
+            <!-- El título cambia dinámicamente según el tipo de atributo -->
+            <h6>Agregar nuevo {{ tipoCrear }}</h6>
+            <p>Digite el nombre del nuevo {{ tipoCrear }}:</p>
+            <!-- El input también es dinámico -->
+            <q-input v-model="nuevoElemento" :label="`Nombre del ${tipoCrear}`" filled />
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" v-close-popup />
+          <!-- El botón también cambia su texto según el tipo de atributo -->
+          <q-btn flat :label="`Agregar ${tipoCrear}`" color="primary" :loading="loading" :disable="loading"
+            @click="agregarNuevoElemento" />
         </q-card-actions>
       </q-card>
     </q-dialog>
