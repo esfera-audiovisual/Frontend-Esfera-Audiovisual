@@ -28,13 +28,7 @@ const isPasswordValid = (value) => {
 }
 
 
-function messageSuccessful() {
-  Cookies.remove()
-  if (newPassword.value === confirmPassword.value) {
-    showTwo.value = true;
-    hideOne.value = false;
-  }
-}
+
 
 function home() {
   router.push('/')
@@ -59,11 +53,22 @@ async function cambiarPassword() {
       return
     }
 
-    messageSuccessful()
+    if (useUsuario.estatus === 200) {
+      notificar('positive', "Contraseña cambiada con éxito, por favor inicie sesión nuevamente")
+      useUsuario.usuario = response; // Update user data in store
+      useUsuario.token = '';
+      router.push('/login'); // Optionally redirect to login
+    }
+    // Check for estatus 401 (session expired)
+    else if (useUsuario.estatus === 401) {
+      notificar('negative', "Contraseña actual incorrecta")
+    }
+
   } catch (error) {
     console.log(error);
   }
 }
+
 
 //Notificaciones
 const $q = useQuasar();
@@ -82,15 +87,15 @@ function notificar(tipo, msg) {
     <section id="sectionone" v-if="hideOne">
 
       <article id="text">
-          <p id="message">Diligencie todos los campos para cambiar su contraseña:</p>
+        <p id="message">Diligencie todos los campos para cambiar su contraseña:</p>
       </article>
 
       <article id="sectiontwo">
         <q-form @reset="onReset" class="q-gutter-lg" id="form" @submit="cambiarPassword">
           <div class="cajas">
             <label class="text-h5 text-weight-bold" for="">Contraseña actual </label>
-            <q-input v-model="password" class="inputpassword" filled :type="isPw ? 'password' : 'text'" 
-              lazy-rules hide-bottom-space color="dark" bg-color="white"
+            <q-input v-model="password" class="inputpassword" filled :type="isPw ? 'password' : 'text'" lazy-rules
+              hide-bottom-space color="dark" bg-color="white"
               :rules="[val => val && val.length > 0 || 'Por favor ingrese la contraseña']">
               <template v-slot:append>
                 <q-icon :name="isPw ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="isPw = !isPw" />
@@ -99,20 +104,21 @@ function notificar(tipo, msg) {
           </div>
           <div class="cajas">
             <label class="text-h5 text-weight-bold" for="">Nueva contraseña </label>
-            <q-input v-model="newPassword" class="inputpassword" filled :type="isPwd ? 'password' : 'text'" 
-              lazy-rules hide-bottom-space color="dark" bg-color="white" :rules="[val => val && val.length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
+            <q-input v-model="newPassword" class="inputpassword" filled :type="isPwd ? 'password' : 'text'" lazy-rules
+              hide-bottom-space color="dark" bg-color="white" :rules="[val => val && val.length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
               val => val && /\d/.test(val) || 'La contraseña debe contener al menos un número',
               val => val && /[@#\/]/.test(val) || 'La contraseña debe contener al menos un carácter especial (@, #, / )',
               val => val && isPasswordValid(val) || 'La contraseña debe tener al menos una letra']">
               <template v-slot:append>
-                <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="isPwd = !isPwd" />
+                <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" class="cursor-pointer"
+                  @click="isPwd = !isPwd" />
               </template>
             </q-input>
           </div>
           <div class="cajas">
             <label class="text-h5 text-weight-bold" for="">Confirmar contraseña </label>
             <q-input v-model="confirmPassword" class="inputpassword" filled :type="isPwdb ? 'password' : 'text'"
-               lazy-rules hide-bottom-space color="dark" bg-color="white"
+              lazy-rules hide-bottom-space color="dark" bg-color="white"
               :rules="[val => val && val.length > 0 || 'Por favor ingrese la contraseña', val => val && val === newPassword || 'Las contraseñas no coinciden']">
               <template v-slot:append>
                 <q-icon :name="isPwdb ? 'visibility_off' : 'visibility'" class="cursor-pointer"
@@ -124,28 +130,12 @@ function notificar(tipo, msg) {
           <div id="text3">
             <q-btn id="buttonpassword" type="submit" class="bg-primary" :loading="loadingContraseña">Cambiar
               Contraseña</q-btn>
-              
           </div>
         </q-form>
 
 
       </article>
     </section>
-
-    <section v-if="showTwo" id="second">
-      <article id="stext">
-        <div id="stext1">
-          <p  id="smessage">¡La contraseña ha sido cambiada exitosamente!</p>
-        </div>
-        <div id="stext2">
-          <p id="smessage2">Por favor vuelva a iniciar sesión</p>
-          <q-btn id="sbuttonpassword" type="submit" class="bg-primary" @click="home()">Ir al inicio</q-btn>
-        </div>
-      </article>
-
-    </section>
-
-
   </main>
 </template>
 
@@ -158,12 +148,13 @@ main {
   height: 100%;
 }
 
-#sectionone, #second {
+#sectionone,
+#second {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh; 
+  min-height: 80vh;
 }
 
 #sectiontwo {
@@ -171,16 +162,17 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 90%; 
-  max-width: 35vw; 
+  width: 90%;
+  max-width: 35vw;
   min-height: 80%;
   background-color: rgb(245, 245, 245);
   border-radius: 20px;
   text-align: center;
-  padding: 20px; 
+  padding: 20px;
 }
 
-#text, #stext {
+#text,
+#stext {
   font-family: Arial, Helvetica, sans-serif;
   display: flex;
   flex-direction: column;
@@ -191,19 +183,20 @@ main {
 }
 
 .inputpassword {
-  width: 100%; 
+  width: 100%;
 }
 
-#buttonpassword, #sbuttonpassword {
+#buttonpassword,
+#sbuttonpassword {
   color: white;
   font-weight: bolder;
-  font-size: 120%; 
+  font-size: 120%;
   border-radius: 25px;
   cursor: pointer;
   margin-top: 20px;
 }
 
-#smessage{
+#smessage {
   font-size: 200%;
   font-weight: bolder;
 }
@@ -211,15 +204,16 @@ main {
 
 @media screen and (min-width: 481px) and (max-width: 769px) {
   #sectiontwo {
-    width: 70%; 
-    max-width: none; 
+    width: 70%;
+    max-width: none;
   }
 
-  #text, #stext {
-    font-size: 170%; 
+  #text,
+  #stext {
+    font-size: 170%;
   }
 
-  #smessage2{
+  #smessage2 {
     font-size: 150%;
   }
 
@@ -227,15 +221,15 @@ main {
 
 @media screen and (min-width: 100px) and (max-width: 480px) {
   #sectiontwo {
-    width: 80%; 
-    max-width: none; 
+    width: 80%;
+    max-width: none;
   }
 
-  #smessage{
+  #smessage {
     font-size: 130%;
   }
 
-  #smessage2{
+  #smessage2 {
     font-size: 110%;
   }
 }

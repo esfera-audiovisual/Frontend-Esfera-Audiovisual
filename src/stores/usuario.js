@@ -1,9 +1,11 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
+import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 
 const modelo = "administrador";
+
 
 export const useStoreUsuarios = defineStore(
   modelo,
@@ -17,6 +19,14 @@ export const useStoreUsuarios = defineStore(
     const id = ref("");
     const correoRecuperar = ref("");
     const router = useRouter();
+    const $q = useQuasar();
+    function notificar(tipo, msg) {
+      $q.notify({
+        type: tipo,
+        message: msg,
+        position: "top",
+      });
+    }
 
 
     function insertarToken() {
@@ -109,6 +119,33 @@ export const useStoreUsuarios = defineStore(
       }
     };
 
+    const cambiarPassword = async (data) => {
+      try {
+        insertarToken();
+        const response = await axios.put(`${modelo}/cambioPassword/${id.value}`, data);
+        console.log(response);
+        estatus.value = response.status;
+        return response.data;
+      } catch (error) {
+        console.log(error);
+        estatus.value = error.response.status;
+        if (error.message === "Network Error") {
+          notificar("negative", "Sin conexión, por favor intente recargar");
+          return null;
+        }
+        if (
+          error.response.data.error === "No hay token en la peticion" ||
+          error.response.data.error === "Token no válido" ||
+          error.response.data.error.name === "TokenExpiredError"
+        ) {
+          notificar("negative", "Tu sesión ha expirado. Por favor vuelva a iniciar sesión");
+          router.push("/login");
+          return null;
+        }
+        return error.response.data;
+      }
+    };
+
     const registro = async (data) => {
       try {
         insertarToken();
@@ -152,6 +189,7 @@ export const useStoreUsuarios = defineStore(
       codigoRecuperar,
       confirmarCodigo,
       nuevaPassword,
+      cambiarPassword,
     };
   },
   {

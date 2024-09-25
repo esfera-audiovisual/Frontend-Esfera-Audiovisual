@@ -11,27 +11,41 @@ const router = useRouter();
 const userData = ref({ ...storeUsuarios.usuario });
 const isLoading = ref(false);
 
-function guardarCambios() {
+async function guardarCambios() {
     isLoading.value = true;
-    storeUsuarios.editar(userData.value._id, userData.value)
-        .then((res) => {
+
+    try {
+        const res = await storeUsuarios.editar(userData.value._id, userData.value);
+
+        // Check for estatus 200 (success)
+        if (storeUsuarios.estatus === 200) {
             $q.notify({
                 color: 'positive',
                 message: 'Cambios guardados correctamente',
-                position: 'top'
+                position: 'top',
             });
-            storeUsuarios.usuario = res
-        })
-        .catch((error) => {
+            storeUsuarios.usuario = res; // Update user data in store
+        }
+        // Check for estatus 401 (session expired)
+        else if (storeUsuarios.estatus === 401) {
             $q.notify({
                 color: 'negative',
-                message: `Error al guardar cambios: ${error.message}`,
-                position: 'top'
+                message: 'Tu sesión ha expirado. Inicia sesión nuevamente para continuar',
+                position: 'top',
             });
-        })
-        .finally(() => {
-            isLoading.value = false;
+            router.push('/login'); // Optionally redirect to login
+        }
+    } catch (error) {
+        // Catch any other errors
+        $q.notify({
+            color: 'negative',
+            message: 'Error al intentar guardar los cambios',
+            position: 'top',
         });
+        console.error(error);
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 function cambiarContraseña() {

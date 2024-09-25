@@ -30,6 +30,12 @@ function notificar(tipo, msg, posicion = "top") {
   });
 }
 
+function formatReglamento(texto) {
+  // Si el texto es undefined o null, devolvemos una cadena vacía.
+  return texto ? texto.replace(/\n/g, '<br>') : '';
+}
+
+
 
 async function getReglamentoSalon() {
   try {
@@ -146,26 +152,26 @@ onMounted(() => {
 
         <div style="display: flex; width: 100%; flex-direction: column;">
           <div v-if="detalleSalon.galeria_sal.length" class="gallery-banner-container">
-          <div class="gallery">
-            <!-- Imagen principal -->
-            <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
-              class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" @click="openGallery" />
+            <div class="gallery">
+              <!-- Imagen principal -->
+              <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
+                class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" @click="openGallery" />
 
-            <!-- Galería secundaria -->
-            <div class="gallery-column">
-              <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
-                :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9"
-                @click="openGallery">
+              <!-- Galería secundaria -->
+              <div class="gallery-column">
+                <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
+                  :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9"
+                  @click="openGallery">
 
-                <!-- Verificar si es la última imagen de la galería con slice -->
-                <template v-if="index === detalleSalon.galeria_sal.slice(1, 4).length - 1">
-                  <!-- Mostrar mensaje "Ver más..." sobre la última imagen -->
-                  <div class="overlay-text">Ver más...</div>
-                </template>
-              </q-img>
+                  <!-- Verificar si es la última imagen de la galería con slice -->
+                  <template v-if="index === detalleSalon.galeria_sal.slice(1, 4).length - 1">
+                    <!-- Mostrar mensaje "Ver más..." sobre la última imagen -->
+                    <div class="overlay-text">Ver más...</div>
+                  </template>
+                </q-img>
+              </div>
             </div>
           </div>
-        </div>
 
           <!-- Modal for Image Gallery -->
           <q-dialog v-model="galleryOpen" full-width>
@@ -207,13 +213,16 @@ onMounted(() => {
         <!-- Descripción -->
         <q-card-section class="description">
           <h2 class="text-bold">Descripción</h2>
-          <p>{{ detalleSalon.descripcion_sal }}</p>
+          <p v-html="formatReglamento(detalleSalon.descripcion_sal)"></p>
         </q-card-section>
 
         <q-separator />
 
         <!-- Espacios -->
-        <q-expansion-item class="q-mt-md" label="ESPACIOS" expand-separator :default-opened="true">
+        <q-expansion-item class="q-mt-md" expand-separator :default-opened="true">
+          <template v-slot:header>
+            <span class="custom-label">ESPACIOS</span>
+          </template>
           <q-list>
             <q-item v-for="espacio in detalleSalon.idEspaciosSalon" :key="espacio._id"
               style="display: flex; align-items: center; gap: 5px;">
@@ -224,7 +233,11 @@ onMounted(() => {
         </q-expansion-item>
 
         <!-- Servicios -->
-        <q-expansion-item class="q-mt-md" label="SERVICIOS" expand-separator :default-opened="true">
+        <q-expansion-item class="q-mt-md" expand-separator :default-opened="true">
+          <template v-slot:header>
+            <span class="custom-label">SERVICIOS</span>
+          </template>
+
           <q-list>
             <q-item v-for="servicio in detalleSalon.idServiciosSalon" :key="servicio._id"
               style="display: flex; align-items: center; gap: 5px;">
@@ -235,7 +248,10 @@ onMounted(() => {
         </q-expansion-item>
 
         <!-- Ubicación -->
-        <q-expansion-item class="q-mt-md" label="UBICACION" expand-separator :default-opened="true">
+        <q-expansion-item class="q-mt-md" expand-separator :default-opened="true">
+          <template v-slot:header>
+            <span class="custom-label">UBICACION</span>
+          </template>
           <q-list>
             <q-item v-for="tipo in detalleSalon.idTipoSalon" :key="tipo._id"
               style="display: flex; align-items: center; gap: 5px;">
@@ -252,10 +268,11 @@ onMounted(() => {
 
         <q-separator />
 
-        <q-card-section class="reglamento">
+        <q-card-section class="reglamento" v-if="reglamento">
           <h2 class="text-bold">Reglamento</h2>
-          <p>{{ reglamento.descripcion_regl }}</p>
+          <p v-html="formatReglamento(reglamento.descripcion_regl)"></p>
         </q-card-section>
+
 
       </q-card-section>
     </q-card>
@@ -314,6 +331,14 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.custom-label {
+  font-weight: bolder;
+  /* O el valor de font-weight que prefieras */
+  display: flex;
+  align-items: center;
+  font-size: 1rem;   /* Cambia el tamaño de la letra, por ejemplo a 1.5rem */
+}
+
 .detalle-salon {
   height: 100%;
   width: 100%;
@@ -387,17 +412,20 @@ onMounted(() => {
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
-  background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Fondo semitransparente */
   padding: 10px;
   font-weight: bold;
   border-radius: 5px;
   text-align: center;
-  pointer-events: none; /* Elimina la interacción con el texto */
+  pointer-events: none;
+  /* Elimina la interacción con el texto */
 }
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* Responsive grid */
   gap: 10px;
   padding: 20px;
 }
@@ -410,7 +438,8 @@ onMounted(() => {
 }
 
 .gallery-grid-item:hover {
-  transform: scale(1.05); /* Hover zoom effect */
+  transform: scale(1.05);
+  /* Hover zoom effect */
 }
 
 .gallery-image-large {
@@ -451,6 +480,11 @@ onMounted(() => {
   font-size: 1.5rem;
   margin-bottom: 10px;
 }
+
+.reglamento p {
+  white-space: pre-line;
+}
+
 
 .right-btn {
   color: white;
