@@ -13,7 +13,7 @@ function toggleLeftDrawer() {
 
 <template>
     <q-layout view="hHh lpR lFf">
-        <q-header bordered class="bg-primary text-white" style="position: fixed; top: 13%;">
+        <q-header bordered class="bg-primary text-white" style="top: 17%;">
             <q-toolbar>
                 <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
                 <q-toolbar-title class="text-center">
