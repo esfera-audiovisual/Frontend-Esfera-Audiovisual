@@ -21,9 +21,30 @@ function notificar(tipo, msg) {
 
 const columns = [
     { name: "nombre_sal", label: "Nombre del salón", field: "nombre_sal", sortable: true, align: "left" },
+    {
+        name: "ciudadDepartamento",
+        label: "Ciudad",
+        field: (row) => {
+            const ciudad = row.idCiudSalonEvento?.nombre_ciud || 'Sin ciudad';
+            const departamento = row.idCiudSalonEvento?.idDepart?.nombre_depart || 'Sin departamento';
+            return `${ciudad}, ${departamento}`;  // Concatenar ciudad y departamento
+        },
+        sortable: true,
+        align: "left"
+    },
+    {
+        name: "contacto",
+        label: "Contacto",
+        field: (row) => {
+            return row.idContactoSalon ? row.idContactoSalon.nombre_cont : 'Falta contacto de este salón'; // Verifica si existe el salón
+        },
+        sortable: true,
+        align: "left"
+    },
     { name: "estado", label: "Estado", field: "estado", sortable: true, align: "center" },
     { name: "opciones", label: "Opciones", field: (row) => null, sortable: false, align: "center" },
 ];
+
 
 const rows = ref([]);
 
@@ -31,12 +52,13 @@ const rows = ref([]);
 async function getInfo() {
     try {
         loadingTable.value = true;
-        const response = await useSalonEvento.getAll(); 
+        const response = await useSalonEvento.getAll();
         if (!response) return;
         if (response.error) {
             notificar('negative', response.error);
             return;
         }
+        console.log(response)
         rows.value = response.reverse();
     } catch (error) {
         console.error(error);
