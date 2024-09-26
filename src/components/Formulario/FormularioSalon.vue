@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useStoreSalon } from '../../stores/salon.js';
 import { useStoreAmbienteSalon } from '../../stores/ambiente.js';
@@ -51,6 +51,7 @@ const modalUbicaciones = ref(false);
 
 
 const data = ref({
+  idCiudSalonEvento: null,
   idServiciosSalon: [], // Para almacenar las IDs de los servicios seleccionados
   idTipoSalon: [], // Para los tipos de salón
   idAmbienteSalon: [], // Para los tipos de eventos
@@ -60,11 +61,11 @@ const data = ref({
 });
 
 const nombreCampos = {
-  servicios: 'nombre_serv',
-  espacios: 'nombre_esp',
-  ubicaciones: 'nombre_ubi',
-  tipos_evento: 'nombre_amb',
-  tipos_salon: 'nombre_tip',
+  servicio: 'nombre_serv',
+  espacio: 'nombre_esp',
+  ubicacion: 'nombre_ubi',
+  tipo_evento: 'nombre_amb',
+  tipo_salon: 'nombre_tip',
   contactos: 'nombre_cont'
 };
 
@@ -74,27 +75,27 @@ function abrirModalSeleccion(tipo) {
   console.log("soy tipo", tipo)
 
   switch (tipo) {
-    case 'servicios':
+    case 'servicio':
       tituloModal.value = 'Administrar Servicios del Salón';
       opcionesSeleccion.value = servicio.value; // Cargar los servicios disponibles
       arraySeleccionado.value = data.value.idServiciosSalon; // Selección previa
       break;
-    case 'tipos_salon':
+    case 'tipo_salon':
       tituloModal.value = 'Administrar Tipos de Salón';
       opcionesSeleccion.value = tipoSalon.value;
       arraySeleccionado.value = data.value.idTipoSalon;
       break;
-    case 'tipos_evento':
+    case 'tipo_evento':
       tituloModal.value = 'Administrar Tipos de Eventos';
       opcionesSeleccion.value = tipoEvento.value;
       arraySeleccionado.value = data.value.idAmbienteSalon;
       break;
-    case 'espacios':
+    case 'espacio':
       tituloModal.value = 'Administrar Espacios del Salón';
       opcionesSeleccion.value = espacio.value;
       arraySeleccionado.value = data.value.idEspaciosSalon;
       break;
-    case 'ubicaciones':
+    case 'ubicacion':
       tituloModal.value = 'Administrar Ubicaciones del Salón';
       opcionesSeleccion.value = ubicacion.value;
       arraySeleccionado.value = data.value.idUbicacionSalon;
@@ -131,35 +132,35 @@ async function agregarNuevoElemento() {
 
     // Dependiendo del tipo, hacemos la llamada a la API adecuada
     let response;
-    if (tipoCrear.value === 'servicios') {
+    if (tipoCrear.value === 'servicio') {
       response = await useServicio.registro(dataElemento);
       if (useServicio.estatus === 200) {
         notificar('positive', `Servicio creado y agregado exitosamente`);
         data.value.idServiciosSalon.push(useServicio.nuevoServicioSalon);
         opcionesSeleccion.value.push(useServicio.nuevoServicio);
       }
-    } else if (tipoCrear.value === 'tipos_salon') {
+    } else if (tipoCrear.value === 'tipo_salon') {
       response = await useTipoSalon.registro(dataElemento);
       if (useTipoSalon.estatus === 200) {
         notificar('positive', `Tipo salón creado y agregado exitosamente`);
         data.value.idTipoSalon.push(useTipoSalon.nuevoTipoSalon);
         opcionesSeleccion.value.push(useTipoSalon.nuevoTipo);
       }
-    } else if (tipoCrear.value === 'tipos_evento') {
+    } else if (tipoCrear.value === 'tipo_evento') {
       response = await useTipoEvento.registro(dataElemento);
       if (useTipoEvento.estatus === 200) {
         notificar('positive', `Tipo evento creado y agregado exitosamente`);
         data.value.idAmbienteSalon.push(useTipoEvento.nuevoAmbiente);
         opcionesSeleccion.value.push(useTipoEvento.nuevoAmb);
       }
-    } else if (tipoCrear.value === 'espacios') {
+    } else if (tipoCrear.value === 'espacio') {
       response = await useEspacio.registro(dataElemento);
       if (useEspacio.estatus === 200) {
         notificar('positive', `Espacio creado y agregado exitosamente`);
         data.value.idEspaciosSalon.push(useEspacio.nuevoEspacioSalon);
         opcionesSeleccion.value.push(useEspacio.nuevoEspacio);
       }
-    } else if (tipoCrear.value === 'ubicaciones') {
+    } else if (tipoCrear.value === 'ubicacion') {
       response = await useUbicacion.registro(dataElemento);
       if (useUbicacion.estatus === 200) {
         notificar('positive', `Ubicación creada y agregada exitosamente`);
@@ -213,7 +214,7 @@ async function agregarServicio() {
     notificar('negative', 'Hubo un error al agregar el servicio');
   } finally {
     modalCrearServicio.value = false;
-    loading.value = false;  // Desactivamos el loading cuando termina la petición
+    loading.value = false; 
 
   }
 }
@@ -222,7 +223,7 @@ async function agregarServicio() {
 async function getCiudades() {
   try {
     const response = await useCiudad.getAll();
-    ciudades.value = response; // Asegúrate de que `ciudades` sea la propiedad correcta
+    ciudades.value = response; 
     console.log(response);
   } catch (error) {
     console.error('Error al obtener ciudades:', error);
@@ -232,7 +233,7 @@ async function getCiudades() {
 async function getTipoEventos() {
   try {
     const response = await useTipoEvento.getAll();
-    tipoEvento.value = response// Asegúrate de que `tipoEventos` sea la propiedad correcta
+    tipoEvento.value = response;
     console.log(response);
   } catch (error) {
     console.error('Error al obtener tipos de eventos:', error);
@@ -242,8 +243,7 @@ async function getTipoEventos() {
 async function getTipoSalones() {
   try {
     const response = await useTipoSalon.getAll();
-    tipoSalon.value = response; // Asegúrate de que `tipoSalones` sea la propiedad correcta
-    console.log(response);
+    tipoSalon.value = response; 
   } catch (error) {
     console.error('Error al obtener tipos de salones:', error);
   }
@@ -252,7 +252,7 @@ async function getTipoSalones() {
 async function getEspacios() {
   try {
     const response = await useEspacio.getAll();
-    espacio.value = response; // Asegúrate de que `espacios` sea la propiedad correcta
+    espacio.value = response; 
     console.log(response);
   } catch (error) {
     console.error('Error al obtener espacios:', error);
@@ -262,7 +262,7 @@ async function getEspacios() {
 async function getServicios() {
   try {
     const response = await useServicio.getAll();
-    servicio.value = response; // Asegúrate de que `servicios` sea la propiedad correcta
+    servicio.value = response;
     console.log("servicios", servicio)
     console.log(response);
   } catch (error) {
@@ -273,7 +273,7 @@ async function getServicios() {
 async function getUbicaciones() {
   try {
     const response = await useUbicacion.getAll();
-    ubicacion.value = response; // Asegúrate de que `ubicaciones` sea la propiedad correcta
+    ubicacion.value = response; 
     console.log(response);
   } catch (error) {
     console.error('Error al obtener ubicaciones:', error);
@@ -283,7 +283,7 @@ async function getUbicaciones() {
 async function getContactosSalon() {
   try {
     const response = await useContactoSalon.getAll();
-    contacto.value = response; // Asegúrate de que `contactos` sea la propiedad correcta
+    contacto.value = response; 
     console.log(response);
   } catch (error) {
     console.error('Error al obtener contactos del salón:', error);
@@ -330,6 +330,13 @@ function seleccionarServicio(seleccionado, servicioId) {
   }
 }
 
+const formattedCiudades = computed(() => {
+  return ciudades.value.map(ciudad => ({
+    _id: ciudad._id,
+    label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}` 
+  }));
+});
+
 function prueba() {
   console.log("soy prueba", data)
 }
@@ -351,6 +358,15 @@ onMounted(() => {
   <div class="formulario-salon">
     <q-card class="q-pa-md" style="margin: 30px 0;">
       <q-card-section>
+        <!-- 1. Ciudad del salón -->
+        <div class="form-group">
+          <p>Seleccione la ciudad del salón:</p>
+          <q-select v-model="data.idCiudSalonEvento" :options="formattedCiudades" option-value="_id"
+            option-label="label" label="Seleccionar ciudad" filled emit-value map-options
+            :rules="[val => !!val || 'Debe seleccionar una ciudad']" />
+        </div>
+
+
         <!-- 1. Nombre del salón -->
         <div class="form-group">
           <p>Digite el nombre del salón:</p>
@@ -419,31 +435,31 @@ onMounted(() => {
         <!-- 11. Selección de tipos de eventos -->
         <div class="form-group">
           <p>Escoger los diferentes tipos de eventos que se pueden realizar en este salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('tipos_evento')">Ver Tipos de Eventos</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('tipo_evento')">Ver Tipos de Eventos</q-btn>
         </div>
 
         <!-- 12. Selección de tipos de salón -->
         <div class="form-group">
           <p>Escoger los diferentes tipos de salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('tipos_salon')">Ver Tipos de Salón</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('tipo_salon')">Ver Tipos de Salón</q-btn>
         </div>
 
         <!-- 13. Selección de espacios -->
         <div class="form-group">
           <p>Escoger los diferentes espacios del salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('espacios')">Ver Espacios</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('espacio')">Ver Espacios</q-btn>
         </div>
 
         <!-- 14. Selección de servicios -->
         <div class="form-group">
           <p>Escoger los diferentes servicios que ofrece el salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('servicios')">Ver Servicios</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('servicio')">Ver Servicios</q-btn>
         </div>
 
         <!-- 15. Selección de ubicación -->
         <div class="form-group">
           <p>Escoger la ubicación del salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('ubicaciones')">Ver Ubicaciones</q-btn>
+          <q-btn color="primary" @click="abrirModalSeleccion('ubicacion')">Ver Ubicaciones</q-btn>
         </div>
 
         <!-- 16. Asignar contacto del salón -->
