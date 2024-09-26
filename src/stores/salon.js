@@ -7,10 +7,12 @@ const estatus = ref("");
 const validacion = ref("");
 const nuevoSalon = ref("");
 const idSalon = ref("");
+const urlImagen = ref("");
+const publicImagen = ref("");
 const salonSeleccionado = ref("");
 const editarSalonSelec = ref("");
 const salonFiltroCiudad = ref("");
-const salonFiltroCiudadNombre = ref("")
+const salonFiltroCiudadNombre = ref("");
 const salonFiltroAmbiente = ref("");
 const salonFiltroAmbienteNombre = ref("");
 const salonFiltroPersona = ref("");
@@ -110,29 +112,32 @@ export const useStoreSalon = defineStore(
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", "fotossalon");
+
         const config = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         };
+
         const response = await axios.post(
           `https://api.cloudinary.com/v1_1/dsdnk8yhz/image/upload`,
           formData,
           config
         );
-        console.log(response);
-        const imagen = response.data.secure_url;
 
-        // Actualizar la foto de perfil del usuario
-        
+        console.log('fotos-cloudinary', response)
 
-        // Guardar la foto de perfil en el servidor
-        
+        urlImagen.value = response.data.secure_url;
+        publicImagen.value = response.data.public_id;
 
-        return  imagen ;
+        // Devuelve tanto el secure_url como el public_id de Cloudinary
+        return {
+          secure_url: response.data.secure_url,
+          public_id: response.data.public_id,
+        };
       } catch (error) {
         console.error("Error al subir la foto:", error);
-        throw error; // Re-lanzar el error para que se pueda manejar en el llamador
+        throw error; // Re-lanza el error para que pueda manejarse donde se llama la función
       }
     };
 
@@ -192,6 +197,8 @@ export const useStoreSalon = defineStore(
       salonCiudLongitud,
       devolverHomeDetalle,
       subirGrupoFotos,
+      urlImagen,
+      publicImagen,
     };
   },
   {

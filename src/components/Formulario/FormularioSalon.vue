@@ -9,8 +9,10 @@ import { useStoreEspacioSalon } from '../../stores/espacio.js';
 import { useStoreServicioSalon } from '../../stores/servicio.js';
 import { useStoreUbicacionSalon } from '../../stores/ubicacion.js';
 import { useStoreContactoSalon } from '../../stores/contacto.js';
+import { useRouter } from 'vue-router'
 
 const $q = useQuasar();
+const router = useRouter();
 const useSalonEvento = useStoreSalon();
 const useCiudad = useStoreCiudad();
 const useTipoEvento = useStoreAmbienteSalon();
@@ -49,6 +51,7 @@ function notificar(tipo, msg) {
 };
 
 const data = ref({
+  galeria_sal: [],
   idCiudSalonEvento: null,
   idServiciosSalon: [], // Para almacenar las IDs de los servicios seleccionados
   idTipoSalon: [], // Para los tipos de salón
@@ -73,22 +76,53 @@ const nuevoContacto = ref({
 });
 
 async function subirFotosSalon(files) {
-  if (!files || files.length === 0) return; // Asegúrate de que haya archivos
+  if (!files || files.length === 0) return;
 
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const imageUrl = await useSalonEvento.subirGrupoFotos(file); // Aquí va tu lógica para subir el archivo a Cloudinary
+      const response = await useSalonEvento.subirGrupoFotos(file);
 
-      const fotoObj = { url: imageUrl };
-      console.log("Foto subida:", fotoObj);
+      const imagenSubida = {
+        url: response.secure_url,
+        publicId: response.public_id,
+      };
+
+      data.value.galeria_sal.push(imagenSubida);  // Guardamos la imagen en el array
+      console.log("Imagen subida:", imagenSubida);
     }
   } catch (error) {
     console.error("Error al subir las fotos:", error);
   }
 }
 
+// Function to handle file input change event
+function onFileChange(event) {
+  console.log("soy event", event)
+  const files = event.target.files;
+  subirFotosSalon(files);
+}
 
+// Updated function to remove image using publicId (without relying on position)
+function removeImage(publicId) {
+  if (!publicId) {
+    notificar('negative', 'No se pudo encontrar el identificador de la imagen.');
+    return;
+  }
+
+  try {
+    const index = data.value.galeria_sal.findIndex(img => img.publicId === publicId);
+    if (index !== -1) {
+      data.value.galeria_sal.splice(index, 1);
+      console.log("Imagen eliminada de la galería:", publicId);
+    } else {
+      notificar('negative', 'Imagen no encontrada en la galería.');
+    }
+  } catch (error) {
+    console.error('Error al eliminar la imagen:', error);
+    notificar('negative', 'Hubo un error al eliminar la imagen.');
+  }
+}
 
 function abrirModalSeleccion(tipo) {
   tipoSeleccion.value = tipo;
@@ -352,7 +386,6 @@ function seleccionarElemento(seleccionado, idElemento) {
   if (!Array.isArray(arraySeleccionado.value)) {
     arraySeleccionado.value = [];
   }
-
   if (seleccionado) {
     if (!arraySeleccionado.value.includes(idElemento)) {
       arraySeleccionado.value.push(idElemento);
@@ -363,7 +396,6 @@ function seleccionarElemento(seleccionado, idElemento) {
       arraySeleccionado.value.splice(index, 1);
     }
   }
-
   console.log("Seleccionados:", arraySeleccionado.value);
 }
 
@@ -376,9 +408,137 @@ function seleccionarContacto(val, opcion) {
   }
   console.log("Contacto seleccionado:", data.value.idContactoSalon);
 }
-
 function prueba() {
   console.log("soy prueba", data)
+}
+
+// Validar campos de data antes de enviar
+function validarData() {
+  // Definir las reglas de validación para cada campo
+  if (!data.value.nombre_sal || data.value.nombre_sal.trim() === '') {
+    notificar('negative', 'El nombre del salón es obligatorio.');
+    return false;
+  }
+
+  if (!data.value.idCiudSalonEvento) {
+    notificar('negative', 'Debe seleccionar una ciudad para el salón.');
+    return false;
+  }
+
+  if (!data.value.descripcion_sal || data.value.descripcion_sal.trim() === '') {
+    notificar('negative', 'La descripción del salón es obligatoria.');
+    return false;
+  }
+
+  if (!data.value.capacidad_min || data.value.capacidad_min <= 0) {
+    notificar('negative', 'La capacidad mínima debe ser mayor a 0.');
+    return false;
+  }
+
+  if (!data.value.capacidad_max || data.value.capacidad_max <= 0 || data.value.capacidad_max < data.value.capacidad_min) {
+    notificar('negative', 'La capacidad máxima debe ser mayor a la mínima.');
+    return false;
+  }
+
+  if (!data.value.precio_sal || data.value.precio_sal <= 0) {
+    notificar('negative', 'El precio debe ser mayor a 0.');
+    return false;
+  }
+
+  if (!data.value.direccion_sal || data.value.direccion_sal.trim() === '') {
+    notificar('negative', 'La dirección del salón es obligatoria.');
+    return false;
+  }
+
+  // Opcional: validaciones para latitud y longitud si es que son obligatorias
+  if (!data.value.latitud || !data.value.longitud) {
+    notificar('negative', 'Debe proporcionar las coordenadas del salón.');
+    return false;
+  }
+
+  // Validar que al menos un tipo de evento esté seleccionado
+  if (!data.value.idAmbienteSalon.length) {
+    notificar('negative', 'Debe seleccionar al menos un tipo de evento.');
+    return false;
+  }
+
+  // Validar que al menos un tipo de salón esté seleccionado
+  if (!data.value.idTipoSalon.length) {
+    notificar('negative', 'Debe seleccionar al menos un tipo de salón.');
+    return false;
+  }
+
+  // Validar que al menos un servicio esté seleccionado
+  if (!data.value.idServiciosSalon.length) {
+    notificar('negative', 'Debe seleccionar al menos un servicio.');
+    return false;
+  }
+
+  // Validar que al menos una ubicación esté seleccionada
+  if (!data.value.idUbicacionSalon.length) {
+    notificar('negative', 'Debe seleccionar al menos una ubicación.');
+    return false;
+  }
+
+  // Validar que un contacto esté asignado
+  if (!data.value.idContactoSalon) {
+    notificar('negative', 'Debe asignar un contacto al salón.');
+    return false;
+  }
+
+  // Si todo está correcto
+  return true;
+}
+
+async function agregarSalon() {
+  // Primero validamos los datos
+  if (!validarData()) {
+    return;  // Si la validación falla, detenemos el flujo
+  }
+
+  loading.value = true;  // Mostramos un indicador de carga
+
+  try {
+    // Enviar la petición para registrar el salón
+    const response = await useSalonEvento.registro(data.value);
+
+    if (useSalonEvento.estatus === 200) {
+      notificar('positive', 'El salón ha sido registrado exitosamente.');
+      router.push('/panel-admin/salon-evento')
+      // Aquí puedes limpiar el formulario o redirigir si es necesario
+      limpiarFormulario();
+    } else {
+      notificar('negative', 'Hubo un error al registrar el salón.');
+    }
+  } catch (error) {
+    console.error('Error al registrar el salón:', error);
+    notificar('negative', 'Hubo un error en el registro.');
+  } finally {
+    loading.value = false;  // Ocultamos el indicador de carga
+  }
+}
+
+function limpiarFormulario() {
+  // Resetear el objeto `data` para limpiar el formulario
+  data.value = {
+    galeria_sal: [],
+    idCiudSalonEvento: null,
+    idServiciosSalon: [],
+    idTipoSalon: [],
+    idAmbienteSalon: [],
+    idEspaciosSalon: [],
+    idUbicacionSalon: [],
+    idContactoSalon: null,
+    nombre_sal: '',
+    descripcion_sal: '',
+    capacidad_min: null,
+    capacidad_max: null,
+    direccion_sal: '',
+    precio_sal: null,
+    latitud: '',
+    longitud: '',
+    video360: '',
+  };
 }
 
 
@@ -405,18 +565,24 @@ onMounted(() => {
             hint="Escriba para buscar una ciudad" :rules="[val => !!val || 'Debe seleccionar una ciudad']"
             no-options-value="Sin coincidencias" @filter="customFilter" />
         </div>
-
         <!-- 1. Nombre del salón -->
         <div class="form-group">
           <p>Digite el nombre del salón:</p>
           <q-input v-model="data.nombre_sal" label="Nombre del salón" filled
             :rules="[val => !!val || 'Campo obligatorio']" />
         </div>
-
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
           <p>Seleccione las imágenes del salón:</p>
-          <q-uploader label="Subir imágenes" @added="subirFotosSalon" accept="image/*" :auto-upload="false" />
+          <input type="file" @change="onFileChange" multiple accept="image/*" />
+        </div>
+        <!-- Show uploaded images with a delete option -->
+        <div v-if="data.galeria_sal.length > 0" class="form-group">
+          <p>Imágenes subidas:</p>
+          <div v-for="(image, index) in data.galeria_sal" :key="index" class="image-preview">
+            <img :src="image.url" alt="Imagen del salón" width="150px" />
+            <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
+          </div>
         </div>
 
         <!-- 3. Descripción del salón -->
@@ -425,14 +591,12 @@ onMounted(() => {
           <q-input v-model="data.descripcion_sal" label="Descripción del salón" type="textarea" filled
             :rules="[val => !!val || 'Campo obligatorio']" />
         </div>
-
         <!-- 4. Capacidad mínima del salón -->
         <div class="form-group">
           <p>Especifique la capacidad mínima:</p>
           <q-input v-model.number="data.capacidad_min" label="Capacidad mínima" type="number" filled
             :rules="[val => val > 0 || 'Debe ser mayor a 0']" />
         </div>
-
         <!-- 5. Capacidad máxima del salón -->
         <div class="form-group">
           <p>Especifique la capacidad máxima:</p>
@@ -510,7 +674,7 @@ onMounted(() => {
 
       <q-card-section>
         <div style="display: flex; justify-content: center;">
-          <q-btn color="primary" @click="prueba()">Agregar Salón</q-btn>
+          <q-btn color="primary" @click="agregarSalon()">Agregar Salón</q-btn>
         </div>
       </q-card-section>
     </q-card>

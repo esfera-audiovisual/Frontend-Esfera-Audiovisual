@@ -77,6 +77,7 @@ const limpiar = () => {
   mensaje.value = 'Hola, estamos pensando en celebrar nuestro evento en tus instalaciones. ¿Nos podrías enviar más información acerca de este salón para eventos? Gracias.';
   invitados.value = '';
   fecha.value = '';
+  dialogoAbierto.value = false;
 }
 
 const cerrarFormulario = () => {
