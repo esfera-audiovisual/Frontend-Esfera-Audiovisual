@@ -105,6 +105,37 @@ export const useStoreSalon = defineStore(
       }
     };
 
+    const subirFotos = async (id, file) => {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "fotoprincipalhotel");
+        const config = {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        };
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/dep417oku/image/upload`,
+          formData,
+          config
+        );
+        console.log(response);
+        const imagen = response.data.secure_url;
+
+        // Actualizar la foto de perfil del usuario
+        
+
+        // Guardar la foto de perfil en el servidor
+        
+
+        return  imagen ;
+      } catch (error) {
+        console.error("Error al subir la foto:", error);
+        throw error; // Re-lanzar el error para que se pueda manejar en el llamador
+      }
+    };
+
     const activar = async (id) => {
       try {
         const response = await axios.put(`${modelo}/activar/${id}`);
@@ -155,6 +186,7 @@ export const useStoreSalon = defineStore(
       salonFiltroTipo,
       salonFiltroUbicacion,
       salonesFiltrados,
+      subirFotos,
       loading,
       detalleSalon,
       salonCiudLatitud,

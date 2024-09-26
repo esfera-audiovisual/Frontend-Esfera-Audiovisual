@@ -26,17 +26,19 @@ const espacio = ref([]);
 const servicio = ref([]);
 const ubicacion = ref([]);
 const contacto = ref([]);
-const modalCrearServicio = ref(false);
 const loading = ref(false);  // Variable para controlar el estado de carga
-const nuevoServicio = ref('');  // Aquí almacenamos el nombre del nuevo servicio
 const modalSeleccion = ref(false); // Controla la visibilidad del modal
+const modalContactoSalon = ref(false);
 const tipoSeleccion = ref(''); // Indica el tipo de selección actual
 const tituloModal = ref(''); // Título dinámico del modal
 const opcionesSeleccion = ref([]); // Opciones que se mostrarán en el modal
 const arraySeleccionado = ref([]); // El array correspondiente a lo seleccionado
+const arrayContacto = ref([]);
 const modalCrear = ref(false); // Controla la visibilidad del modal de creación
+const modalCrearContacto = ref(false);
 const tipoCrear = ref(''); // Indica el tipo de atributo que se está creando (servicio, tipo_salon, etc.)
 const nuevoElemento = ref(''); // Almacena el nombre del nuevo atributo que se está creando
+const searchQuery = ref('');
 
 function notificar(tipo, msg) {
   $q.notify({
@@ -46,10 +48,6 @@ function notificar(tipo, msg) {
   });
 };
 
-const modalEspacios = ref(false);
-const modalUbicaciones = ref(false);
-
-
 const data = ref({
   idCiudSalonEvento: null,
   idServiciosSalon: [], // Para almacenar las IDs de los servicios seleccionados
@@ -57,7 +55,7 @@ const data = ref({
   idAmbienteSalon: [], // Para los tipos de eventos
   idEspaciosSalon: [], // Para los espacios del salón
   idUbicacionSalon: [], // Para las ubicaciones del salón
-  idContactoSalon: [], // Para los contactos del salón
+  idContactoSalon: null, // Para los contactos del salón
 });
 
 const nombreCampos = {
@@ -66,9 +64,13 @@ const nombreCampos = {
   ubicacion: 'nombre_ubi',
   tipo_evento: 'nombre_amb',
   tipo_salon: 'nombre_tip',
-  contactos: 'nombre_cont'
 };
 
+const nuevoContacto = ref({
+  nombre_cont: '',
+  correo_cont: '',
+  telefono_cont: ''
+});
 
 function abrirModalSeleccion(tipo) {
   tipoSeleccion.value = tipo;
@@ -100,21 +102,23 @@ function abrirModalSeleccion(tipo) {
       opcionesSeleccion.value = ubicacion.value;
       arraySeleccionado.value = data.value.idUbicacionSalon;
       break;
-    case 'contactos':
-      tituloModal.value = 'Administrar Contactos del Salón';
-      opcionesSeleccion.value = contacto.value;
-      arraySeleccionado.value = data.value.idContactoSalon;
-      break;
   }
 
   modalSeleccion.value = true; // Abre el modal
 }
 
 function abrirModalCrear(tipo) {
-
   tipoCrear.value = tipo; // Asignamos el tipo de atributo que se está creando
   nuevoElemento.value = ''; // Reiniciamos el campo de texto
   modalCrear.value = true; // Abrimos el modal de creación
+}
+
+function abrirModalContacto() {
+  // Asigna el valor del contacto actual al abrir el modal
+  if (data.value.idContactoSalon) {
+    arraySeleccionado.value = data.value.idContactoSalon; // Contacto previamente seleccionado
+  }
+  modalContactoSalon.value = true;
 }
 
 async function agregarNuevoElemento() {
@@ -167,13 +171,6 @@ async function agregarNuevoElemento() {
         data.value.idUbicacionSalon.push(useUbicacion.nuevaUbicacionSalon);
         opcionesSeleccion.value.push(useUbicacion.nuevaUbicacion);
       }
-    } else if (tipoCrear.value === 'contactos') {
-      response = await useContactoSalon.registro(dataElemento);
-      if (useContactoSalon.estatus === 200) {
-        notificar('positive', `Contacto creado y agregado exitosamente`);
-        data.value.idContactoSalon.push(useContactoSalon.nuevoContactoSalon);
-        opcionesSeleccion.value.push(useContactoSalon.nuevoContacto);
-      }
     }
   } catch (error) {
     console.error(`Error al agregar ${tipoCrear.value}:`, error);
@@ -184,46 +181,63 @@ async function agregarNuevoElemento() {
   }
 }
 
-
-
-async function agregarServicio() {
-  if (nuevoServicio.value.trim() === '') {
-    notificar('negative', 'El nombre del servicio no puede estar vacío');
+async function agregarNuevoContacto() {
+  if (
+    nuevoContacto.value.nombre_cont.trim() === '' ||
+    nuevoContacto.value.correo_cont.trim() === '' ||
+    nuevoContacto.value.telefono_cont.trim() === ''
+  ) {
+    notificar('negative', 'Todos los campos del contacto deben estar completos');
     return;
   }
 
-  loading.value = true;  // Activamos el loading
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(nuevoContacto.value.correo_cont)) {
+    notificar('negative', 'Ingrese un correo electrónico válido');
+    return;
+  }
 
+  loading.value = true;
   try {
-    // Llamamos a la función de registro de la tienda Pinia
-    const dataserv = { nombre_serv: nuevoServicio.value };
-    console.log("data servicio", data)
+    const dataContacto = {
+      nombre_cont: nuevoContacto.value.nombre_cont,
+      correo_cont: nuevoContacto.value.correo_cont,
+      telefono_cont: nuevoContacto.value.telefono_cont
+    };
 
-    const response = await useServicio.registro(dataserv);
-    // Notificar éxito
-    console.log(response)
-    if (useServicio.estatus === 200) {
-      notificar('positive', 'Servicio creado exitosamente');
-      data.value.idServiciosSalon.push(useServicio.nuevoServicioSalon);
-      getServicios();
+    const response = await useContactoSalon.registro(dataContacto);
+    if (useContactoSalon.estatus === 200) {
+      notificar('positive', 'Contacto creado y agregado exitosamente');
+
+      // Agregamos el nuevo contacto a la lista de contactos disponibles
+      contacto.value.push(useContactoSalon.nuevoContacto);
+
+      // Asignamos el nuevo contacto como seleccionado
+      const nuevoContactoId = useContactoSalon.nuevoContactoSalon;
+      data.value.idContactoSalon = nuevoContactoId;
+      arrayContacto.value = nuevoContactoId;
+      console.log("agregar contacto", nuevoContactoId)
+
+      // Limpiar el formulario
+      nuevoContacto.value = {
+        nombre_cont: '',
+        correo_cont: '',
+        telefono_cont: ''
+      };
     }
-
-    nuevoServicio.value = '';
   } catch (error) {
-    console.error('Error al agregar servicio:', error);
-    notificar('negative', 'Hubo un error al agregar el servicio');
+    console.error('Error al agregar contacto:', error);
+    notificar('negative', 'Hubo un error al agregar el contacto');
   } finally {
-    modalCrearServicio.value = false;
-    loading.value = false; 
-
+    modalCrearContacto.value = false;
+    loading.value = false;
   }
 }
-
 
 async function getCiudades() {
   try {
     const response = await useCiudad.getAll();
-    ciudades.value = response; 
+    ciudades.value = response;
     console.log(response);
   } catch (error) {
     console.error('Error al obtener ciudades:', error);
@@ -243,7 +257,7 @@ async function getTipoEventos() {
 async function getTipoSalones() {
   try {
     const response = await useTipoSalon.getAll();
-    tipoSalon.value = response; 
+    tipoSalon.value = response;
   } catch (error) {
     console.error('Error al obtener tipos de salones:', error);
   }
@@ -252,7 +266,7 @@ async function getTipoSalones() {
 async function getEspacios() {
   try {
     const response = await useEspacio.getAll();
-    espacio.value = response; 
+    espacio.value = response;
     console.log(response);
   } catch (error) {
     console.error('Error al obtener espacios:', error);
@@ -273,7 +287,7 @@ async function getServicios() {
 async function getUbicaciones() {
   try {
     const response = await useUbicacion.getAll();
-    ubicacion.value = response; 
+    ubicacion.value = response;
     console.log(response);
   } catch (error) {
     console.error('Error al obtener ubicaciones:', error);
@@ -283,12 +297,38 @@ async function getUbicaciones() {
 async function getContactosSalon() {
   try {
     const response = await useContactoSalon.getAll();
-    contacto.value = response; 
+    contacto.value = response;
     console.log(response);
   } catch (error) {
     console.error('Error al obtener contactos del salón:', error);
   }
 }
+
+function customFilter(val, update) {
+  searchQuery.value = val.toLowerCase(); // Solo actualiza searchQuery
+  update();  // Deja que Vue actualice los datos basados en la propiedad computada
+}
+
+// Ciudades filtradas
+const filteredCiudades = computed(() => {
+  if (!searchQuery.value) {
+    return ciudades.value.map(ciudad => ({
+      _id: ciudad._id,
+      label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
+    }));
+  }
+
+  return ciudades.value
+    .filter(ciudad =>
+      `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
+        .toLowerCase()
+        .includes(searchQuery.value)
+    )
+    .map(ciudad => ({
+      _id: ciudad._id,
+      label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
+    }));
+});
 
 function seleccionarElemento(seleccionado, idElemento) {
   if (!Array.isArray(arraySeleccionado.value)) {
@@ -309,33 +349,15 @@ function seleccionarElemento(seleccionado, idElemento) {
   console.log("Seleccionados:", arraySeleccionado.value);
 }
 
-
-function seleccionarServicio(seleccionado, servicioId) {
-  // Verificamos que el array esté inicializado antes de hacer cualquier operación
-  if (!Array.isArray(data.value.idServiciosSalon)) {
-    data.value.idServiciosSalon = []; // Inicializamos como array vacío si no lo está
-  }
-
-  if (seleccionado) {
-    // Si seleccionamos el servicio, lo añadimos al array solo si no existe ya
-    if (!data.value.idServiciosSalon.includes(servicioId)) {
-      data.value.idServiciosSalon.push(servicioId);
-    }
+function seleccionarContacto(val, opcion) {
+  if (val) {
+    data.value.idContactoSalon = opcion._id;  // Actualiza con el ID del contacto seleccionado
+    arrayContacto.value = opcion._id;
   } else {
-    // Si deseleccionamos el servicio, lo eliminamos del array si existe
-    const index = data.value.idServiciosSalon.indexOf(servicioId);
-    if (index > -1) {
-      data.value.idServiciosSalon.splice(index, 1);
-    }
+    data.value.idContactoSalon = null;  // Puedes manejar la deselección si lo prefieres
   }
+  console.log("Contacto seleccionado:", data.value.idContactoSalon);
 }
-
-const formattedCiudades = computed(() => {
-  return ciudades.value.map(ciudad => ({
-    _id: ciudad._id,
-    label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}` 
-  }));
-});
 
 function prueba() {
   console.log("soy prueba", data)
@@ -351,7 +373,6 @@ onMounted(() => {
   getUbicaciones();
   getContactosSalon();
 })
-
 </script>
 
 <template>
@@ -361,11 +382,11 @@ onMounted(() => {
         <!-- 1. Ciudad del salón -->
         <div class="form-group">
           <p>Seleccione la ciudad del salón:</p>
-          <q-select v-model="data.idCiudSalonEvento" :options="formattedCiudades" option-value="_id"
-            option-label="label" label="Seleccionar ciudad" filled emit-value map-options
-            :rules="[val => !!val || 'Debe seleccionar una ciudad']" />
+          <q-select v-model="data.idCiudSalonEvento" :options="filteredCiudades" option-value="_id" option-label="label"
+            label="Seleccionar ciudad" filled emit-value map-options use-input input-debounce="0"
+            hint="Escriba para buscar una ciudad" :rules="[val => !!val || 'Debe seleccionar una ciudad']"
+            no-options-value="Sin coincidencias" @filter="customFilter" />
         </div>
-
 
         <!-- 1. Nombre del salón -->
         <div class="form-group">
@@ -416,13 +437,13 @@ onMounted(() => {
 
         <!-- 8. Latitud -->
         <div class="form-group">
-          <p>Latitud:</p>
+          <p>Latitud del salón (Google maps)</p>
           <q-input v-model="data.latitud" label="Latitud" filled />
         </div>
 
         <!-- 9. Longitud -->
         <div class="form-group">
-          <p>Longitud:</p>
+          <p>Longitud del salón (Google maps):</p>
           <q-input v-model="data.longitud" label="Longitud" filled />
         </div>
 
@@ -465,7 +486,7 @@ onMounted(() => {
         <!-- 16. Asignar contacto del salón -->
         <div class="form-group">
           <p>Asignar contacto del salón:</p>
-          <q-btn color="primary" @click="abrirModalSeleccion('contactos')">Ver Contactos</q-btn>
+          <q-btn color="primary" @click="abrirModalContacto()">Ver Contactos</q-btn>
         </div>
       </q-card-section>
 
@@ -476,7 +497,7 @@ onMounted(() => {
       </q-card-section>
     </q-card>
 
-    <!-- Dialog for viewing/adding services -->
+    <!-- Modales -->
     <q-dialog v-model="modalSeleccion" persistent>
       <q-card style="min-width: 600px;">
         <q-card-section>
@@ -501,6 +522,30 @@ onMounted(() => {
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="modalContactoSalon" persistent>
+      <q-card style="min-width: 600px;">
+        <q-card-section>
+          <div class="q-pt-sm">
+            <h6>Administrar Contacto del Salón</h6>
+            <p>Seleccione el contacto del salón</p>
+            <q-list bordered separator>
+              <q-item v-for="opcion in contacto" :key="opcion._id" clickable v-ripple>
+                <q-item-section>
+                  <!-- Cambiar v-model a arraySeleccionado ya que será único -->
+                  <q-radio v-model="arrayContacto" :val="opcion._id" :label="opcion.nombre_cont"
+                    @update:model-value="val => seleccionarContacto(val, opcion)" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Aceptar" color="primary" v-close-popup />
+          <q-btn flat label="Crear Contacto" color="secondary" @click="modalCrearContacto = true;" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <q-dialog v-model="modalCrear" persistent>
       <q-card style="min-width: 600px;">
         <q-card-section>
@@ -521,25 +566,40 @@ onMounted(() => {
       </q-card>
     </q-dialog>
 
-
-    <!-- Modal crear servicio -->
-    <q-dialog v-model="modalCrearServicio" persistent>
+    <!-- Modal crear contacto -->
+    <q-dialog v-model="modalCrearContacto" persistent>
       <q-card style="min-width: 600px;">
         <q-card-section>
           <div class="q-pt-sm">
-            <h6>Agregar nuevo servicio</h6>
-            <p>Digite el nombre del nuevo servicio:</p>
-            <q-input v-model="nuevoServicio" label="Nombre del servicio" filled />
+            <h6>Agregar nuevo contacto</h6>
+            <p>Digite los detalles del nuevo contacto:</p>
+
+            <div class="container">
+              <div class="form-group">
+                <p>Digite el nombre del contacto del salón</p>
+                <q-input v-model="nuevoContacto.nombre_cont" label="Nombre del contacto" filled />
+              </div>
+
+              <div class="form-group">
+                <p>Digite el correo del contacto del salón</p>
+                <q-input v-model="nuevoContacto.correo_cont" label="Correo del contacto" filled type="email" />
+              </div>
+
+              <div class="form-group">
+                <p>Digite el teléfono del contacto del salón</p>
+                <q-input v-model="nuevoContacto.telefono_cont" label="Teléfono del contacto" filled type="tel" />
+              </div>
+            </div>
+
           </div>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="primary" v-close-popup />
-          <q-btn flat label="Agregar" color="primary" :loading="loading" :disable="loading" @click="agregarServicio" />
+          <q-btn flat label="`Agregar Contacto" color="primary" :loading="loading" :disable="loading"
+            @click="agregarNuevoContacto" />
         </q-card-actions>
       </q-card>
     </q-dialog>
-
-
   </div>
 </template>
 
