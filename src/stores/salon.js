@@ -105,18 +105,18 @@ export const useStoreSalon = defineStore(
       }
     };
 
-    const subirFotos = async (id, file) => {
+    const subirGrupoFotos = async (file) => {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", "fotoprincipalhotel");
+        formData.append("upload_preset", "fotossalon");
         const config = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         };
         const response = await axios.post(
-          `https://api.cloudinary.com/v1_1/dep417oku/image/upload`,
+          `https://api.cloudinary.com/v1_1/dsdnk8yhz/image/upload`,
           formData,
           config
         );
@@ -186,12 +186,12 @@ export const useStoreSalon = defineStore(
       salonFiltroTipo,
       salonFiltroUbicacion,
       salonesFiltrados,
-      subirFotos,
       loading,
       detalleSalon,
       salonCiudLatitud,
       salonCiudLongitud,
       devolverHomeDetalle,
+      subirGrupoFotos,
     };
   },
   {

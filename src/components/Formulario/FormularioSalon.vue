@@ -72,6 +72,24 @@ const nuevoContacto = ref({
   telefono_cont: ''
 });
 
+async function subirFotosSalon(files) {
+  if (!files || files.length === 0) return; // Asegúrate de que haya archivos
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const imageUrl = await useSalonEvento.subirGrupoFotos(file); // Aquí va tu lógica para subir el archivo a Cloudinary
+
+      const fotoObj = { url: imageUrl };
+      console.log("Foto subida:", fotoObj);
+    }
+  } catch (error) {
+    console.error("Error al subir las fotos:", error);
+  }
+}
+
+
+
 function abrirModalSeleccion(tipo) {
   tipoSeleccion.value = tipo;
   console.log("soy tipo", tipo)
@@ -398,7 +416,7 @@ onMounted(() => {
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
           <p>Seleccione las imágenes del salón:</p>
-          <q-input v-model="data.galeria_sal" label="" filled type="file" accept="image/*" />
+          <q-uploader label="Subir imágenes" @added="subirFotosSalon" accept="image/*" :auto-upload="false" />
         </div>
 
         <!-- 3. Descripción del salón -->
