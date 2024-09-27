@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useStoreCiudad } from '../stores/ciudad.js';
 import { useStoreAmbienteSalon } from '../stores/ambiente.js';
 import { useStoreSalon } from '../stores/salon.js';
@@ -21,7 +21,12 @@ const ambiente = ref("");
 const showLoadingModal = ref(false);
 const isCleaning = ref(false);
 const showProfileModal = ref(false);
+const isNavModalOpen = ref(false);  // Control para abrir/cerrar el modal de navegación
+const windowWidth = ref(window.innerWidth);
 
+function checkWindowSize() {
+  windowWidth.value = window.innerWidth;
+}
 
 async function contactarnos() {
   const enlaceWhatsApp = await useReserva.generarEnlaceWhatsApp();
@@ -35,6 +40,10 @@ function toggleProfileModal() {
 function editarPerfil() {
   // Navegar a la página de edición de perfil
   router.push('/panel-admin/editar-perfil');
+}
+
+function toggleNavModal() {
+  isNavModalOpen.value = !isNavModalOpen.value;  // Alternar el estado del modal de navegación
 }
 
 function cerrarSesion() {
@@ -124,7 +133,6 @@ const cantidad_personas = [
 
 const filtrarPersonas = (val, update) => {
   update(() => {
-    console.log("adios");
   });
 };
 
@@ -193,6 +201,7 @@ const filtrarSalones = async () => {
       const filteredSalones = await useSalon.getSalonesFiltrados(filters);
       useSalon.salonesFiltrados = filteredSalones;
       router.push('/busqueda');
+
       console.log('Salones filtrados:', filteredSalones);
     } catch (error) {
       console.error("Error al filtrar salones:", error);
@@ -272,11 +281,9 @@ watch(fecha, () => {
   }
 });
 
-
-
-
-
 onMounted(() => {
+  window.addEventListener('resize', checkWindowSize);
+
   ciudad.value = useSalon.salonFiltroCiudadNombre;
   ambiente.value = useSalon.salonFiltroAmbienteNombre;
   c_personas.value = useSalon.salonFiltroPersona;
@@ -285,81 +292,117 @@ onMounted(() => {
 
   getCiudades();
   getAmbientes();
+})
 
-
+onUnmounted(() => {
+  window.removeEventListener('resize', checkWindowSize);
 });
+
 </script>
 
 <template>
-  <div>
-    <q-layout view="hHh lpR fFf">
-      <q-dialog v-model="showLoadingModal" persistent>
-        <q-card>
-          <q-card-section class="row items-center">
-            <q-spinner color="primary" size="30px" />
-            <span class="q-ml-sm">Cargando salones...</span>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
-      <q-header elevated>
-        <q-toolbar class="custom-toolbar">
-          <!-- Esfera Logo y Nombre -->
-          <div class="logo-container">
-            <router-link to="/home" class="boton-home">
-              <q-btn flat round type="button" icon="public" class="right-btn bg-primary" @click="limpiar" />
+  <q-layout view="hHh lpR fFf">
+    <!-- Modal de Cargando -->
+    <q-dialog v-model="showLoadingModal" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-spinner color="primary" size="30px" />
+          <span class="q-ml-sm">Cargando...</span>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Cabecera / Navbar -->
+    <q-header elevated>
+      <q-toolbar class="custom-toolbar">
+        <!-- Logo y Botón Toggler -->
+        <div class="logo-container d-flex align-items-center">
+          <router-link to="/home">
+            <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar" />
+          </router-link>
+          <h6 class="logo-title">Esfera Audiovisual</h6>
+
+          <!-- Mostrar el botón de Toggler sólo en pantallas de 984px o menos -->
+          <q-btn v-if="windowWidth <= 1200" flat  icon="menu" label="Filtros" class="right-btn bg-primary ms-auto"
+            @click="toggleNavModal" style="margin-left: 10px;" />
+        </div>
+
+        <!-- Contenido de la barra de navegación visible en pantallas grandes (más de 984px) -->
+        <div v-if="windowWidth > 1201" class="inputs-container">
+          <q-select filled v-model="ciudad" use-input hide-selected fill-input input-debounce="0"
+            :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades" placeholder="¿Dónde?" class="input-item" />
+
+          <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
+            :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento" class="input-item" />
+
+          <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
+            :options="cantidad_personas" placeholder="¿Cuántas personas?" class="input-item" />
+
+          <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
+
+          <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" />
+        </div>
+
+        <!-- Botones del lado derecho (ocultos en pantallas pequeñas) -->
+        <q-space />
+        <div class="right-side d-none d-lg-flex"> <!-- Ocultar en pantallas menores de 984px -->
+          <q-btn v-if="!useUsuario.token" flat label="Contáctanos" class="right-btn bg-primary" @click="contactarnos" />
+          <q-btn v-if="useUsuario.token" flat label="Administrar salones" class="right-btn bg-primary"
+            @click="router.push('/panel-admin')" />
+
+          <template v-if="useUsuario.token">
+            <q-btn flat round icon="account_circle" class="right-btn bg-primary" @click="toggleProfileModal" />
+          </template>
+          <template v-else>
+            <router-link to="/login">
+              <q-btn flat round icon="login" class="right-btn bg-primary" />
             </router-link>
-            <h6 class="logo-title">Esfera Audiovisual</h6>
-          </div>
+          </template>
+        </div>
+      </q-toolbar>
+    </q-header>
 
-          <!-- Inputs Centrados -->
-          <div class="inputs-container">
-            <q-select filled v-model="ciudad" use-input hide-selected fill-input input-debounce="0"
-              :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades" placeholder="¿Dónde?"
-              class="input-item" />
+    <!-- Contenedor Principal -->
+    <q-page-container>
+      <router-view />
+    </q-page-container>
 
-            <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
-              :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento"
-              class="input-item" />
+    <!-- Modal de Navegación (en pantallas de 984px o menos) -->
+    <q-dialog v-model="isNavModalOpen">
+      <q-card>
+        <q-card-section>
+          <q-list>
+            <q-item>
+              <q-select filled v-model="ciudad" use-input hide-selected fill-input input-debounce="0"
+                :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades"  placeholder="¿Dónde?" class="input-item" />
+            </q-item>
+            <q-item>
+              <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
+                :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento" class="input-item" />
+            </q-item>
+            <q-item>
+              <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
+                :options="cantidad_personas" placeholder="¿Cuántas personas?" class="input-item" />
+            </q-item>
+            <q-item>
+              <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
+            </q-item>
+            <q-item>
+              <div style="display: flex; justify-content: center; width: 100%; color: white">
+                <q-btn flat  label="Buscar" class="bg-primary" @click="filtrarSalones"
+                />
+              </div>
 
-            <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
-              :options="cantidad_personas" @filter="filtrarPersonas" placeholder="¿Cuántas personas?"
-              class="input-item" />
+            </q-item>
+          </q-list>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cerrar" color="primary" @click="toggleNavModal" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
-            <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
-
-            <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" style="margin-left: 10px;" />
-          </div>
-
-
-
-          <!-- Right Side Links -->
-          <q-space />
-          <div class="right-side">
-            <q-btn v-if="!useUsuario.token" flat label="Contáctanos" class="right-btn bg-primary"
-              @click="contactarnos" />
-            <q-btn v-if="useUsuario.token" flat label="Administrar salones" class="right-btn bg-primary"
-              @click="router.push('/panel-admin')" />
-
-            <!-- Mostrar botón dependiendo si el usuario está logeado -->
-            <template v-if="useUsuario.token">
-              <!-- Botón "Ver Perfil" cuando el usuario está logeado -->
-              <q-btn flat round icon="account_circle" class="right-btn bg-primary" @click="toggleProfileModal" />
-            </template>
-            <template v-else>
-              <!-- Botón de login cuando no está logeado -->
-              <router-link to="/login" class="boton-home">
-                <q-btn flat round icon="login" class="right-btn bg-primary" />
-              </router-link>
-            </template>
-          </div>
-        </q-toolbar>
-      </q-header>
-
-      <q-page-container>
-        <router-view />
-      </q-page-container>
-    </q-layout>
-
+    <!-- Modal de Perfil -->
     <q-dialog v-model="showProfileModal">
       <q-card class="custom-card">
         <q-card-section class="q-pt-none">
@@ -372,27 +415,24 @@ onMounted(() => {
               <p>{{ useUsuario.usuario.rol }}</p>
             </div>
           </div>
-
           <q-card-actions align="center" class="q-pt-none q-pb-lg">
-            <q-btn flat label="Editar Perfil" color="primary" class="btn-action" @click="editarPerfil" />
-            <q-btn flat label="Cerrar Sesión" color="negative" class="btn-action" @click="cerrarSesion" />
+            <q-btn flat label="Editar Perfil" color="primary" @click="editarPerfil" />
+            <q-btn flat label="Cerrar Sesión" color="negative" @click="cerrarSesion" />
           </q-card-actions>
         </q-card-section>
       </q-card>
     </q-dialog>
-  </div>
+  </q-layout>
 </template>
 
 <style scoped>
 .custom-toolbar {
-  background-color: #ffffff !important;
+  background-color: #ffffff;
 }
-
 
 .logo-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
 }
 
 .logo-title {
@@ -406,7 +446,6 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   flex: 20;
-  /* Para que tome el espacio necesario */
 }
 
 .input-item {
@@ -434,48 +473,40 @@ onMounted(() => {
   width: 300px;
   border-radius: 20px;
   background-color: #f4f4f9;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  text-align: center;
 }
 
 .profile-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
-}
-
-.avatar-profile {
-  background-color: #e0e0e0;
-  margin-bottom: 15px;
-}
-
-.icon-profile {
-  font-size: 3rem;
-  color: #ffffff;
 }
 
 .profile-details h6 {
   font-weight: bold;
-  font-size: 1.2rem;
   margin: 0;
 }
 
 .profile-details p {
-  margin: 5px 0 0;
-  color: #666666;
-}
-
-.btn-action {
-  width: 100%;
-  margin-top: 10px;
-  font-size: 1rem;
+  margin: 5px 0;
 }
 
 .q-card-actions {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  gap: 10px;
+}
+
+@media (max-width: 621px) {
+  .custom-toolbar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .right-side{
+  margin-bottom: 20px;
+  }
+
 }
 </style>

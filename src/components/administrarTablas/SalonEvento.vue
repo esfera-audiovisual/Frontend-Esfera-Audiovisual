@@ -71,16 +71,18 @@ getInfo();
 
 const opciones = {
     agregar: () => {
-        router.push('/panel-admin/formulario-salon'); 
+        useSalonEvento.idSalonSelec = null;  // Limpiar la selección de salón
+        router.push('/panel-admin/formulario-salon');  // Navegar al formulario
     },
     editar: (info) => {
         router.push({
             path: '/panel-admin/formulario-salon',
-            query: { id: info._id } 
+            query: { id: info._id }
         });
-        useSalonEvento.idSalonSelec = info._id;
+        useSalonEvento.idSalonSelec = info._id;  // Establecer el id del salón a editar
     }
 };
+
 
 const in_activar = {
     activar: async (id) => {

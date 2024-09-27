@@ -170,7 +170,7 @@ function buscarIndexLocal(id) {
 }
 
 function verCiudades(departamento) {
-    router.push(`/panel-admin/ciudad?departamento=${departamento._id}`);
+    router.push({ path: '/panel-admin/ciudad', query: { id: departamento._id } }).href;
     useDepartamento.departamentoCiudad = departamento;
 }
 

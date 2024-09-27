@@ -49,9 +49,10 @@ function debounce(fn, delay) {
   };
 }
 
+
 const getNombresAmbiente = (idAmbienteSalon) => {
   if (idAmbienteSalon && idAmbienteSalon.length > 0) {
-    return idAmbienteSalon.map((ambiente) => ambiente.nombre_amb).join(', ');
+    return idAmbienteSalon.slice(0, 4).map((ambiente) => ambiente.nombre_amb).join(', ');
   } else {
     return 'No hay ambiente asignado';
   }
@@ -421,7 +422,7 @@ onMounted(() => {
             <div class="filtroprecio" v-if="ocultarPrecio">
               <q-input v-model="precioMax" class="q-ml-md"></q-input>
               <div class="precio-range q-ml-md">
-                <q-slider v-model="precioMax" :min="0" :max="1000000" :step="10000" label color="dark"
+                <q-slider v-model="precioMax" :min="0" :max="10000000" :step="100000" label color="dark"
                   track-color="grey-4" class="custom-slider" />
               </div>
             </div>
@@ -535,7 +536,10 @@ onMounted(() => {
               <div v-for="salon in useSalon.salonesFiltrados" :key="salon._id" class="salon-card">
                 <q-card class="my-card">
                   <div class="card-content">
+                    <!-- Imagen del salón -->
                     <q-img :src="salon.galeria_sal[0].url" class="card-image" />
+
+                    <!-- Información del salón -->
                     <q-card-section class="card-details">
                       <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
                       <div class="text-subtitle2">
@@ -543,12 +547,11 @@ onMounted(() => {
                         {{ salon.idCiudSalonEvento.nombre_ciud }}, {{ salon.idCiudSalonEvento.idDepart.nombre_depart }}
                       </div>
                       <div class="text-subtitle2">
-                        <q-icon name="architecture" size="18px" />
+                        <q-icon name="celebration" size="18px" />
                         {{ getNombresAmbiente(salon.idAmbienteSalon) }}
                       </div>
                       <div class="text-subtitle2">
-                        Desde
-                      {{ formatPrice(salon.precio_sal) }} $
+                        Desde {{ formatPrice(salon.precio_sal) }} $
                       </div>
                       <div class="text-subtitle2">
                         <q-icon name="groups" size="18px" />
@@ -574,7 +577,6 @@ onMounted(() => {
   </div>
 </template>
 
-
 <style scoped>
 .container {
   width: 100%;
@@ -591,14 +593,7 @@ onMounted(() => {
   gap: 20px;
 }
 
-.salones-container {
-  flex: 1;
-  /* Esto permitirá que el contenedor de salones ocupe la mitad o más del espacio disponible */
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  /* Hacer scroll si hay muchas cards */
-}
+
 
 .map-container {
   flex: 1;
@@ -611,8 +606,17 @@ onMounted(() => {
   /* Espacio entre las cards */
 }
 
+.salones-container {
+  flex: 1;
+  /* Esto permitirá que el contenedor de salones ocupe la mitad o más del espacio disponible */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Hacer scroll si hay muchas cards */
+}
+
 /* Estilos responsive: En pantallas pequeñas, el mapa irá debajo de las cards */
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .content-wrapper {
     flex-direction: column;
   }
@@ -646,12 +650,47 @@ onMounted(() => {
 }
 
 .salon-card {
-  width: 100%;
-  max-width: 800px;
-  margin-top: 20px;
-  /* Ajusta el ancho máximo de la tarjeta */
+  margin-bottom: 20px;
+}
+
+/* Contenedor principal de la imagen y la información */
+.card-content {
   display: flex;
-  justify-content: start;
+  flex-direction: row; /* Por defecto, mostrar en fila */
+  padding: 0;
+}
+
+/* Estilo de la imagen del salón */
+.card-image {
+  flex: 4.5;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Estilo de los detalles del salón */
+.card-details {
+  flex: 5.5;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Media query para pantallas menores o iguales a 775px */
+@media (max-width: 775px) {
+  .card-content {
+    flex-direction: column; /* Cambia a columna en pantallas pequeñas */
+  }
+
+  .card-image {
+    max-width: 100%;
+    margin-bottom: 15px; /* Espacio entre la imagen y la información */
+  }
+
+  .card-details {
+    padding-left: 0; /* Elimina el padding izquierdo */
+  }
 }
 
 .my-card {
@@ -660,28 +699,9 @@ onMounted(() => {
   flex-direction: column;
 }
 
-.card-content {
-  display: flex;
-  flex-direction: row;
-  padding: 0;
-}
 
-.card-image {
-  flex: 4.5;
-  /* Ajusta el ancho de la imagen */
-  max-height: 250px;
-  /* Ajusta el alto de la imagen automáticamente */
-  object-fit: cover;
-  border-radius: 8px;
-}
 
-.card-details {
-  flex: 5.5;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-left: 20px;
-}
+
 
 .card-image-container {
   flex: 1;

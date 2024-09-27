@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useStoreCiudad } from '../../stores/ciudad.js';
 import { useStoreDepartamentoSalonEvento } from '../../stores/departamento.js';  // Import the store for departments
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const useCiudad = useStoreCiudad();
 const useDepartamento = useStoreDepartamentoSalonEvento(); // Store to fetch departments
@@ -15,6 +15,7 @@ const departamentos = ref([]); // Store the list of departments
 const filter = ref("");
 const modal = ref(false);
 const router = useRouter();
+const route = useRoute();
 const $q = useQuasar();
 
 function notificar(tipo, msg) {
@@ -59,17 +60,7 @@ const columns = [
 
 const rows = ref([]);
 
-onMounted(() => {
-    const idDepartamento = router.currentRoute.value.query.departamento; // Obtén el departamento de la URL
-    getDepartamentos(); // Cargar la lista de departamentos
 
-    if (idDepartamento) {
-        // Si existe un departamento en la ruta, cargar las ciudades de ese departamento
-        getCiudadesPorDepartamento(idDepartamento);
-    } else {
-        getInfo(); // Cargar todas las ciudades si no hay un departamento en la ruta
-    }
-});
 
 
 async function getDepartamentos() {
@@ -125,13 +116,10 @@ const opciones = {
     agregar: () => {
         data.value = {}; // Limpiar los datos anteriores
 
-        const idDepartamento = router.currentRoute.value.query.departamento; // Obtener el id del departamento desde la URL
+        const idDepartamento = route.query.id; // Obtener el id del departamento desde la URL
+        console.log("iddd depart", idDepartamento)
         if (idDepartamento) {
-            // Si el usuario viene desde el componente de departamentos, preseleccionamos el departamento
-            const selectedDepartamento = departamentos.value.find(dep => dep._id === idDepartamento);
-            if (selectedDepartamento) {
-                data.value.idDepart = selectedDepartamento._id; // Preselecciona el ID del departamento en data
-            }
+            data.value.idDepart = idDepartamento;
         }
 
         estado.value = 'agregar'; // Cambiamos el estado para saber que estamos agregando una nueva ciudad
@@ -151,26 +139,28 @@ const enviarInfo = {
         try {
             loadingModal.value = true;
 
-            // Asegúrate de que solo se envíe el _id del departamento
+            // Si el idDepart es un objeto, extrae el _id, de lo contrario usa el valor tal como está
             const dataToSend = {
                 ...data.value,
-                idDepart: data.value.idDepart // Aquí solo se envía el _id del departamento
+                idDepart: typeof data.value.idDepart === 'object' ? data.value.idDepart._id : data.value.idDepart
             };
 
-            const response = await useCiudad.registro(dataToSend); // Enviar los datos limpios al backend
+            // Envía la solicitud para registrar la nueva ciudad
+            const response = await useCiudad.registro(dataToSend);
+
             if (!response) return;
             if (response.error) {
                 notificar('negative', response.error);
                 return;
             };
 
-            const idDepartamento = router.currentRoute.value.query.departamento;
-            if (idDepartamento) {
-                // Si existe un departamento en la URL, recargar solo las ciudades de ese departamento
-                await getCiudadesPorDepartamento(idDepartamento);
+            // Si el ID del departamento está en la URL, recargar solo las ciudades de ese departamento
+            if (route.query.id) {
+                await getCiudadesPorDepartamento(route.query.id);
+            } else {
+                await getInfo();
             }
 
-            rows.value.splice(buscarIndexLocal(response._id), 1, response);
             modal.value = false; // Cerrar el modal
             notificar('positive', 'Ciudad agregada exitosamente');
         } catch (error) {
@@ -200,7 +190,7 @@ const enviarInfo = {
 
 
             // Verificar si estás en el departamento filtrado
-            const idDepartamento = router.currentRoute.value.query.departamento;
+            const idDepartamento = route.query.id;
             if (idDepartamento) {
                 // Si el usuario está en un departamento, recargar solo las ciudades de ese departamento
                 await getCiudadesPorDepartamento(idDepartamento);
@@ -229,14 +219,17 @@ const enviarInfo = {
 
 function validarCampos() {
     const arrData = Object.values(data.value);
+    // Validar los otros campos
     for (const d of arrData) {
         if (d === null || (typeof d === "string" && d.trim() === "")) {
-            errorCamposVacios();
+            notificar('negative', 'Todos los campos son obligatorios.');
             return;
         }
     }
+
     enviarInfo[estado.value]();
 }
+
 
 const in_activar = {
     activar: async (id) => {
@@ -278,6 +271,24 @@ const in_activar = {
 function buscarIndexLocal(id) {
     return rows.value.findIndex((r) => r._id === id);
 }
+
+onMounted(() => {
+    const idDepartamento = route.query.id; // Obtén el departamento de la URL
+    if (idDepartamento) {
+        data.value.idDepart = idDepartamento;
+    }
+
+    getDepartamentos(); // Cargar la lista de departamentos para seleccionar en caso de que no haya ID en la URL.
+
+    if (idDepartamento) {
+        // Si existe un departamento en la ruta, cargamos las ciudades de ese departamento
+        getCiudadesPorDepartamento(idDepartamento);
+    } else {
+        // Si no hay un departamento específico, cargamos todas las ciudades
+        getInfo();
+    }
+});
+;
 
 </script>
 

@@ -31,6 +31,7 @@ const contacto = ref([]);
 const loading = ref(false);  // Variable para controlar el estado de carga
 const modalSeleccion = ref(false); // Controla la visibilidad del modal
 const modalContactoSalon = ref(false);
+const modalGaleriaVisible = ref(false);
 const tipoSeleccion = ref(''); // Indica el tipo de selección actual
 const tituloModal = ref(''); // Título dinámico del modal
 const opcionesSeleccion = ref([]); // Opciones que se mostrarán en el modal
@@ -197,6 +198,10 @@ function abrirModalContacto() {
     arraySeleccionado.value = data.value.idContactoSalon; // Contacto previamente seleccionado
   }
   modalContactoSalon.value = true;
+}
+
+function abrirModalGaleria() {
+  modalGaleriaVisible.value = true;
 }
 
 async function agregarNuevoElemento() {
@@ -427,13 +432,13 @@ function seleccionarContacto(val, opcion) {
 // Validar campos de data antes de enviar
 function validarData() {
   // Definir las reglas de validación para cada campo
-  if (!data.value.nombre_sal || data.value.nombre_sal.trim() === '') {
-    notificar('negative', 'El nombre del salón es obligatorio.');
+  if (!data.value.idCiudSalonEvento) {
+    notificar('negative', 'Debe seleccionar una ciudad para el salón.');
     return false;
   }
 
-  if (!data.value.idCiudSalonEvento) {
-    notificar('negative', 'Debe seleccionar una ciudad para el salón.');
+  if (!data.value.nombre_sal || data.value.nombre_sal.trim() === '') {
+    notificar('negative', 'El nombre del salón es obligatorio.');
     return false;
   }
 
@@ -576,13 +581,19 @@ function limpiarFormulario() {
 
 onMounted(async () => {
   const id = useSalonEvento.idSalonSelec;  // Obtener el id del salón de la ruta
+
   if (id) {
+    // Modo edición
     salonId.value = id;  // Guardar el id en la referencia
-    editMode.value = true;  // Estamos en modo edición
+    editMode.value = true;  // Cambiar a modo edición
     await cargarSalon(id);  // Cargar los datos del salón
+  } else {
+    // Modo agregar
+    limpiarFormulario();  // Limpiar datos si no hay id
+    editMode.value = false;  // Cambiar a modo creación
   }
 
-
+  // Cargar listas desde los stores
   getCiudades();
   getTipoEventos();
   getTipoSalones();
@@ -590,7 +601,8 @@ onMounted(async () => {
   getServicios();
   getUbicaciones();
   getContactosSalon();
-})
+});
+
 </script>
 
 <template>
@@ -610,7 +622,7 @@ onMounted(async () => {
         <div class="form-group">
           <p>Digite el nombre del salón:</p>
           <q-input v-model="data.nombre_sal" label="Nombre del salón" filled
-            :rules="[val => !!val || 'Campo obligatorio']" />
+            :rules="[val => !!val || 'Digite el nombre del salón']" />
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
@@ -618,14 +630,10 @@ onMounted(async () => {
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->
-        <div v-if="data.galeria_sal.length > 0" class="form-group">
-          <p>Imágenes subidas:</p>
-          <div v-for="(image, index) in data.galeria_sal" :key="index" class="q-gutter-md row items-center">
-            <img :src="image.url" alt="Imagen del salón" width="150px" />
-            <div class="ml-md">
-              <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
-            </div>
-          </div>
+        <div class="form-group">
+          <q-btn color="primary" @click="abrirModalGaleria">
+            Ver Galería de Imágenes
+          </q-btn>
         </div>
 
         <!-- 3. Descripción del salón -->
@@ -663,7 +671,8 @@ onMounted(async () => {
         <!-- 8. Latitud -->
         <div class="form-group">
           <p>Latitud del salón (Google maps)</p>
-          <q-input v-model="data.latitud" label="Latitud" filled />
+          <q-input v-model="data.latitud" label="Latitud" filled
+            :rules="[val => val > 0 || 'Ingrese la latitud del salón']" />
         </div>
 
         <!-- 9. Longitud -->
@@ -826,6 +835,27 @@ onMounted(async () => {
           <q-btn flat label="Cancelar" color="primary" v-close-popup />
           <q-btn flat label="`Agregar Contacto" color="primary" :loading="loading" :disable="loading"
             @click="agregarNuevoContacto" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="modalGaleriaVisible" persistent>
+      <q-card style="min-width: 800px;">
+        <q-card-section>
+          <div class="q-pt-sm">
+            <h6>Galería de Imágenes del Salón</h6>
+
+            <!-- Mostramos las imágenes en filas de 4 columnas (ajustable) -->
+            <div class="row q-gutter-md">
+              <div v-for="(image, index) in data.galeria_sal" :key="index" class="col-3">
+                <img :src="image.url" alt="Imagen del salón" style="width: 100%; height: auto; object-fit: cover;" />
+                <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cerrar" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>

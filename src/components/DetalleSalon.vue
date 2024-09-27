@@ -179,20 +179,26 @@ onMounted(async () => {
           </div>
 
           <!-- Modal for Image Gallery -->
-          <q-dialog v-model="galleryOpen" full-width>
+          <!-- Modal para galería de imágenes -->
+          <!-- Modal para galería de imágenes -->
+          <!-- Modal para galería de imágenes -->
+          <q-dialog v-model="galleryOpen" full-width full-height>
             <q-card>
               <q-card-section>
-                <!-- Close button -->
+                <!-- Botón de cerrar -->
                 <q-btn flat round icon="close" @click="galleryOpen = false" class="absolute-top-right" />
 
-                <!-- Gallery in Modal -->
-                <div class="gallery-grid">
-                  <q-img v-for="(image, index) in detalleSalon.galeria_sal" :key="image.publicId" :src="image.url"
-                    class="gallery-grid-item" :alt="detalleSalon.nombre_sal" :ratio="1" />
+                <!-- Galería de imágenes dentro del modal -->
+                <div class="gallery-normal">
+                  <q-img v-for="(image, index) in detalleSalon.galeria_sal" :key="index" :src="image.url"
+                    class="gallery-normal-item" :alt="detalleSalon.nombre_sal" />
                 </div>
               </q-card-section>
             </q-card>
           </q-dialog>
+
+
+
           <!-- Banner de información -->
           <div class="q-mb-md banner-info fixed-banner">
             <q-banner
@@ -220,6 +226,21 @@ onMounted(async () => {
           <h2 class="text-bold">Descripción</h2>
           <p v-html="formatReglamento(detalleSalon.descripcion_sal)"></p>
         </q-card-section>
+
+        <q-separator />
+
+        <q-expansion-item class="q-mt-md" expand-separator :default-opened="true">
+          <template v-slot:header>
+            <span class="custom-label">TIPOS DE EVENTOS</span>
+          </template>
+          <q-list>
+            <q-item v-for="ambiente in detalleSalon.idAmbienteSalon" :key="ambiente._id"
+              style="display: flex; align-items: center; gap: 5px;">
+              <q-icon name="check_circle" color="green" />
+              <q-item-section>{{ ambiente.nombre_amb }}</q-item-section>
+            </q-item>
+          </q-list>
+        </q-expansion-item>
 
         <q-separator />
 
@@ -419,23 +440,44 @@ onMounted(async () => {
   pointer-events: none;
 }
 
-.gallery-grid {
+/* Galería con imágenes que respetan su tamaño original */
+.gallery-normal {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 15px;
+  /* Espacio entre las imágenes */
+  padding: 30px;
+  overflow-y: auto;
+  /* Permitir desplazamiento vertical si hay muchas imágenes */
+  max-height: 80vh;
+  /* Limitar la altura total del modal */
 }
 
-.gallery-grid-item {
-  cursor: pointer;
-  transition: transform 0.2s;
+/* Cada imagen dentro de la galería */
+.gallery-normal-item {
   width: 100%;
   height: auto;
+  object-fit: contain;
+  /* No recortar las imágenes, mostrar todo su contenido */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
 }
 
-.gallery-grid-item:hover {
-  transform: scale(1.05);
+/* Efecto de hover sobre las imágenes */
+.gallery-normal-item:hover {
+  transform: scale(1.1);
+  /* Efecto de zoom ligero al pasar el cursor */
 }
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .gallery-normal {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    /* Ajustar el tamaño mínimo de las columnas */
+  }
+}
+
 
 .gallery-image-large {
   width: 70%;
@@ -458,25 +500,32 @@ onMounted(async () => {
 /* Ajustes responsivos usando media queries */
 @media (max-width: 1450px) {
   .fixed-banner {
-    position: relative; /* Para que el banner no sea fijo en pantallas pequeñas */
-    width: 100%; /* Toma todo el ancho disponible */
+    position: relative;
+    /* Para que el banner no sea fijo en pantallas pequeñas */
+    width: 100%;
+    /* Toma todo el ancho disponible */
     left: 0;
     margin-top: 20px;
-    transform: none; /* Elimina el translateX */
+    transform: none;
+    /* Elimina el translateX */
   }
 }
 
 @media (max-width: 900px) {
   .fixed-banner {
-    position: relative; /* Para que el banner no sea fijo en pantallas pequeñas */
-    width: 100%; /* Toma todo el ancho disponible */
+    position: relative;
+    /* Para que el banner no sea fijo en pantallas pequeñas */
+    width: 100%;
+    /* Toma todo el ancho disponible */
     left: 0;
     margin-top: 20px;
-    transform: none; /* Elimina el translateX */
+    transform: none;
+    /* Elimina el translateX */
   }
 
   .my-card {
-    margin-left: 0; /* Eliminar el margen para pantallas pequeñas */
+    margin-left: 0;
+    /* Eliminar el margen para pantallas pequeñas */
   }
 }
 
@@ -503,4 +552,3 @@ onMounted(async () => {
   color: white;
 }
 </style>
-

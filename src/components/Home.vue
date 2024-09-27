@@ -39,7 +39,8 @@ async function getSalones() {
 function irDetalleSalon(salon) {
     useSalon.detalleSalon = salon;
     useSalon.devolverHomeDetalle = true;
-    router.push('/detalle-salon')
+    const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
+    window.open(url, '_blank');
 }
 
 function nextImage(salonId) {
@@ -54,6 +55,13 @@ function prevImage(salonId) {
     if (salon) {
         imageIndices.value[salonId] = (imageIndices.value[salonId] - 1 + salon.galeria_sal.length) % salon.galeria_sal.length;
     }
+}
+
+function formatPrice(price) {
+  if (price) {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  return price;
 }
 
 onMounted(() => {
@@ -97,8 +105,7 @@ onMounted(() => {
                                     {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                                 </div>
                                 <div class="text-subtitle2">
-                                    <q-icon name="attach_money" size="18px" />
-                                    {{ salon.precio_sal }}
+                                    Desde {{ formatPrice(salon.precio_sal) }} $
                                 </div>
                             </div>
                         </q-card-section>
@@ -141,8 +148,7 @@ onMounted(() => {
                                     {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                                 </div>
                                 <div class="text-subtitle2">
-                                    <q-icon name="attach_money" size="18px" />
-                                    {{ salon.precio_sal }}
+                                    Desde {{ formatPrice(salon.precio_sal) }} $
                                 </div>
                             </div>
                         </q-card-section>
