@@ -4,14 +4,15 @@ import { useQuasar } from 'quasar';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreReglamentoSalon } from '../stores/reglamento.js';
 import { useStoreReserva } from '../stores/reserva.js';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const useSalon = useStoreSalon();
 const useReserva = useStoreReserva();
 const $q = useQuasar();
 const router = useRouter();
+const route = useRoute();
 const useReglamento = useStoreReglamentoSalon();
-const detalleSalon = ref(useSalon.detalleSalon);
+const detalleSalon = ref('');
 const reglamento = ref("");
 const dialogoAbierto = ref(false);
 const mensaje = ref('Hola, estamos pensando en celebrar nuestro evento en tus instalaciones. ¿Nos podrías enviar más información acerca de este salón para eventos? Gracias.');
@@ -21,6 +22,7 @@ const telefono = ref('');
 const fecha = ref('');
 const invitados = ref('');
 const minDate = ref(getCurrentDate());
+const salonId = ref('')
 
 function notificar(tipo, msg, posicion = "top") {
   $q.notify({
@@ -35,6 +37,25 @@ function formatReglamento(texto) {
   return texto ? texto.replace(/\n/g, '<br>') : '';
 }
 
+function formatPrice(price) {
+  if (price) {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  return price;
+}
+
+async function cargarSalon(id) {
+  try {
+    const response = await useSalon.getPorId(id);
+    console.log("datos salonnn", response)
+    if (response) {
+      detalleSalon.value = response;
+    }
+  } catch (error) {
+    notificar('negative', 'Error al cargar los datos del salón.');
+    console.error('Error al cargar salón:', error);
+  }
+}
 
 
 async function getReglamentoSalon() {
@@ -46,29 +67,6 @@ async function getReglamentoSalon() {
     console.log(error);
   }
 }
-
-/* const goBack = () => {
-  if (useSalon.devolverHomeDetalle === true) {
-    router.push('/home');
-    useSalon.devolverHomeDetalle = false;
-  } else {
-    router.push('/busqueda');
-  }
-}; */
-
-/* const enviarFormulario = () => {
-  console.log('Formulario enviado:', {
-    mensaje_res: mensaje.value,
-    nombre_cliente: nombre.value,
-    correo_cliente: email.value,
-    telefono_cliente: telefono.value,
-    cant_pers_res: invitados.value,
-    fecha_res: fecha.value,
-    idSalonEvento: detalleSalon.value._id
-  })
-
-  dialogoAbierto.value = false
-} */
 
 const limpiar = () => {
   nombre.value = '';
@@ -140,7 +138,13 @@ function openGallery() {
   galleryOpen.value = true;
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const id = route.query.id; // Obtener el id del salón de la ruta
+  if (id) {
+    salonId.value = id;  // Guardar el id en la referencia
+    await cargarSalon(id);  // Cargar los datos del salón
+  }
+
   getReglamentoSalon();
 })
 </script>
@@ -152,7 +156,7 @@ onMounted(() => {
         <!-- Encabezado con botón de regreso -->
 
         <div style="display: flex; width: 100%; flex-direction: column;">
-          <div v-if="detalleSalon.galeria_sal.length" class="gallery-banner-container">
+          <div v-if="detalleSalon.galeria_sal" class="gallery-banner-container">
             <div class="gallery">
               <!-- Imagen principal -->
               <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
@@ -194,8 +198,8 @@ onMounted(() => {
             <q-banner
               style="  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12); padding: 25px;">
               <h2 class="title text-bold">{{ detalleSalon.nombre_sal }}</h2>
-              <q-item-label class="precio">Precio: {{ detalleSalon.precio_sal }}</q-item-label>
-              <q-item-label class="capacidad">Capacidad: {{ detalleSalon.capacidad_max }} personas</q-item-label>
+              <q-item-label class="precio">Precio: {{ formatPrice(detalleSalon.precio_sal) }}</q-item-label>
+              <q-item-label class="capacidad">Capacidad máxima: {{ detalleSalon.capacidad_max }} personas</q-item-label>
               <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
               <div style="display: flex; justify-content: center;">
                 <q-btn class="btn" @click="dialogoAbierto = true">Pedir información...</q-btn>
@@ -334,10 +338,9 @@ onMounted(() => {
 <style scoped>
 .custom-label {
   font-weight: bolder;
-  /* O el valor de font-weight que prefieras */
   display: flex;
   align-items: center;
-  font-size: 1rem;   /* Cambia el tamaño de la letra, por ejemplo a 1.5rem */
+  font-size: 1rem;
 }
 
 .detalle-salon {
@@ -364,16 +367,13 @@ onMounted(() => {
   margin-top: 20px;
   background-color: black;
   color: white;
-
 }
-
-
 
 .tipo,
 .capacidad,
 .reglamento,
 .direccion {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #000000;
 }
 
@@ -382,8 +382,6 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
 }
-
-
 
 .gallery {
   display: flex;
@@ -414,19 +412,16 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   color: white;
   background-color: rgba(0, 0, 0, 0.5);
-  /* Fondo semitransparente */
   padding: 10px;
   font-weight: bold;
   border-radius: 5px;
   text-align: center;
   pointer-events: none;
-  /* Elimina la interacción con el texto */
 }
 
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  /* Responsive grid */
   gap: 10px;
   padding: 20px;
 }
@@ -440,7 +435,6 @@ onMounted(() => {
 
 .gallery-grid-item:hover {
   transform: scale(1.05);
-  /* Hover zoom effect */
 }
 
 .gallery-image-large {
@@ -453,18 +447,37 @@ onMounted(() => {
   gap: 10px;
 }
 
-
-
-
 /* Banner fijo */
 .fixed-banner {
   position: fixed;
   left: 65%;
   width: 450px;
-
-  /* Ajusta el ancho según sea necesario */
-
   z-index: 1000;
+}
+
+/* Ajustes responsivos usando media queries */
+@media (max-width: 1450px) {
+  .fixed-banner {
+    position: relative; /* Para que el banner no sea fijo en pantallas pequeñas */
+    width: 100%; /* Toma todo el ancho disponible */
+    left: 0;
+    margin-top: 20px;
+    transform: none; /* Elimina el translateX */
+  }
+}
+
+@media (max-width: 900px) {
+  .fixed-banner {
+    position: relative; /* Para que el banner no sea fijo en pantallas pequeñas */
+    width: 100%; /* Toma todo el ancho disponible */
+    left: 0;
+    margin-top: 20px;
+    transform: none; /* Elimina el translateX */
+  }
+
+  .my-card {
+    margin-left: 0; /* Eliminar el margen para pantallas pequeñas */
+  }
 }
 
 .q-expansion-item {
@@ -486,8 +499,8 @@ onMounted(() => {
   white-space: pre-line;
 }
 
-
 .right-btn {
   color: white;
 }
 </style>
+

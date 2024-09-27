@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { defineStore } from "pinia";
+import { useQuasar } from "quasar";
 
 const modelo = "salon-evento";
 const estatus = ref("");
@@ -28,11 +29,21 @@ const salonCiudLatitud = ref("");
 const salonCiudLongitud = ref("");
 const devolverHomeDetalle = ref(false);
 const loading = ref(false);
+const idSalonSelec = ref('');
+
 
 export const useStoreSalon = defineStore(
   modelo,
   () => {
     const salones = ref([]);
+    const $q = useQuasar();
+    function notificar(tipo, msg) {
+      $q.notify({
+        type: tipo,
+        message: msg,
+        position: "top",
+      });
+    }
 
     const getAll = async () => {
       try {
@@ -104,6 +115,7 @@ export const useStoreSalon = defineStore(
       } catch (error) {
         console.log(error);
         estatus.value = error.response.status;
+        notificar("negative", error.response.data.error);
       }
     };
 
@@ -199,6 +211,7 @@ export const useStoreSalon = defineStore(
       subirGrupoFotos,
       urlImagen,
       publicImagen,
+      idSalonSelec,
     };
   },
   {

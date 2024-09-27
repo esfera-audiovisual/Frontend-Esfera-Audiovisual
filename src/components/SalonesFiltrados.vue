@@ -293,7 +293,8 @@ function verDetalleSalon(salon) {
   useSalon.salonFiltroServicio = [];
   useSalon.salonFiltroTipo = [];
   useSalon.salonFiltroUbicacion = [];
-  const url = router.resolve({ path: '/detalle-salon' }).href;
+  useSalon.idSalonSelec = salon._id;
+  const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
   window.open(url, '_blank');
 
 }
@@ -326,6 +327,14 @@ const filtrarSalones = async () => {
     loading.value = false;
   }
 };
+
+
+function formatPrice(price) {
+  if (price) {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  return price;
+}
 
 
 const debouncedFiltrarSalones = debounce(filtrarSalones, 1200);
@@ -538,12 +547,8 @@ onMounted(() => {
                         {{ getNombresAmbiente(salon.idAmbienteSalon) }}
                       </div>
                       <div class="text-subtitle2">
-                        <q-icon name="description" size="18px" />
-                        {{ salon.descripcion_sal }}
-                      </div>
-                      <div class="text-subtitle2">
-                        <q-icon name="attach_money" size="18px" />
-                        {{ salon.precio_sal }}
+                        Desde
+                      {{ formatPrice(salon.precio_sal) }} $
                       </div>
                       <div class="text-subtitle2">
                         <q-icon name="groups" size="18px" />
@@ -664,7 +669,7 @@ onMounted(() => {
 .card-image {
   flex: 4.5;
   /* Ajusta el ancho de la imagen */
-  height: auto;
+  max-height: 250px;
   /* Ajusta el alto de la imagen automáticamente */
   object-fit: cover;
   border-radius: 8px;

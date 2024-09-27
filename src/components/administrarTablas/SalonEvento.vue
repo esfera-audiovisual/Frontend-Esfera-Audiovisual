@@ -71,13 +71,14 @@ getInfo();
 
 const opciones = {
     agregar: () => {
-        router.push('/panel-admin/formulario-salon'); // Navigate to the form page for adding a salon
+        router.push('/panel-admin/formulario-salon'); 
     },
     editar: (info) => {
         router.push({
             path: '/panel-admin/formulario-salon',
-            query: { id: info._id } // Pass the id as a query parameter to the form page
+            query: { id: info._id } 
         });
+        useSalonEvento.idSalonSelec = info._id;
     }
 };
 

@@ -327,7 +327,7 @@ onMounted(() => {
 
             <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
 
-            <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" />
+            <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" style="margin-left: 10px;" />
           </div>
 
 

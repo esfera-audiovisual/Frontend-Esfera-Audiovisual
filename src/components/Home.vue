@@ -174,49 +174,6 @@ onMounted(() => {
                 </q-card>
             </div>
         </section>
-
-        <!-- Sección de Salones -->
-        <h1 class="text-center">Nuestros salones</h1>
-        <div v-if="loading" class="loading-container">
-            <q-spinner color="dark" size="2em" />
-            <p>Cargando salones...</p>
-        </div>
-        <div v-else class="salones">
-            <div v-for="salon in salones" :key="salon._id" class="salon-card">
-                <q-card class="my-card">
-                    <div class="card-content">
-                        <q-img :src="salon.galeria_sal[0].url" class="card-image" />
-                        <q-card-section class="card-details">
-                            <div class="text-h6 text-bold">{{ salon.nombre_sal }}</div>
-                            <div class="text-subtitle2">
-                                <q-icon name="location_on" size="18px" />
-                                {{ salon.idCiudSalonEvento.nombre_ciud }}, {{
-                                    salon.idCiudSalonEvento.idDepart.nombre_depart }}
-                            </div>
-                            <div class="text-subtitle2">
-                                <q-icon name="architecture" size="18px" />
-                                {{ getNombresAmbiente(salon.idAmbienteSalon) }}
-                            </div>
-                            <div class="text-subtitle2">
-                                <q-icon name="description" size="18px" />
-                                {{ salon.descripcion_sal }}
-                            </div>
-                            <div class="text-subtitle2">
-                                <q-icon name="attach_money" size="18px" />
-                                {{ salon.precio_sal }}
-                            </div>
-                            <div class="text-subtitle2">
-                                <q-icon name="groups" size="18px" />
-                                {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
-                            </div>
-                            <div class="row justify-end">
-                                <q-btn color="dark" label="Ver información..." size="sm" />
-                            </div>
-                        </q-card-section>
-                    </div>
-                </q-card>
-            </div>
-        </div>
     </div>
 </template>
 

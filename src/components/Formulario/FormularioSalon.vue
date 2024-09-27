@@ -41,6 +41,8 @@ const modalCrearContacto = ref(false);
 const tipoCrear = ref(''); // Indica el tipo de atributo que se está creando (servicio, tipo_salon, etc.)
 const nuevoElemento = ref(''); // Almacena el nombre del nuevo atributo que se está creando
 const searchQuery = ref('');
+const salonId = ref(null);  // Guardar el id del salón
+const editMode = ref(false);  // Modo edición
 
 function notificar(tipo, msg) {
   $q.notify({
@@ -51,8 +53,8 @@ function notificar(tipo, msg) {
 };
 
 const data = ref({
-  galeria_sal: [],
   idCiudSalonEvento: null,
+  galeria_sal: [],
   idServiciosSalon: [], // Para almacenar las IDs de los servicios seleccionados
   idTipoSalon: [], // Para los tipos de salón
   idAmbienteSalon: [], // Para los tipos de eventos
@@ -123,6 +125,30 @@ function removeImage(publicId) {
     notificar('negative', 'Hubo un error al eliminar la imagen.');
   }
 }
+
+async function cargarSalon(id) {
+  try {
+    const response = await useSalonEvento.getPorId(id);
+    if (response) {
+      data.value = {
+        ...data.value,
+        ...response,
+        idCiudSalonEvento: response.idCiudSalonEvento._id,  // Asegúrate de que solo sea el _id
+        idContactoSalon: response.idContactoSalon?._id || null,
+        idAmbienteSalon: response.idAmbienteSalon.map(ambiente => ambiente._id),  // Solo los _ids de los ambientes
+        idEspaciosSalon: response.idEspaciosSalon.map(espacio => espacio._id),
+        idServiciosSalon: response.idServiciosSalon.map(servicio => servicio._id),
+        idTipoSalon: response.idTipoSalon.map(tipo => tipo._id),
+        idUbicacionSalon: response.idUbicacionSalon.map(ubicacion => ubicacion._id),
+      };
+      arrayContacto.value = response.idContactoSalon?._id || null;
+    }
+  } catch (error) {
+    notificar('negative', 'Error al cargar los datos del salón.');
+    console.error('Error al cargar salón:', error);
+  }
+}
+
 
 function abrirModalSeleccion(tipo) {
   tipoSeleccion.value = tipo;
@@ -363,24 +389,12 @@ function customFilter(val, update) {
 
 // Ciudades filtradas
 const filteredCiudades = computed(() => {
-  if (!searchQuery.value) {
-    return ciudades.value.map(ciudad => ({
-      _id: ciudad._id,
-      label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
-    }));
-  }
-
-  return ciudades.value
-    .filter(ciudad =>
-      `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
-        .toLowerCase()
-        .includes(searchQuery.value)
-    )
-    .map(ciudad => ({
-      _id: ciudad._id,
-      label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}`
-    }));
+  return ciudades.value.map(ciudad => ({
+    _id: ciudad._id,
+    label: `${ciudad.nombre_ciud}, ${ciudad.idDepart.nombre_depart}` // Asegúrate de que la etiqueta contenga ciudad y departamento
+  }));
 });
+
 
 function seleccionarElemento(seleccionado, idElemento) {
   if (!Array.isArray(arraySeleccionado.value)) {
@@ -408,9 +422,7 @@ function seleccionarContacto(val, opcion) {
   }
   console.log("Contacto seleccionado:", data.value.idContactoSalon);
 }
-function prueba() {
-  console.log("soy prueba", data)
-}
+
 
 // Validar campos de data antes de enviar
 function validarData() {
@@ -518,6 +530,26 @@ async function agregarSalon() {
   }
 }
 
+// Función para editar salón
+async function editarSalon() {
+  if (!validarData()) return;  // Valida los datos antes de enviarlos
+
+  loading.value = true;
+  try {
+    const response = await useSalonEvento.editar(salonId.value, data.value);  // Edita el salón con el id y los nuevos datos
+    if (response) {
+      notificar('positive', 'El salón ha sido actualizado exitosamente.');
+      router.push('/panel-admin/salon-evento');  // Redirigir a la lista de salones
+    }
+  } catch (error) {
+    notificar('negative', 'Error al actualizar el salón.');
+    console.error('Error al actualizar salón:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+
 function limpiarFormulario() {
   // Resetear el objeto `data` para limpiar el formulario
   data.value = {
@@ -542,7 +574,15 @@ function limpiarFormulario() {
 }
 
 
-onMounted(() => {
+onMounted(async () => {
+  const id = useSalonEvento.idSalonSelec;  // Obtener el id del salón de la ruta
+  if (id) {
+    salonId.value = id;  // Guardar el id en la referencia
+    editMode.value = true;  // Estamos en modo edición
+    await cargarSalon(id);  // Cargar los datos del salón
+  }
+
+
   getCiudades();
   getTipoEventos();
   getTipoSalones();
@@ -565,6 +605,7 @@ onMounted(() => {
             hint="Escriba para buscar una ciudad" :rules="[val => !!val || 'Debe seleccionar una ciudad']"
             no-options-value="Sin coincidencias" @filter="customFilter" />
         </div>
+
         <!-- 1. Nombre del salón -->
         <div class="form-group">
           <p>Digite el nombre del salón:</p>
@@ -573,15 +614,17 @@ onMounted(() => {
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
-          <p>Seleccione las imágenes del salón:</p>
+          <p>Seleccione las imágenes del salón (mínimo 4 fotos):</p>
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->
         <div v-if="data.galeria_sal.length > 0" class="form-group">
           <p>Imágenes subidas:</p>
-          <div v-for="(image, index) in data.galeria_sal" :key="index" class="image-preview">
+          <div v-for="(image, index) in data.galeria_sal" :key="index" class="q-gutter-md row items-center">
             <img :src="image.url" alt="Imagen del salón" width="150px" />
-            <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
+            <div class="ml-md">
+              <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
+            </div>
           </div>
         </div>
 
@@ -612,7 +655,7 @@ onMounted(() => {
 
         <!-- 7. Precio máximo del salón -->
         <div class="form-group">
-          <p>Precio máximo del salón:</p>
+          <p>Precio mínimo de la reserva del salón:</p>
           <q-input v-model.number="data.precio_sal" label="Precio del salón" type="number" filled
             :rules="[val => val > 0 || 'Debe ser mayor a 0']" />
         </div>
@@ -674,7 +717,11 @@ onMounted(() => {
 
       <q-card-section>
         <div style="display: flex; justify-content: center;">
-          <q-btn color="primary" @click="agregarSalon()">Agregar Salón</q-btn>
+          <!-- Botón de enviar -->
+          <q-btn color="green" @click="editMode ? editarSalon() : agregarSalon()">
+            {{ editMode ? 'Guardar Cambios' : 'Agregar Salón' }}
+          </q-btn>
+
         </div>
       </q-card-section>
     </q-card>
