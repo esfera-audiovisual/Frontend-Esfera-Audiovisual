@@ -316,25 +316,23 @@ onUnmounted(() => {
     <!-- Cabecera / Navbar -->
     <q-header elevated>
       <q-toolbar class="custom-toolbar">
-        <!-- Logo y Botón Toggler -->
-        <div class="logo-container d-flex align-items-center">
+        <div class="logo-container">
           <router-link to="/home">
             <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar" />
           </router-link>
           <h6 class="logo-title">Esfera Audiovisual</h6>
-
-          <!-- Mostrar el botón de Toggler sólo en pantallas de 984px o menos -->
-          <q-btn v-if="windowWidth <= 1200" flat  icon="menu" label="Filtros" class="right-btn bg-primary ms-auto"
-            @click="toggleNavModal" style="margin-left: 10px;" />
+          <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary" @click="toggleNavModal" />
         </div>
 
         <!-- Contenido de la barra de navegación visible en pantallas grandes (más de 984px) -->
         <div v-if="windowWidth > 1201" class="inputs-container">
           <q-select filled v-model="ciudad" use-input hide-selected fill-input input-debounce="0"
-            :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades" placeholder="¿Dónde?" class="input-item" />
+            :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades" placeholder="¿Dónde?"
+            class="input-item" />
 
           <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
-            :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento" class="input-item" />
+            :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento"
+            class="input-item" />
 
           <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
             :options="cantidad_personas" placeholder="¿Cuántas personas?" class="input-item" />
@@ -375,11 +373,13 @@ onUnmounted(() => {
           <q-list>
             <q-item>
               <q-select filled v-model="ciudad" use-input hide-selected fill-input input-debounce="0"
-                :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades"  placeholder="¿Dónde?" class="input-item" />
+                :options="getCiudadesFiltradas(ciudades)" @filter="filtrarCiudades" placeholder="¿Dónde?"
+                class="input-item" />
             </q-item>
             <q-item>
               <q-select filled v-model="ambiente" use-input hide-selected fill-input input-debounce="0"
-                :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento" class="input-item" />
+                :options="getAmbientesFiltrados(ambientes)" @filter="filtrarAmbientes" placeholder="Tipo Evento"
+                class="input-item" />
             </q-item>
             <q-item>
               <q-select filled v-model="c_personas" use-input hide-selected fill-input input-debounce="0"
@@ -389,9 +389,8 @@ onUnmounted(() => {
               <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
             </q-item>
             <q-item>
-              <div style="display: flex; justify-content: center; width: 100%; color: white">
-                <q-btn flat  label="Buscar" class="bg-primary" @click="filtrarSalones"
-                />
+              <div style="display: flex; justify-content: center; width: 100%; color: white;">
+                <q-btn flat label="Buscar" class="bg-primary" @click="filtrarSalones"/>
               </div>
 
             </q-item>
@@ -455,6 +454,7 @@ onUnmounted(() => {
 }
 
 .search-btn {
+  margin-left: 10px;
   height: 35px;
   width: 35px;
   color: white;
@@ -505,8 +505,8 @@ onUnmounted(() => {
     flex-direction: column;
   }
 
-  .right-side{
-  margin-bottom: 20px;
+  .right-side {
+    margin-bottom: 20px;
   }
 
 }

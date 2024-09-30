@@ -144,7 +144,7 @@ function notificar(tipo, msg) {
 
 <style scoped>
 main {
-  width: 100vw;
+  width: 100%;
   height: 100%;
 }
 

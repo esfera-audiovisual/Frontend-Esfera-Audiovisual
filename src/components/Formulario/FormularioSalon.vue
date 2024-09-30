@@ -840,25 +840,33 @@ onMounted(async () => {
     </q-dialog>
 
     <q-dialog v-model="modalGaleriaVisible" persistent>
-      <q-card style="min-width: 800px;">
-        <q-card-section>
-          <div class="q-pt-sm">
-            <h6>Galería de Imágenes del Salón</h6>
+      <q-card style="min-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
 
-            <!-- Mostramos las imágenes en filas de 4 columnas (ajustable) -->
-            <div class="row q-gutter-md">
-              <div v-for="(image, index) in data.galeria_sal" :key="index" class="col-3">
-                <img :src="image.url" alt="Imagen del salón" style="width: 100%; height: auto; object-fit: cover;" />
-                <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
-              </div>
+        <!-- Título fijo -->
+        <q-card-section class="sticky-title">
+          <div class="q-pt-sm">
+            <h6 class="text-uppercase text-bold">Galería de Imágenes del Salón</h6>
+          </div>
+        </q-card-section>
+
+        <!-- Sección de imágenes con scroll -->
+        <q-card-section class="scrollable-content" style="overflow-y: auto; flex-grow: 1;">
+          <div class="row q-gutter-md">
+            <div v-for="(image, index) in data.galeria_sal" :key="index" class="col-3">
+              <img :src="image.url" alt="Imagen del salón" style="width: 100%; height: auto; object-fit: cover;" />
+              <q-btn color="negative" size="sm" @click="removeImage(image.publicId)">Eliminar</q-btn>
             </div>
           </div>
         </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Cerrar" color="primary" v-close-popup />
+
+        <!-- Botón fijo -->
+        <q-card-actions class="sticky-footer" align="right">
+          <q-btn flat label="Cerrar" class="bg-primary" style="color: white;" v-close-popup />
         </q-card-actions>
+
       </q-card>
     </q-dialog>
+
   </div>
 </template>
 
@@ -874,5 +882,33 @@ onMounted(async () => {
 
 q-btn {
   margin-top: 10px;
+}
+
+.sticky-title {
+  position: sticky;
+  display: flex;
+  justify-content: center;
+  top: 0;
+  background-color: white;
+  /* Aseguramos que el título tenga un fondo visible */
+  z-index: 1;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.scrollable-content {
+  flex-grow: 1;
+  max-height: 60vh;
+  /* Ajusta según el espacio disponible */
+  overflow-y: auto;
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  /* Fondo blanco para asegurar visibilidad */
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 </style>
