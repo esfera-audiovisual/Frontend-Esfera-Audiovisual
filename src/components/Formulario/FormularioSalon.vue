@@ -626,7 +626,7 @@ onMounted(async () => {
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
-          <p>Seleccione las imágenes del salón (mínimo 4 fotos):</p>
+          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB) :</p>
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->

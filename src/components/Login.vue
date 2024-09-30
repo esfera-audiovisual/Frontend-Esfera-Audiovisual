@@ -4,14 +4,25 @@ import Login from '../assets/login.jpg';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreUsuarios } from '../stores/usuario.js'
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 
 const cedula = ref("");
 const password = ref("");
+const showPassword = ref(false); // New ref for toggling password visibility
 const useSalon = useStoreSalon();
 const useUsuario = useStoreUsuarios();
 const router = useRouter();
 const isCleaning = ref(false);
 const msgValidacion = ref("");
+const $q = useQuasar();
+
+function notificar(tipo, msg) {
+    $q.notify({
+        type: tipo,
+        message: msg,
+        position: "top",
+    });
+}
 
 const login = async () => {
     const data = {
@@ -25,31 +36,17 @@ const login = async () => {
         if (useUsuario.estatus === 200) {
             console.log(response);
             router.push('/panel-admin')
-        } else if (useUsuario.estatus === 400) {
-            msgValidacion.value = useUsuario.validacion
-            setTimeout(() => {
-                msgValidacion.value = "";
-                return;
-            }, 5000);
-            return;
-        } else if (useUsuario.estatus === 401) {
-            msgValidacion.value = useUsuario.validacion
-            setTimeout(() => {
-                msgValidacion.value = "";
-                return;
-            }, 5000);
+        } else if (useUsuario.estatus === 400 || useUsuario.estatus === 401) {
+            notificar('negative', 'Usuario o contraseña incorrectos');
             return;
         }
     } catch (error) {
         console.log(error);
+        notificar('negative', 'Usuario o contraseña incorrectos');
     }
 };
 
-
-
-
 function limpiar() {
-
     isCleaning.value = true;
     useSalon.salonFiltroCiudadNombre = "";
     useSalon.salonFiltroCiudad = "";
@@ -63,13 +60,11 @@ function limpiar() {
     useSalon.salonFiltroUbicacion = [];
     useSalon.salonFiltroFecha = "";
 
-
     setTimeout(() => {
         isCleaning.value = false;
         router.push('/home');
     }, 0);
 }
-
 </script>
 
 <template>
@@ -86,16 +81,22 @@ function limpiar() {
                         :rules="[val => !!val || 'Ingrese su cédula']" />
                 </div>
                 <div class="input-container">
-                    <q-input v-model="password" type="password" label="Contraseña" lazy-rules
-                        :rules="[val => !!val || 'Ingrese la contraseña']" />
+                    <q-input v-model="password" :type="showPassword ? 'text' : 'password'" label="Contraseña" lazy-rules
+                        :rules="[val => !!val || 'Ingrese la contraseña']">
+                        <template v-slot:append>
+                            <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" class="cursor-pointer"
+                                @click="showPassword = !showPassword" />
+                        </template>
+                    </q-input>
                 </div>
                 <div class="q-pt-md">
                     <q-btn type="submit" color="primary" class="submit">Ingresar</q-btn>
                 </div>
-                <p class="text-bold text-center text-red">{{ msgValidacion }}</p>
             </q-form>
             <p class="signup-link">
-                ¿Olvidaste tu contraseña? <a href="#">Haz clic aquí</a>
+                ¿Olvidaste tu contraseña? <router-link to="/recuperar-contrasena">
+                    <a href="#">Haz clic aquí</a>
+                </router-link>
             </p>
         </div>
     </div>
@@ -128,6 +129,7 @@ function limpiar() {
     margin-bottom: 1rem;
     font-size: 2rem;
     color: #333;
+    cursor: pointer;
 }
 
 .form {

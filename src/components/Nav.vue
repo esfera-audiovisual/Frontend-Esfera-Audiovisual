@@ -47,6 +47,7 @@ function toggleNavModal() {
 }
 
 function cerrarSesion() {
+  showProfileModal.value = false;
   useUsuario.token = '';
   useUsuario.usuario = '';
   useUsuario.id = '';

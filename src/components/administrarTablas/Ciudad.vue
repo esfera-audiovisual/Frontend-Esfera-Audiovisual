@@ -114,16 +114,16 @@ async function getInfo() {
 
 const opciones = {
     agregar: () => {
-        data.value = {}; // Limpiar los datos anteriores
+        data.value = {}; // Limpiar datos anteriores
 
+        estado.value = 'agregar';
+        modal.value = true;
         const idDepartamento = route.query.id; // Obtener el id del departamento desde la URL
-        console.log("iddd depart", idDepartamento)
         if (idDepartamento) {
-            data.value.idDepart = idDepartamento;
+            data.value.idDepart = idDepartamento; // Asignar el ID del departamento al campo correspondiente
         }
+        console.log("Departamento ID:", data.value.idDepart); // Asegúrate de que el ID esté presente
 
-        estado.value = 'agregar'; // Cambiamos el estado para saber que estamos agregando una nueva ciudad
-        modal.value = true; // Mostramos el modal
     },
     editar: (info) => {
         data.value = { ...info }; // Copiamos los datos de la ciudad que queremos editar
@@ -136,35 +136,47 @@ const opciones = {
 
 const enviarInfo = {
     agregar: async () => {
+        loadingModal.value = true;
         try {
-            loadingModal.value = true;
+            // Verificar qué datos se están enviando
+            console.log('Datos originales que se enviarán:', data.value);
 
-            // Si el idDepart es un objeto, extrae el _id, de lo contrario usa el valor tal como está
+            // Validar si `idDepart` es un objeto, y si es así, obtener el `_id`
             const dataToSend = {
                 ...data.value,
-                idDepart: typeof data.value.idDepart === 'object' ? data.value.idDepart._id : data.value.idDepart
+                idDepart: typeof data.value.idDepart === 'object' && data.value.idDepart !== null
+                    ? data.value.idDepart._id
+                    : data.value.idDepart
             };
 
-            // Envía la solicitud para registrar la nueva ciudad
+            // Imprimir los datos procesados que se enviarán
+            console.log('Datos procesados que se enviarán:', dataToSend);
+
             const response = await useCiudad.registro(dataToSend);
 
-            if (!response) return;
+            // Verificar la respuesta
+            console.log('Response:', response);
+
+            if (!response || Object.keys(response).length === 0) {
+                notificar('negative', 'La API no devolvió respuesta válida.');
+                return;
+            }
             if (response.error) {
                 notificar('negative', response.error);
                 return;
-            };
+            }
 
-            // Si el ID del departamento está en la URL, recargar solo las ciudades de ese departamento
+            // Actualiza la tabla después de agregar la nueva ciudad
             if (route.query.id) {
                 await getCiudadesPorDepartamento(route.query.id);
             } else {
                 await getInfo();
             }
 
-            modal.value = false; // Cerrar el modal
+            modal.value = false;
             notificar('positive', 'Ciudad agregada exitosamente');
         } catch (error) {
-            console.log(error);
+            console.error('Error en el registro:', error);
         } finally {
             loadingModal.value = false;
         }
@@ -172,7 +184,7 @@ const enviarInfo = {
     editar: async () => {
         loadingModal.value = true;
         try {
-            // Asegurarse de que solo se envíe el _id del departamento
+
             const dataToSend = {
                 ...data.value,
                 idDepart: data.value.idDepart ? data.value.idDepart._id : null // Solo guarda el _id del departamento
@@ -184,12 +196,8 @@ const enviarInfo = {
                 return;
             }
 
-            // 1. Elimina la ciudad editada de su posición actual
-
-            // 2. Inserta la ciudad editada en la primera posición del array
 
 
-            // Verificar si estás en el departamento filtrado
             const idDepartamento = route.query.id;
             if (idDepartamento) {
                 // Si el usuario está en un departamento, recargar solo las ciudades de ese departamento
@@ -198,7 +206,7 @@ const enviarInfo = {
                 rows.value.splice(index, 1);
                 rows.value.unshift(response);
             } else {
-                // Si no hay departamento, cargar todas las ciudades (en caso de ser necesario)
+                // Si no hay departamento, cargar todas las ciudades
                 await getInfo();
                 const index = buscarIndexLocal(response._id);
                 rows.value.splice(index, 1);
@@ -219,16 +227,15 @@ const enviarInfo = {
 
 function validarCampos() {
     const arrData = Object.values(data.value);
-    // Validar los otros campos
     for (const d of arrData) {
         if (d === null || (typeof d === "string" && d.trim() === "")) {
-            notificar('negative', 'Todos los campos son obligatorios.');
+            errorCamposVacios();
             return;
         }
     }
-
     enviarInfo[estado.value]();
 }
+
 
 
 const in_activar = {
@@ -273,18 +280,16 @@ function buscarIndexLocal(id) {
 }
 
 onMounted(() => {
-    const idDepartamento = route.query.id; // Obtén el departamento de la URL
+    const idDepartamento = route.query.id;
     if (idDepartamento) {
         data.value.idDepart = idDepartamento;
     }
 
-    getDepartamentos(); // Cargar la lista de departamentos para seleccionar en caso de que no haya ID en la URL.
+    getDepartamentos();
 
     if (idDepartamento) {
-        // Si existe un departamento en la ruta, cargamos las ciudades de ese departamento
         getCiudadesPorDepartamento(idDepartamento);
     } else {
-        // Si no hay un departamento específico, cargamos todas las ciudades
         getInfo();
     }
 });

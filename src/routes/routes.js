@@ -20,6 +20,7 @@ import ReservaSalon from "../components/administrarTablas/Reservas.vue";
 import ContactoSalon from "../components/administrarTablas/ContactoSalon.vue";
 import FormularioSalon from "../components/Formulario/FormularioSalon.vue";
 import NuevaContraseña from "../components/administrador/NuevaContraseña.vue";
+import recuperarContra from "../components/recuperarContraseña/RecuperarContrasena.vue";
 
 
 
@@ -69,6 +70,7 @@ const routes = [
     path: "/login",
     component: Login,
   },
+  { path: "/recuperar-contrasena", component: recuperarContra },
 ];
 
 export const router = createRouter({
