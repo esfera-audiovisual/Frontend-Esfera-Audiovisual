@@ -70,10 +70,10 @@ function limpiar() {
 <template>
     <div class="login-container">
         <div class="login-image">
-            <q-img :src="Login"></q-img>
+            <q-img :src="Login" class="login-img"></q-img>
         </div>
         <div class="login-form">
-            <h2 class="site-title text-uppercase text-bold" @click="limpiar">Esfera Audiovisual</h2>
+            <h2 class="site-title text-uppercase text-bold text-center" @click="limpiar">Esfera Audiovisual</h2>
             <q-form class="form" @submit.prevent="login">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
                 <div class="input-container">
@@ -107,14 +107,18 @@ function limpiar() {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100%;
 }
 
 .login-image {
-    background-size: cover;
-    background-position: center;
     width: 50%;
-    height: 100%;
+    height: 100vh;
+}
+
+.login-img {
+    max-width: 100%;
+    height: 100vh;
+    object-fit: cover;
 }
 
 .login-form {
@@ -173,4 +177,16 @@ function limpiar() {
     color: rgb(112, 27, 240);
     text-decoration: none;
 }
+
+/* Media query para pantallas menores a 800px */
+@media (max-width: 800px) {
+    .login-image {
+        display: none;
+    }
+
+    .login-form {
+        width: 100%;
+    }
+}
 </style>
+

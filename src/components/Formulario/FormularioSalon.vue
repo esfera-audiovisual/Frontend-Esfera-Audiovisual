@@ -853,9 +853,8 @@ onMounted(async () => {
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="modalGaleriaVisible" persistent>
-      <q-card style="min-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-
+    <q-dialog v-model="modalGaleriaVisible" full-width full-height>
+      <q-card style="display: flex; flex-direction: column;">
         <!-- Título fijo -->
         <q-card-section class="sticky-title">
           <div class="q-pt-sm">
