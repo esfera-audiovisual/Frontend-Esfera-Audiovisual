@@ -44,6 +44,7 @@ const nuevoElemento = ref(''); // Almacena el nombre del nuevo atributo que se e
 const searchQuery = ref('');
 const salonId = ref(null);  // Guardar el id del salón
 const editMode = ref(false);  // Modo edición
+const loadingSalon = ref(false);
 
 function notificar(tipo, msg) {
   $q.notify({
@@ -75,18 +76,19 @@ const nombreCampos = {
 const nuevoContacto = ref({
   nombre_cont: '',
   correo_cont: '',
-  telefono_cont: ''
+  telefono_cont: '',
+  telefono_whats: ''
 });
 
 async function subirFotosSalon(files) {
   if (!files || files.length === 0) return;
 
   const loadingNotify = $q.notify({
-        message: 'Subiendo imagen...',
-        spinner: true,
-        timeout: 0,
-        position: 'top',
-    });
+    message: 'Subiendo imagen...',
+    spinner: true,
+    timeout: 0,
+    position: 'top',
+  });
 
   try {
     for (let i = 0; i < files.length; i++) {
@@ -100,7 +102,7 @@ async function subirFotosSalon(files) {
         publicId: response.public_id,
       };
 
-      if(useSalonEvento.estatus === 200){
+      if (useSalonEvento.estatus === 200) {
         data.value.galeria_sal.push(imagenSubida);  // Guardamos la imagen en el array
         notificar('positive', 'Imagen guardada exitosamemnte');
       }
@@ -299,7 +301,8 @@ async function agregarNuevoContacto() {
     const dataContacto = {
       nombre_cont: nuevoContacto.value.nombre_cont,
       correo_cont: nuevoContacto.value.correo_cont,
-      telefono_cont: nuevoContacto.value.telefono_cont
+      telefono_cont: nuevoContacto.value.telefono_cont,
+      telefono_whats: nuevoContacto.value.telefono_whats
     };
 
     const response = await useContactoSalon.registro(dataContacto);
@@ -319,7 +322,8 @@ async function agregarNuevoContacto() {
       nuevoContacto.value = {
         nombre_cont: '',
         correo_cont: '',
-        telefono_cont: ''
+        telefono_cont: '',
+        telefono_whats: ''
       };
     }
   } catch (error) {
@@ -528,6 +532,7 @@ async function agregarSalon() {
   }
 
   loading.value = true;  // Mostramos un indicador de carga
+  loadingSalon.value = true;
 
   try {
     // Enviar la petición para registrar el salón
@@ -546,6 +551,7 @@ async function agregarSalon() {
     notificar('negative', 'Hubo un error en el registro.');
   } finally {
     loading.value = false;  // Ocultamos el indicador de carga
+    loadingSalon.value = false;
   }
 }
 
@@ -554,6 +560,7 @@ async function editarSalon() {
   if (!validarData()) return;  // Valida los datos antes de enviarlos
 
   loading.value = true;
+  loadingSalon.value = true;
   try {
     const response = await useSalonEvento.editar(salonId.value, data.value);  // Edita el salón con el id y los nuevos datos
     if (response) {
@@ -565,6 +572,7 @@ async function editarSalon() {
     console.error('Error al actualizar salón:', error);
   } finally {
     loading.value = false;
+    loadingSalon.value = false;
   }
 }
 
@@ -589,6 +597,7 @@ function limpiarFormulario() {
     latitud: '',
     longitud: '',
     video360: '',
+    video_sal: '',
   };
 }
 
@@ -695,10 +704,15 @@ onMounted(async () => {
           <q-input v-model="data.longitud" label="Longitud" filled />
         </div>
 
-        <!-- 10. Enlace de video 360 -->
+        <!-- 10. Enlace de video 360 y video salón -->
         <div class="form-group">
           <p>Enlace del video de realidad virtual o video 360 (opcional):</p>
           <q-input v-model="data.video360" label="URL de video 360 (opcional)" filled />
+        </div>
+
+        <div class="form-group">
+          <p>Enlace del video del salón (opcional):</p>
+          <q-input v-model="data.video_sal" label="URL del video   (opcional)" filled />
         </div>
 
         <!-- 11. Selección de tipos de eventos -->
@@ -741,8 +755,8 @@ onMounted(async () => {
       <q-card-section>
         <div style="display: flex; justify-content: center;">
           <!-- Botón de enviar -->
-          <q-btn color="green" @click="editMode ? editarSalon() : agregarSalon()">
-            {{ editMode ? 'Guardar Cambios' : 'Agregar Salón' }}
+          <q-btn color="green" @click="editMode ? editarSalon() : agregarSalon()" :loading="loadingSalon" :disable="loadingSalon">
+            {{ editMode ? 'Guardar Cambios' : 'Agregar Salón' }} 
           </q-btn>
 
         </div>
@@ -754,7 +768,7 @@ onMounted(async () => {
       <q-card style="min-width: 600px;">
         <q-card-section>
           <div class="q-pt-sm">
-            <h6>{{ tituloModal }}</h6>
+            <p class="text-bold text-h6 text-uppercase">{{ tituloModal }}</p>
             <p>Seleccione las opciones correspondientes:</p>
             <q-list bordered separator>
               <q-item v-for="opcion in opcionesSeleccion" :key="opcion._id" clickable v-ripple>
@@ -769,7 +783,8 @@ onMounted(async () => {
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Aceptar" color="primary" v-close-popup />
-          <q-btn flat :label="`Crear ${tipoSeleccion}`" color="secondary" @click="abrirModalCrear(tipoSeleccion)" />
+          <q-btn flat :label="`Crear ${tipoSeleccion}`" class="bg-green text-bold"
+            @click="abrirModalCrear(tipoSeleccion)" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -778,8 +793,8 @@ onMounted(async () => {
       <q-card style="min-width: 600px;">
         <q-card-section>
           <div class="q-pt-sm">
-            <h6>Administrar Contacto del Salón</h6>
-            <p>Seleccione el contacto del salón</p>
+            <p class="text-bold text-uppercase text-h6">Administrar Contacto del Salón</p>
+            <p>Seleccione el contacto del salón: </p>
             <q-list bordered separator>
               <q-item v-for="opcion in contacto" :key="opcion._id" clickable v-ripple>
                 <q-item-section>
@@ -793,7 +808,7 @@ onMounted(async () => {
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Aceptar" color="primary" v-close-popup />
-          <q-btn flat label="Crear Contacto" color="secondary" @click="modalCrearContacto = true;" />
+          <q-btn flat label="Crear Contacto" class="text-bold bg-green" @click="modalCrearContacto = true;" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -803,7 +818,7 @@ onMounted(async () => {
         <q-card-section>
           <div class="q-pt-sm">
             <!-- El título cambia dinámicamente según el tipo de atributo -->
-            <h6>Agregar nuevo {{ tipoCrear }}</h6>
+            <p class="text-h6 text-bold text-uppercase">Agregar nuevo {{ tipoCrear }}</p>
             <p>Digite el nombre del nuevo {{ tipoCrear }}:</p>
             <!-- El input también es dinámico -->
             <q-input v-model="nuevoElemento" :label="`Nombre del ${tipoCrear}`" filled />
@@ -812,7 +827,7 @@ onMounted(async () => {
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="primary" v-close-popup />
           <!-- El botón también cambia su texto según el tipo de atributo -->
-          <q-btn flat :label="`Agregar ${tipoCrear}`" color="primary" :loading="loading" :disable="loading"
+          <q-btn flat :label="`Agregar ${tipoCrear}`" class="bg-green text-bold" :loading="loading" :disable="loading"
             @click="agregarNuevoElemento" />
         </q-card-actions>
       </q-card>
@@ -823,23 +838,26 @@ onMounted(async () => {
       <q-card style="min-width: 600px;">
         <q-card-section>
           <div class="q-pt-sm">
-            <h6>Agregar nuevo contacto</h6>
-            <p>Digite los detalles del nuevo contacto:</p>
-
+            <p class="text-h6 text-bold text-uppercase">Agregar nuevo contacto</p>
             <div class="container">
               <div class="form-group">
                 <p>Digite el nombre del contacto del salón</p>
-                <q-input v-model="nuevoContacto.nombre_cont" label="Nombre del contacto" filled />
+                <q-input v-model="nuevoContacto.nombre_cont"  :rules="[val => !!val || 'Digite el nombre']" label="Nombre del contacto" filled />
               </div>
 
               <div class="form-group">
                 <p>Digite el correo del contacto del salón</p>
-                <q-input v-model="nuevoContacto.correo_cont" label="Correo del contacto" filled type="email" />
+                <q-input v-model="nuevoContacto.correo_cont"  :rules="[val => !!val || 'Digite el correo']" label="Correo del contacto" filled type="email" />
               </div>
 
               <div class="form-group">
                 <p>Digite el teléfono del contacto del salón</p>
-                <q-input v-model="nuevoContacto.telefono_cont" label="Teléfono del contacto" filled type="tel" />
+                <q-input v-model="nuevoContacto.telefono_cont"  :rules="[val => !!val || 'Digite el teléfono']" label="Teléfono del contacto" filled type="tel" />
+              </div>
+
+              <div class="form-group">
+                <p>Digite el enlace del WhatsApp del nuevo contacto salón (opcional)</p>
+                <q-input v-model="nuevoContacto.telefono_whats" label="Enlace WhatsApp" filled />
               </div>
             </div>
 
@@ -847,7 +865,7 @@ onMounted(async () => {
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="primary" v-close-popup />
-          <q-btn flat label="`Agregar Contacto" color="primary" :loading="loading" :disable="loading"
+          <q-btn flat label="`Agregar Contacto" class="bg-green text-bold" :loading="loading" :disable="loading"
             @click="agregarNuevoContacto" />
         </q-card-actions>
       </q-card>

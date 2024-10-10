@@ -28,9 +28,11 @@ const columns = [
     { name: "nombre_cont", label: "Nombre del contacto", field: "nombre_cont", sortable: true, align: "left" },
     { name: "correo_cont", label: "Correo", field: "correo_cont", sortable: true, align: "left" },
     { name: "telefono_cont", label: "Teléfono", field: "telefono_cont", sortable: true, align: "left" },
+    { name: "telefono_whats", label: "Enlace WhatsApp", field: (row) => row.telefono_whats ? "Si" : "No", sortable: true, align: "left" },
     { name: "estado", label: "Estado", field: "estado", sortable: true, align: "center" },
     { name: "opciones", label: "Opciones", field: (row) => null, sortable: false, align: "center" },
 ];
+
 
 const rows = ref([]);
 
@@ -190,6 +192,8 @@ function buscarIndexLocal(id) {
 
                         <q-input filled v-model.trim="data.telefono_cont" label="Teléfono"
                             :rules="[val => !!val || 'Digite el teléfono']" />
+
+                        <q-input filled v-model.trim="data.telefono_whats" label="Enlace para WhatsApp" />
 
                         <div style="display: flex; width: 96%; justify-content: flex-end;">
                             <q-btn :loading="loadingModal" padding="10px" type="submit" color="primary"

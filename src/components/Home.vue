@@ -24,7 +24,8 @@ async function getSalones() {
         const response = await useSalon.getAll();
         if (useSalon.estatus === 200) {
             salones.value = [...response];
-            salonesNuevos.value = response.reverse();
+            salonesNuevos.value = response.sort(() => Math.random() - 0.5);
+
             salones.value.forEach(salon => {
                 imageIndices.value[salon._id] = 0; // Initialize the image index for each salon
             });
@@ -68,7 +69,6 @@ onMounted(() => {
     getSalones();
 });
 </script>
-
 
 <template>
     <div class="home-container">
@@ -286,35 +286,10 @@ h2 {
 }
 
 
-.featured-salons-container::-webkit-scrollbar {
-    height: 8px;
-    /* Ajusta la altura del scrollbar */
-}
-
-.featured-salons-container::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
-    /* Color del fondo del scrollbar */
-    border-radius: 10px;
-    /* Bordes redondeados */
-}
-
-.featured-salons-container::-webkit-scrollbar-thumb {
-    background-color: #4d4d4d;
-    /* Color del thumb (la parte que se mueve) */
-    border-radius: 10px;
-    /* Bordes redondeados */
-    border: 2px solid #f1f1f1;
-    /* Bordes alrededor del thumb */
-}
-
-.featured-salons-container::-webkit-scrollbar-thumb:hover {
-    background-color: #333;
-    /* Cambia el color al pasar el cursor */
-}
 
 /* Personalizar el scrollbar en Firefox */
 .featured-salons-container {
-    padding: 40px;
+    padding: 20px;
     scrollbar-width: thin;
     /* Anchura del scrollbar */
     scrollbar-color: #4d4d4d #f1f1f1;
