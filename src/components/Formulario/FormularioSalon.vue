@@ -81,21 +81,35 @@ const nuevoContacto = ref({
 async function subirFotosSalon(files) {
   if (!files || files.length === 0) return;
 
+  const loadingNotify = $q.notify({
+        message: 'Subiendo imagen...',
+        spinner: true,
+        timeout: 0,
+        position: 'top',
+    });
+
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const response = await useSalonEvento.subirGrupoFotos(file);
+
+      loadingNotify();
 
       const imagenSubida = {
         url: response.secure_url,
         publicId: response.public_id,
       };
 
-      data.value.galeria_sal.push(imagenSubida);  // Guardamos la imagen en el array
+      if(useSalonEvento.estatus === 200){
+        data.value.galeria_sal.push(imagenSubida);  // Guardamos la imagen en el array
+        notificar('positive', 'Imagen guardada exitosamemnte');
+      }
+
       console.log("Imagen subida:", imagenSubida);
     }
   } catch (error) {
     console.error("Error al subir las fotos:", error);
+    loadingNotify();
   }
 }
 

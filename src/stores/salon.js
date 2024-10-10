@@ -137,6 +137,8 @@ export const useStoreSalon = defineStore(
           config
         );
 
+        estatus.value = response.status;
+
         console.log('fotos-cloudinary', response)
 
         urlImagen.value = response.data.secure_url;

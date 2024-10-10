@@ -316,11 +316,11 @@ onUnmounted(() => {
     <!-- Cabecera / Navbar -->
     <q-header elevated>
       <q-toolbar class="custom-toolbar">
-        <div class="logo-container">
-          <router-link to="/home">
+        <div class="logo-container q-pa-xl">
+          <router-link to="/home" style="text-decoration: none;">
             <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar" />
+            <span class="logo-title text-h6" >Esfera Audiovisual</span>
           </router-link>
-          <h6 class="logo-title">Esfera Audiovisual</h6>
           <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary" @click="toggleNavModal" />
         </div>
 
@@ -433,6 +433,7 @@ onUnmounted(() => {
 .logo-container {
   display: flex;
   align-items: center;
+  gap: 20px;
 }
 
 .logo-title {
