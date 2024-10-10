@@ -61,8 +61,9 @@ async function cargarSalon(id) {
 async function getReglamentoSalon() {
   try {
     const response = await useReglamento.getPorSalonEvento(detalleSalon.value._id);
-    reglamento.value = response;
-    console.log(reglamento)
+    if(response.estado === true){
+      reglamento.value = response;
+    }
   } catch (error) {
     console.log(error);
   }

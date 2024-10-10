@@ -84,45 +84,49 @@ const getCiudadesFiltradas = (ciudades) => {
 
   // Añadir opciones de ciudades
   ciudades.forEach((c) => {
-    const labelCiudad = c.estado === 0
-      ? `${c.nombre_ciud}, ${c.idDepart.nombre_depart} - Inactiva`
-      : `${c.nombre_ciud}, ${c.idDepart.nombre_depart}`;
+    // Filtramos las ciudades que tienen estado === true
+    if (c.estado === true && c.idDepart.estado === true) {
+      const labelCiudad = `${c.nombre_ciud}, ${c.idDepart.nombre_depart}`;
 
-    opciones.push({
-      label: labelCiudad,
-      value: c,
-      disable: c.estado === 0,
-    });
-
-    // Añadir departamentos al Set si no están ya
-    if (!departamentos.has(c.idDepart.nombre_depart)) {
-      departamentos.add(c.idDepart.nombre_depart); // Añadimos el nombre del departamento al Set para evitar duplicados
       opciones.push({
-        label: c.idDepart.nombre_depart,  // Nombre del departamento para mostrar
-        value: {
-          tipo: 'departamento',
-          _id: c.idDepart._id,
-          nombre_depart: c.idDepart.nombre_depart,
-          latitud: c.idDepart.latitud,  // Latitud del departamento
-          longitud: c.idDepart.longitud  // Longitud del departamento
-        },
-        disable: false,
+        label: labelCiudad,
+        value: c,
+        disable: false, // No se deshabilitan porque están activas
       });
 
+      // Añadir departamentos al Set si no están ya
+      if (!departamentos.has(c.idDepart.nombre_depart) && c.idDepart.estado === true) {
+        departamentos.add(c.idDepart.nombre_depart); // Añadimos el nombre del departamento al Set para evitar duplicados
+        opciones.push({
+          label: c.idDepart.nombre_depart,  // Nombre del departamento para mostrar
+          value: {
+            tipo: 'departamento',
+            _id: c.idDepart._id,
+            nombre_depart: c.idDepart.nombre_depart,
+            latitud: c.idDepart.latitud,  // Latitud del departamento
+            longitud: c.idDepart.longitud  // Longitud del departamento
+          },
+          disable: false,
+        });
+      }
     }
   });
 
-  return opciones.slice(0, 5);
+  return opciones.slice(0, 5); // Puedes ajustar el número de resultados según tus necesidades
 };
+
 
 
 const getAmbientesFiltrados = (ambientes) => {
-  return ambientes.map((c) => ({
-    label: c.estado === 0 ? `${c.nombre_amb} - Inactivo` : c.nombre_amb,
-    value: c._id,
-    disable: c.estado === 0,
-  }));
+  return ambientes
+    .filter(c => c.estado === true) // Filtra solo los ambientes activos (estado === 1 o true)
+    .map(c => ({
+      label: c.nombre_amb, // No es necesario marcar como inactivo porque ya se filtraron
+      value: c._id,
+      disable: false, // No deshabilitamos porque ya estamos filtrando
+    }));
 };
+
 
 const cantidad_personas = [
   '0 - 99',
@@ -200,7 +204,7 @@ const filtrarSalones = async () => {
     try {
       console.log("filtros nav ", filters);
       const filteredSalones = await useSalon.getSalonesFiltrados(filters);
-      useSalon.salonesFiltrados = filteredSalones;
+      useSalon.salonesFiltrados = filteredSalones.filter(salon => salon.estado === true);
       router.push('/busqueda');
 
       console.log('Salones filtrados:', filteredSalones);
@@ -316,12 +320,13 @@ onUnmounted(() => {
     <!-- Cabecera / Navbar -->
     <q-header elevated>
       <q-toolbar class="custom-toolbar">
-        <div class="logo-container q-pa-xl">
+        <div class="logo-container q-pa-xl" @click="limpiar">
           <router-link to="/home" style="text-decoration: none;">
-            <q-btn flat round icon="public" class="right-btn bg-primary" @click="limpiar" />
-            <span class="logo-title text-h6" >Esfera Audiovisual</span>
+            <q-btn flat round icon="public" class="right-btn bg-primary" />
+            <span class="logo-title text-h6">Esfera Audiovisual</span>
           </router-link>
-          <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary" @click="toggleNavModal" />
+          <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary"
+            @click="toggleNavModal" />
         </div>
 
         <!-- Contenido de la barra de navegación visible en pantallas grandes (más de 984px) -->
@@ -386,11 +391,11 @@ onUnmounted(() => {
                 :options="cantidad_personas" placeholder="¿Cuántas personas?" class="input-item" />
             </q-item>
             <q-item>
-              <q-input v-model="fecha" filled type="date" placeholder="Cuando" class="input-item" />
+              <q-input v-model="fecha" filled type="date" placeholder="¿Cuando?" class="input-item" />
             </q-item>
             <q-item>
               <div style="display: flex; justify-content: center; width: 100%; color: white;">
-                <q-btn flat label="Buscar" class="bg-primary" @click="filtrarSalones"/>
+                <q-btn flat label="Buscar" class="bg-primary" @click="filtrarSalones" />
               </div>
 
             </q-item>
