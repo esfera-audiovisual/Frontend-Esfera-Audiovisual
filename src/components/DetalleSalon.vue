@@ -61,12 +61,17 @@ async function cargarSalon(id) {
 async function getReglamentoSalon() {
   try {
     const response = await useReglamento.getPorSalonEvento(detalleSalon.value._id);
-    if(response.estado === true){
+    if (response.estado === true) {
       reglamento.value = response;
     }
   } catch (error) {
     console.log(error);
   }
+}
+
+function getYouTubeEmbedUrl(url) {
+  const videoId = url.split('v=')[1];  // Extrae el ID del video
+  return `https://www.youtube.com/embed/${videoId}`;
 }
 
 const limpiar = () => {
@@ -110,10 +115,12 @@ const enviarFormulario = async () => {
     loadingNotify();
 
     if (useReserva.estatus === 200) {
-      notificar('positive', "Reserva enviada con éxito");
+      notificar('positive', "Reserva enviada con éxito, por favor revise su correo");
       limpiar();
     } else if (useReserva.estatus === 400) {
-      notificar('negative', useReserva.validacion);
+      notificar('negative', useReserva.validacion
+
+      );
     }
   } catch (error) {
     console.log(error);
@@ -179,9 +186,10 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- Modal for Image Gallery -->
-          <!-- Modal para galería de imágenes -->
-          <!-- Modal para galería de imágenes -->
+
+
+
+
           <!-- Modal para galería de imágenes -->
           <q-dialog v-model="galleryOpen" full-width full-height>
             <q-card>
@@ -203,30 +211,42 @@ onMounted(async () => {
           <!-- Banner de información -->
           <div class="q-mb-md banner-info fixed-banner">
             <q-banner
-              style="  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12); padding: 25px;">
-              <h2 class="title text-bold">{{ detalleSalon.nombre_sal }}</h2>
-              <q-item-label class="precio">Precio: {{ formatPrice(detalleSalon.precio_sal) }}</q-item-label>
-              <q-item-label class="capacidad">Capacidad máxima: {{ detalleSalon.capacidad_max }} personas</q-item-label>
+              style="  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12); padding: 20px;">
+              <p class="title text-bold text-h4">{{ detalleSalon.nombre_sal }}</p>
+              <q-item-label class="precio">Desde $ {{ formatPrice(detalleSalon.precio_sal) }}</q-item-label>
+              <q-item-label class="capacidad">Capacidad máxima de {{ detalleSalon.capacidad_max }}
+                personas</q-item-label>
               <q-item-label class="direccion">Dirección: {{ detalleSalon.direccion_sal }}</q-item-label>
               <div style="display: flex; justify-content: center;">
                 <q-btn class="btn" @click="dialogoAbierto = true">Pedir información...</q-btn>
               </div>
             </q-banner>
 
-            <div class="q-pa-md" v-if="detalleSalon.video360">
-              <p class="text-h5 text-bold mt-4">Recorrido Virtual</p>
+            <div class="text-center">
+              <iframe v-if="detalleSalon.video_sal" :src="getYouTubeEmbedUrl(detalleSalon.video_sal)" width="90%"
+                height="200px" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen class="q-mt-lg">
+              </iframe>
+            </div>
+
+            <div class="q-pa-md" v-if="detalleSalon.video360 && !detalleSalon.video_sal">
+              <p class="text-bold text-h6 text-uppercase">Recorrido Virtual</p>
               <q-btn flat label="Ver recorrido" class=" right-btn bg-primary" @click="recorrido360" />
             </div>
           </div>
-
         </div>
-
 
         <!-- Descripción -->
         <q-card-section class="description">
-          <h2 class="text-bold">Descripción</h2>
+          <p class="text-bold text-h6 text-uppercase">Descripción</p>
           <p v-html="formatReglamento(detalleSalon.descripcion_sal)"></p>
         </q-card-section>
+
+        <div class="q-pa-md" v-if="detalleSalon.video360 && detalleSalon.video_sal">
+          <p class="text-bold text-h6 text-uppercase">Recorrido Virtual</p>
+          <q-btn flat label="Ver recorrido" class=" right-btn bg-primary" @click="recorrido360" />
+        </div>
 
         <q-separator />
 
@@ -334,7 +354,7 @@ onMounted(async () => {
             <!-- Selección de invitados con q-radio -->
             <div class="text-body1 q-mt-md text-bold m-0">Nº de invitados</div>
             <div>
-              <q-radio v-model="invitados" val="0-99" label="0-99"
+              <q-radio v-model="invitados" val="1-99" label="1-99"
                 :rules="[val => !!val || 'El número de invitados es obligatorio']" />
               <q-radio v-model="invitados" val="100-199" label="100-199" />
               <q-radio v-model="invitados" val="200-299" label="200-299" />
@@ -375,10 +395,6 @@ onMounted(async () => {
   width: 100%;
 }
 
-.title {
-  font-size: 2rem;
-  margin: 0;
-}
 
 .precio {
   font-size: 1.2rem;
