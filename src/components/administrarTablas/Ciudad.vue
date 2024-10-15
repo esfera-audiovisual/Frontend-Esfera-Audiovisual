@@ -122,7 +122,7 @@ const opciones = {
         if (idDepartamento) {
             data.value.idDepart = idDepartamento; // Asignar el ID del departamento al campo correspondiente
         }
-        console.log("Departamento ID:", data.value.idDepart); // Asegúrate de que el ID esté presente
+        /* console.log("Departamento ID:", data.value.idDepart); */ // Asegúrate de que el ID esté presente
 
     },
     editar: (info) => {
@@ -139,7 +139,7 @@ const enviarInfo = {
         loadingModal.value = true;
         try {
             // Verificar qué datos se están enviando
-            console.log('Datos originales que se enviarán:', data.value);
+           /*  console.log('Datos originales que se enviarán:', data.value); */
 
             // Validar si `idDepart` es un objeto, y si es así, obtener el `_id`
             const dataToSend = {
@@ -150,12 +150,12 @@ const enviarInfo = {
             };
 
             // Imprimir los datos procesados que se enviarán
-            console.log('Datos procesados que se enviarán:', dataToSend);
+            /* console.log('Datos procesados que se enviarán:', dataToSend); */
 
             const response = await useCiudad.registro(dataToSend);
 
             // Verificar la respuesta
-            console.log('Response:', response);
+            /* console.log('Response:', response); */
 
             if (!response || Object.keys(response).length === 0) {
                 notificar('negative', 'La API no devolvió respuesta válida.');

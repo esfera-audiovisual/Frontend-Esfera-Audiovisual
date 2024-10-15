@@ -60,7 +60,7 @@ async function getCiudades() {
     if (useCiudad.estatus === 200) {
       ciudades.value = response;
     }
-    console.log("ciudades", response);
+    /* console.log("ciudades", response); */
   } catch (error) {
     console.log(error);
   }
@@ -72,7 +72,7 @@ async function getAmbientes() {
     if (useAmbiente.estatus === 200) {
       ambientes.value = response;
     }
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.log(error);
   }
@@ -202,12 +202,12 @@ const filtrarSalones = async () => {
     };
 
     try {
-      console.log("filtros nav ", filters);
+      /* console.log("filtros nav ", filters); */
       const filteredSalones = await useSalon.getSalonesFiltrados(filters);
       useSalon.salonesFiltrados = filteredSalones.filter(salon => salon.estado === true);
       router.push('/busqueda');
 
-      console.log('Salones filtrados:', filteredSalones);
+      /* console.log('Salones filtrados:', filteredSalones); */
     } catch (error) {
       console.error("Error al filtrar salones:", error);
     } finally {
@@ -253,8 +253,8 @@ function limpiar() {
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
   if (isCleaning && ciudad?.value?.value && ciudad.value?.value?._id) {
-    console.log("detalle ciudad", ciudad.value?.value.latitud)
-    console.log("detalle ciudad", ciudad.value?.value.longitud)
+/*     console.log("detalle ciudad", ciudad.value?.value.latitud)
+    console.log("detalle ciudad", ciudad.value?.value.longitud) */
     useSalon.salonFiltroCiudad = ciudad.value?.value?._id;
     useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
     useSalon.salonCiudLatitud = ciudad.value?.value.latitud;
@@ -266,7 +266,6 @@ watch(ciudad, () => {
 watch(ambiente, () => {
   if (isCleaning && ambiente.value?.value) {
     useSalon.salonFiltroAmbiente = ambiente.value?.value;
-    console.log("se me olvida", ciudad)
     useSalon.salonFiltroAmbienteNombre = ambiente.value.label;
     filtrarSalones();
   }

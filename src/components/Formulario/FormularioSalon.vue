@@ -107,7 +107,7 @@ async function subirFotosSalon(files) {
         notificar('positive', 'Imagen guardada exitosamemnte');
       }
 
-      console.log("Imagen subida:", imagenSubida);
+      /* console.log("Imagen subida:", imagenSubida); */
     }
   } catch (error) {
     console.error("Error al subir las fotos:", error);
@@ -117,7 +117,7 @@ async function subirFotosSalon(files) {
 
 // Function to handle file input change event
 function onFileChange(event) {
-  console.log("soy event", event)
+ /*  console.log("soy event", event) */
   const files = event.target.files;
   subirFotosSalon(files);
 }
@@ -133,7 +133,7 @@ function removeImage(publicId) {
     const index = data.value.galeria_sal.findIndex(img => img.publicId === publicId);
     if (index !== -1) {
       data.value.galeria_sal.splice(index, 1);
-      console.log("Imagen eliminada de la galería:", publicId);
+      /* console.log("Imagen eliminada de la galería:", publicId); */
     } else {
       notificar('negative', 'Imagen no encontrada en la galería.');
     }
@@ -169,7 +169,7 @@ async function cargarSalon(id) {
 
 function abrirModalSeleccion(tipo) {
   tipoSeleccion.value = tipo;
-  console.log("soy tipo", tipo)
+  /* console.log("soy tipo", tipo) */
 
   switch (tipo) {
     case 'servicio':
@@ -316,7 +316,7 @@ async function agregarNuevoContacto() {
       const nuevoContactoId = useContactoSalon.nuevoContactoSalon;
       data.value.idContactoSalon = nuevoContactoId;
       arrayContacto.value = nuevoContactoId;
-      console.log("agregar contacto", nuevoContactoId)
+      /* console.log("agregar contacto", nuevoContactoId) */
 
       // Limpiar el formulario
       nuevoContacto.value = {
@@ -339,7 +339,7 @@ async function getCiudades() {
   try {
     const response = await useCiudad.getAll();
     ciudades.value = response;
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.error('Error al obtener ciudades:', error);
   }
@@ -349,7 +349,7 @@ async function getTipoEventos() {
   try {
     const response = await useTipoEvento.getAll();
     tipoEvento.value = response;
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.error('Error al obtener tipos de eventos:', error);
   }
@@ -368,7 +368,7 @@ async function getEspacios() {
   try {
     const response = await useEspacio.getAll();
     espacio.value = response;
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.error('Error al obtener espacios:', error);
   }
@@ -378,8 +378,8 @@ async function getServicios() {
   try {
     const response = await useServicio.getAll();
     servicio.value = response;
-    console.log("servicios", servicio)
-    console.log(response);
+/*     console.log("servicios", servicio)
+    console.log(response); */
   } catch (error) {
     console.error('Error al obtener servicios:', error);
   }
@@ -389,7 +389,7 @@ async function getUbicaciones() {
   try {
     const response = await useUbicacion.getAll();
     ubicacion.value = response;
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.error('Error al obtener ubicaciones:', error);
   }
@@ -399,7 +399,7 @@ async function getContactosSalon() {
   try {
     const response = await useContactoSalon.getAll();
     contacto.value = response;
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.error('Error al obtener contactos del salón:', error);
   }
@@ -433,7 +433,7 @@ function seleccionarElemento(seleccionado, idElemento) {
       arraySeleccionado.value.splice(index, 1);
     }
   }
-  console.log("Seleccionados:", arraySeleccionado.value);
+  /* console.log("Seleccionados:", arraySeleccionado.value); */
 }
 
 function seleccionarContacto(val, opcion) {
@@ -443,7 +443,7 @@ function seleccionarContacto(val, opcion) {
   } else {
     data.value.idContactoSalon = null;  // Puedes manejar la deselección si lo prefieres
   }
-  console.log("Contacto seleccionado:", data.value.idContactoSalon);
+  /* console.log("Contacto seleccionado:", data.value.idContactoSalon); */
 }
 
 
@@ -649,7 +649,7 @@ onMounted(async () => {
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
-          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB) :</p>
+          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB, la primera foto subida será utilizada como foto principal y la segunda foto se usará para el banner si es el caso)</p>
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->

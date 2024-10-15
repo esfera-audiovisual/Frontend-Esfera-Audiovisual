@@ -41,6 +41,15 @@ const columns = [
         sortable: true,
         align: "left"
     },
+    {
+        name: "posicion_banner",
+        label: "Posición Banner",
+        field: (row) => {
+            return row.posicion_banner ? row.posicion_banner : 'No'; // Verifica si tiene valor
+        },
+        sortable: true,
+        align: "center"
+    },
     { name: "estado", label: "Estado", field: "estado", sortable: true, align: "center" },
     { name: "opciones", label: "Opciones", field: (row) => null, sortable: false, align: "center" },
 ];
@@ -58,7 +67,7 @@ async function getInfo() {
             notificar('negative', response.error);
             return;
         }
-        console.log(response)
+        /* console.log(response) */
         rows.value = response.reverse();
     } catch (error) {
         console.error(error);

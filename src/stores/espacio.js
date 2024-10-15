@@ -20,7 +20,7 @@ export const useStoreEspacioSalon = defineStore(
     const getAll = async () => {
       try {
         const response = await axios.get(`${modelo}/all`);
-        console.log(response);
+        /* console.log(response); */
         espaciosSalon.value = response.data;
         estatus.value = response.status;
         return response.data;
@@ -33,7 +33,7 @@ export const useStoreEspacioSalon = defineStore(
     const getPorId = async (id) => {
       try {
         const response = await axios.get(`${modelo}/buscarId/${id}`);
-        console.log(response);
+        /* console.log(response); */
         estatus.value = response.status;
         return response.data;
       } catch (error) {
@@ -45,7 +45,7 @@ export const useStoreEspacioSalon = defineStore(
     const getPorNombre = async (nombre) => {
       try {
         const response = await axios.get(`${modelo}/buscarNombre/${nombre}`);
-        console.log(response);
+        /* console.log(response); */
         estatus.value = response.status;
         return response.data;
       } catch (error) {
@@ -57,7 +57,7 @@ export const useStoreEspacioSalon = defineStore(
     const registro = async (data) => {
       try {
         const response = await axios.post(`${modelo}/registro`, data);
-        console.log(response);
+        /* console.log(response); */
         estatus.value = response.status;
         nuevoEspacio.value = response.data;
         nuevoEspacioSalon.value = response.data._id;
@@ -73,7 +73,7 @@ export const useStoreEspacioSalon = defineStore(
       try {
         const response = await axios.put(`${modelo}/editar/${id}`, data);
         estatus.value = response.status;
-        console.log(response);
+        /* console.log(response); */
         return response.data;
       } catch (error) {
         console.log(error);
@@ -84,7 +84,7 @@ export const useStoreEspacioSalon = defineStore(
     const activar = async (id) => {
       try {
         const response = await axios.put(`${modelo}/activar/${id}`);
-        console.log(response);
+        /* console.log(response); */
         return response.data;
       } catch (error) {
         console.log(error);
@@ -95,7 +95,7 @@ export const useStoreEspacioSalon = defineStore(
     const inactivar = async (id) => {
       try {
         const response = await axios.put(`${modelo}/inactivar/${id}`);
-        console.log(response);
+        /* console.log(response); */
         return response.data;
       } catch (error) {
         console.log(error);

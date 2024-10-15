@@ -101,7 +101,7 @@ async function getInfo() {
     try {
         loadingTable.value = true;
         const response = await useReserva.getAll();
-        console.log(useReserva.reservas)
+        /* console.log(useReserva.reservas) */
         if (!response) return;
         if (response.error) {
             notificar('negative', response.error);
@@ -192,7 +192,7 @@ const enviarInfo = {
             const reservaData = { ...data.value };
 
             // Asegúrate de que solo estás enviando el ID del salón y la fecha en formato correcto
-            console.log("Enviando data con idSalonEvento y fecha_res (sin cambio de zona horaria):", reservaData);
+            /* console.log("Enviando data con idSalonEvento y fecha_res (sin cambio de zona horaria):", reservaData); */
 
             const response = await useReserva.editar(reservaData._id, reservaData); // Edita una reserva con el ID
             getInfo(); // Refresca la tabla

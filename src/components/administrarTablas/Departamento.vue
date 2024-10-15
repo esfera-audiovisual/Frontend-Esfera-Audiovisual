@@ -39,7 +39,7 @@ async function getInfo() {
         loadingTable.value = true;
 
         const response = await useDepartamento.getAll();
-        console.log(response);
+        /* console.log(response); */
 
         if (!response) return;
         if (response.error) {
@@ -77,7 +77,7 @@ const enviarInfo = {
             loadingModal.value = true;
 
             const response = await useDepartamento.registro(data.value);
-            console.log(response);
+            /* console.log(response); */
             getInfo();
             if (!response) return;
             if (response.error) {
@@ -97,9 +97,9 @@ const enviarInfo = {
     editar: async () => {
         loadingModal.value = true;
         try {
-            console.log(data.value);
+            /* console.log(data.value); */
             const response = await useDepartamento.editar(data.value._id, data.value);
-            console.log(response);
+            /* console.log(response); */
             getInfo();
             if (!response) return;
             if (response.error) {

@@ -41,7 +41,7 @@ async function getInfo() {
         loadingTable.value = true;
 
         const response = await useContactoSalon.getAll();
-        console.log(response);
+        /* console.log(response); */
 
         if (!response) return;
         if (response.error) {
@@ -79,7 +79,7 @@ const enviarInfo = {
             loadingModal.value = true;
 
             const response = await useContactoSalon.registro(data.value);
-            console.log(response);
+            /* console.log(response); */
             getInfo();
             if (!response) return;
             if (response.error) {
@@ -100,7 +100,7 @@ const enviarInfo = {
         loadingModal.value = true;
         try {
             const response = await useContactoSalon.editar(data.value._id, data.value);
-            console.log(response);
+            /* console.log(response); */
             getInfo();
             if (!response) return;
             if (response.error) {

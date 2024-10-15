@@ -45,7 +45,7 @@ async function cambiarPassword() {
   try {
     const response = await useUsuario.cambiarPassword(data.value)
     loadingContraseña.value = false;
-    console.log(response);
+    /* console.log(response); */
 
     if (!response) return
     if (response.error) {

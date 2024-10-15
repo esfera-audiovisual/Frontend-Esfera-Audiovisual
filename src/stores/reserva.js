@@ -21,7 +21,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };
@@ -34,7 +34,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 400;
             }
         };
@@ -47,7 +47,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };
@@ -60,7 +60,7 @@ export const useStoreReserva = defineStore(
                 reservas.value.push(response.data); // Añadir la nueva reserva a la lista
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 validacion.value = error.response?.data?.error || 'Error en el registro';
                 estatus.value = error.response?.status || 500;
             }
@@ -75,7 +75,7 @@ export const useStoreReserva = defineStore(
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva en la lista
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };
@@ -89,7 +89,7 @@ export const useStoreReserva = defineStore(
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva activada
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };
@@ -103,7 +103,7 @@ export const useStoreReserva = defineStore(
                 if (index !== -1) reservas.value[index] = response.data; // Actualiza la reserva inactivada
                 return response.data;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };
@@ -115,7 +115,7 @@ export const useStoreReserva = defineStore(
                 estatus.value = response.status;
                 return response.data.link;
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 estatus.value = error.response?.status || 500;
             }
         };

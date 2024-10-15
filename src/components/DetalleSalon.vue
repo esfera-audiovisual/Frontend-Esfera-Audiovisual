@@ -47,7 +47,7 @@ function formatPrice(price) {
 async function cargarSalon(id) {
   try {
     const response = await useSalon.getPorId(id);
-    console.log("datos salonnn", response)
+    /* console.log("datos salonnn", response) */
     if (response) {
       detalleSalon.value = response;
     }
@@ -109,7 +109,7 @@ const enviarFormulario = async () => {
 
   try {
     const response = await useReserva.registro(data);
-    console.log(response);
+    /* console.log(response); */
 
     // Cierra la notificación de loading
     loadingNotify();
@@ -131,7 +131,7 @@ const enviarFormulario = async () => {
 
 async function recorrido360() {
   const enlaceRecorrido = detalleSalon.value.video360
-  console.log(enlaceRecorrido)
+  /* console.log(enlaceRecorrido) */
   window.open(enlaceRecorrido, '_blank');
 }
 

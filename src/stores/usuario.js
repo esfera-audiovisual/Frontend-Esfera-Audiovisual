@@ -123,7 +123,7 @@ export const useStoreUsuarios = defineStore(
       try {
         insertarToken();
         const response = await axios.put(`${modelo}/cambioPassword/${id.value}`, data);
-        console.log(response);
+        /* console.log(response); */
         estatus.value = response.status;
         return response.data;
       } catch (error) {

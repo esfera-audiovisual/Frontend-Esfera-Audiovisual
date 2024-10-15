@@ -26,7 +26,7 @@ async function getSalones() {
         const response = await useSalon.getAll();
         if (useSalon.estatus === 200) {
             salones.value = [...response];
-            salonesNuevos.value = response.sort(() => Math.random() - 0.5);
+            salonesNuevos.value = response.filter(salon => salon.estado === true).sort(() => Math.random() - 0.5);
 
             salones.value.forEach(salon => {
                 imageIndices.value[salon._id] = 0; // Initialize the image index for each salon
@@ -44,9 +44,9 @@ async function getSalonesDestacados() {
     try {
         const response = await useSalon.getSalonDestacado(); // Traer los salones destacados desde la tienda Pinia
         if (useSalon.estatus === 200) {
-            salonesDestacados.value = [...response]; // Guardar los salones destacados
+            salonesDestacados.value = [...response].filter(salon => salon.estado === true); // Guardar los salones destacados
         }
-        console.log("salon destacado", response)
+        /* console.log("salon destacado", response) */
     } catch (error) {
         console.log(error);
     } finally {
@@ -102,11 +102,11 @@ onMounted(() => {
             </div>
             <div v-else-if="salonesDestacados.length > 0">
                 <!-- Componente QCarousel de Quasar mostrando solo salones destacados -->
-                <q-carousel animated v-model="slide" navigation infinite arrows height="700px"
+                <q-carousel animated v-model="slide" navigation infinite arrows height="500px" color="black"
                     transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados">
                     <!-- Iterar sobre los salonesDestacados -->
                     <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id" :name="salon.posicion_banner"
-                        :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[0].url : ''" class="carousel-slide"
+                        :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[1].url : ''" class="carousel-slide"
                         @click="irDetalleSalon(salon)" style="background-size: cover;background-position: center;" />
                 </q-carousel>
             </div>
@@ -186,7 +186,7 @@ onMounted(() => {
 
 <style scoped>
 .bg-primary-deg {
-    background-image: linear-gradient(to right, #000000, #FFFFFF);
+    background-color: #000000;
     width: 100%;
     padding: 15px;
 }

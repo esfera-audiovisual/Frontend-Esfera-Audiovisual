@@ -59,11 +59,11 @@ const getNombresAmbiente = (idAmbienteSalon) => {
 };
 
 const cambioFiltroEspacio = async () => {
-  console.log(espacioselec.value);
+  /* console.log(espacioselec.value); */
 };
 
 const cambioFiltroServicio = async () => {
-  console.log(servicioselec.value);
+  /* console.log(servicioselec.value); */
 };
 
 const getSalones = async () => {
@@ -186,7 +186,7 @@ const getEspacios = async () => {
           value: espacio._id,
         }));
     }
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.log(error);
   } finally {
@@ -208,7 +208,7 @@ const getServicios = async () => {
           value: servicio._id,
         }));
     }
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.log(error);
   } finally {
@@ -230,7 +230,7 @@ const getTiposSalon = async () => {
           value: tipo._id,
         }));
     }
-    console.log(response);
+    /* console.log(response); */
   } catch (error) {
     console.log(error);
   } finally {
@@ -252,7 +252,7 @@ const getUbicacionesSalon = async () => {
           value: ubicacion._id,
         }));
     }
-    console.log(response);
+   /*  console.log(response); */
   } catch (error) {
     console.log(error);
   } finally {
@@ -304,7 +304,7 @@ const iconoUbicacion = computed(() => {
 
 function verDetalleSalon(salon) {
   useSalon.detalleSalon = salon;
-  console.log(useSalon.detalleSalon)
+  /* console.log(useSalon.detalleSalon) */
   useSalon.salonFiltroCiudadNombre = "";
   useSalon.salonFiltroCiudad = "";
   useSalon.salonFiltroAmbienteNombre = "";
@@ -339,10 +339,10 @@ const filtrarSalones = async () => {
 
 
   try {
-    console.log("soy salones-filtros.vue", filters)
+    /* console.log("soy salones-filtros.vue", filters) */
     const filteredSalones = await useSalon.getSalonesFiltrados(filters);
     useSalon.salonesFiltrados = filteredSalones.filter(salon => salon.estado === true);
-    console.log('Salones filtrados:', filteredSalones);
+    /* console.log('Salones filtrados:', filteredSalones); */
   } catch (error) {
     console.error("Error al filtrar salones:", error);
   } finally {
@@ -370,7 +370,7 @@ watch(() => useSalon.salonFiltroCiudad, (newCity) => {
       lng: parseFloat(useSalon.salonCiudLongitud)
     };
     map.value.setCenter(newCenter);
-    console.log("mapaaa", markers)
+    /* console.log("mapaaa", markers) */
     initMap();
   }
 });
@@ -716,8 +716,8 @@ onMounted(() => {
                       <div class="text-subtitle2">
                         Desde {{ formatPrice(salon.precio_sal) }} $
                       </div>
-                      <div class="text-subtitle2">
-                        <q-icon name="groups" size="18px" />
+                      <div class="text-subtitle2" style="display: flex; gap: 10px; align-items: center;">
+                        <q-icon name="groups" size="18px" style="margin: 0;" />
                         {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
                       </div>
                       <div class="row justify-end">
@@ -765,8 +765,7 @@ onMounted(() => {
 }
 
 .salon-card {
-  margin-bottom: 20px;
-  /* Espacio entre las cards */
+  margin-bottom: 25px;
 }
 
 .salones-container {
@@ -776,6 +775,24 @@ onMounted(() => {
   flex-direction: column;
   overflow-y: auto;
   /* Hacer scroll si hay muchas cards */
+}
+
+.salones-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.salones-container::-webkit-scrollbar-thumb {
+  background-color: gray; 
+  border-radius: 10px;
+}
+
+.salones-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(0, 0, 0); /* Color cuando pasa el cursor */
+}
+
+.salones-container::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 10px;
 }
 
 /* Estilos responsive: En pantallas pequeñas, el mapa irá debajo de las cards */
@@ -812,10 +829,6 @@ onMounted(() => {
   margin-left: 80px;
 }
 
-.salon-card {
-  margin-bottom: 20px;
-}
-
 /* Contenedor principal de la imagen y la información */
 .card-content {
   display: flex;
@@ -827,7 +840,7 @@ onMounted(() => {
 /* Estilo de la imagen del salón */
 .card-image {
   flex: 4.5;
-  max-height: 250px;
+  max-height: 270px;
   object-fit: cover;
   border-radius: 8px;
 }
@@ -867,9 +880,7 @@ onMounted(() => {
 }
 
 /* Estilos para pantallas menores a 600px */
-@media (max-width: 600px) {
-
-}
+@media (max-width: 600px) {}
 
 .card-image-container {
   flex: 1;

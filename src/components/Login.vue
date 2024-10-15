@@ -34,7 +34,7 @@ const login = async () => {
         const response = await useUsuario.login(data);
 
         if (useUsuario.estatus === 200) {
-            console.log(response);
+            /* console.log(response); */
             router.push('/panel-admin')
         } else if (useUsuario.estatus === 400 || useUsuario.estatus === 401) {
             notificar('negative', 'Usuario o contraseña incorrectos');

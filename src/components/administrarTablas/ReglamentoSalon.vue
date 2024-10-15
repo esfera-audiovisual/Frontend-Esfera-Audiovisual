@@ -63,7 +63,7 @@ async function getInfo() {
     try {
         loadingTable.value = true;
         const response = await useReglamento.getAll();
-        console.log("reglamentos", response);
+        /* console.log("reglamentos", response); */
         if (!response) return;
         if (response.error) {
             notificar('negative', response.error);

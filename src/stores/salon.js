@@ -152,7 +152,7 @@ export const useStoreSalon = defineStore(
 
         estatus.value = response.status;
 
-        console.log('fotos-cloudinary', response)
+        /* console.log('fotos-cloudinary', response) */
 
         urlImagen.value = response.data.secure_url;
         publicImagen.value = response.data.public_id;
@@ -163,7 +163,7 @@ export const useStoreSalon = defineStore(
           public_id: response.data.public_id,
         };
       } catch (error) {
-        console.error("Error al subir la foto:", error);
+        console.log("Error al subir la foto:", error);
         throw error; // Re-lanza el error para que pueda manejarse donde se llama la función
       }
     };
