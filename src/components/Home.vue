@@ -8,7 +8,9 @@ const router = useRouter();
 const salones = ref([]);
 const salonesNuevos = ref([]);
 const loading = ref(false);
-const imageIndices = ref({}); // Object to track the current image index for each salon
+const imageIndices = ref({});
+const salonesDestacados = ref([]);
+const slide = ref(1)
 
 function getNombresAmbiente(idAmbienteSalon) {
     if (idAmbienteSalon && idAmbienteSalon.length > 0) {
@@ -30,6 +32,21 @@ async function getSalones() {
                 imageIndices.value[salon._id] = 0; // Initialize the image index for each salon
             });
         }
+    } catch (error) {
+        console.log(error);
+    } finally {
+        loading.value = false;
+    }
+}
+
+async function getSalonesDestacados() {
+    loading.value = true;
+    try {
+        const response = await useSalon.getSalonDestacado(); // Traer los salones destacados desde la tienda Pinia
+        if (useSalon.estatus === 200) {
+            salonesDestacados.value = [...response]; // Guardar los salones destacados
+        }
+        console.log("salon destacado", response)
     } catch (error) {
         console.log(error);
     } finally {
@@ -59,21 +76,22 @@ function prevImage(salonId) {
 }
 
 function formatPrice(price) {
-  if (price) {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  }
-  return price;
+    if (price) {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    return price;
 }
 
 onMounted(() => {
     getSalones();
+    getSalonesDestacados();
 });
 </script>
 
 <template>
     <div class="home-container">
         <!-- Sección de Salones Destacados -->
-        <section class="featured-salons" style="">
+        <section class="featured-salons">
             <div class="bg-primary-deg">
                 <h2>Salones Destacados</h2>
             </div>
@@ -82,40 +100,20 @@ onMounted(() => {
                 <q-spinner color="dark" size="2em" />
                 <p>Cargando salones...</p>
             </div>
-            <div v-else class="featured-salons-container">
-                <div v-for="salon in salones" :key="salon._id" class="featured-salon-card">
-                    <q-card class="featured-card">
-                        <div class="image-carousel">
-                            <q-btn round icon="chevron_left" flat @click="prevImage(salon._id)" class="carousel-arrow" />
-                            <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
-                            <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
-                        </div>
-                        <q-card-section class="featured-details" @click="irDetalleSalon(salon)">
-                            <VMenu class="vmenu">
-                                <div class="text-h6 salon-name">{{ salon.nombre_sal }}</div>
-                                <template #popper>
-                                    <div class="descripVmenu">{{ salon.nombre_sal }}</div>
-                                </template>
-                            </VMenu>
-                            <div class="text-subtitle2">{{ salon.idCiudSalonEvento.nombre_ciud }}, {{
-                                salon.idCiudSalonEvento.idDepart.nombre_depart }}</div>
-                            <div style="display: flex; gap: 20px;">
-                                <div class="text-subtitle2">
-                                    <q-icon name="groups" size="18px" />
-                                    {{ salon.capacidad_min }} a {{ salon.capacidad_max }}
-                                </div>
-                                <div class="text-subtitle2">
-                                    Desde {{ formatPrice(salon.precio_sal) }} $
-                                </div>
-                            </div>
-                        </q-card-section>
-                    </q-card>
-                </div>
+            <div v-else-if="salonesDestacados.length > 0">
+                <!-- Componente QCarousel de Quasar mostrando solo salones destacados -->
+                <q-carousel animated v-model="slide" navigation infinite arrows height="700px"
+                    transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados">
+                    <!-- Iterar sobre los salonesDestacados -->
+                    <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id" :name="salon.posicion_banner"
+                        :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[0].url : ''" class="carousel-slide"
+                        @click="irDetalleSalon(salon)" style="background-size: cover;background-position: center;" />
+                </q-carousel>
             </div>
-
+            <div v-else>
+                <p>No hay salones destacados disponibles en este momento.</p>
+            </div>
         </section>
-
-        <!-- Sección de Galería -->
 
         <section class="gallery-section">
             <div class="bg-primary-deg">
@@ -129,9 +127,11 @@ onMounted(() => {
                 <div v-for="salon in salonesNuevos" :key="salon._id" class="featured-salon-card">
                     <q-card class="featured-card">
                         <div class="image-carousel">
-                            <q-btn round icon="chevron_left" flat @click="prevImage(salon._id)" class="carousel-arrow" />
+                            <q-btn round icon="chevron_left" flat @click="prevImage(salon._id)"
+                                class="carousel-arrow" />
                             <q-img :src="salon.galeria_sal[imageIndices[salon._id]].url" class="featured-image" />
-                            <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)" class="carousel-arrow" />
+                            <q-btn round icon="chevron_right" flat @click="nextImage(salon._id)"
+                                class="carousel-arrow" />
                         </div>
                         <q-card-section class="featured-details" @click="irDetalleSalon(salon)">
                             <VMenu class="vmenu">
@@ -166,7 +166,8 @@ onMounted(() => {
                 <q-card class="testimonial-card">
                     <q-card-section>
                         <q-icon name="format_quote" size="24px" />
-                        <p>¡Excelente servicio! El salón fue perfecto para nuestra boda. Todo fue tal como lo prometieron.
+                        <p>¡Excelente servicio! El salón fue perfecto para nuestra boda. Todo fue tal como lo
+                            prometieron.
                         </p>
                         <p class="client-name">- Carlos M.</p>
                     </q-card-section>
@@ -196,6 +197,23 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     width: 100%;
+}
+
+.carousel-slide {
+    /* Usamos object-fit: cover para asegurar que la imagen ocupe todo el espacio disponible */
+    object-position: center;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-caption {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
 }
 
 h2 {
@@ -236,6 +254,8 @@ h2 {
     cursor: pointer;
     /* Change cursor on hover */
 }
+
+
 
 .carousel-arrow:first-of-type {
     left: 10px;

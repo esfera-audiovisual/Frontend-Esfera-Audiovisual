@@ -186,10 +186,6 @@ onMounted(async () => {
             </div>
           </div>
 
-
-
-
-
           <!-- Modal para galería de imágenes -->
           <q-dialog v-model="galleryOpen" full-width full-height>
             <q-card>
@@ -213,6 +209,9 @@ onMounted(async () => {
             <q-banner
               style="  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12); padding: 20px;">
               <p class="title text-bold text-h4">{{ detalleSalon.nombre_sal }}</p>
+              <q-item-label v-if="detalleSalon && detalleSalon.idCiudSalonEvento" class="direccion text-bold">{{
+                detalleSalon.idCiudSalonEvento.nombre_ciud }}, {{
+                  detalleSalon.idCiudSalonEvento.idDepart.nombre_depart }}</q-item-label>
               <q-item-label class="precio">Desde $ {{ formatPrice(detalleSalon.precio_sal) }}</q-item-label>
               <q-item-label class="capacidad">Capacidad máxima de {{ detalleSalon.capacidad_max }}
                 personas</q-item-label>

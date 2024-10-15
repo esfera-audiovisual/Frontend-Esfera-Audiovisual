@@ -750,13 +750,19 @@ onMounted(async () => {
           <p>Asignar contacto del salón:</p>
           <q-btn color="primary" @click="abrirModalContacto()">Ver Contactos</q-btn>
         </div>
+
+        <div class="form-group" v-if="editMode">
+          <p>Asignar posición en el banner:</p>
+          <q-input v-model="data.posicion_banner" label="Digite la posición en el banner (1,2,3)" filled />
+        </div>
       </q-card-section>
 
       <q-card-section>
         <div style="display: flex; justify-content: center;">
           <!-- Botón de enviar -->
-          <q-btn color="green" @click="editMode ? editarSalon() : agregarSalon()" :loading="loadingSalon" :disable="loadingSalon">
-            {{ editMode ? 'Guardar Cambios' : 'Agregar Salón' }} 
+          <q-btn color="green" @click="editMode ? editarSalon() : agregarSalon()" :loading="loadingSalon"
+            :disable="loadingSalon">
+            {{ editMode ? 'Guardar Cambios' : 'Agregar Salón' }}
           </q-btn>
 
         </div>
@@ -842,17 +848,20 @@ onMounted(async () => {
             <div class="container">
               <div class="form-group">
                 <p>Digite el nombre del contacto del salón</p>
-                <q-input v-model="nuevoContacto.nombre_cont"  :rules="[val => !!val || 'Digite el nombre']" label="Nombre del contacto" filled />
+                <q-input v-model="nuevoContacto.nombre_cont" :rules="[val => !!val || 'Digite el nombre']"
+                  label="Nombre del contacto" filled />
               </div>
 
               <div class="form-group">
                 <p>Digite el correo del contacto del salón</p>
-                <q-input v-model="nuevoContacto.correo_cont"  :rules="[val => !!val || 'Digite el correo']" label="Correo del contacto" filled type="email" />
+                <q-input v-model="nuevoContacto.correo_cont" :rules="[val => !!val || 'Digite el correo']"
+                  label="Correo del contacto" filled type="email" />
               </div>
 
               <div class="form-group">
                 <p>Digite el teléfono del contacto del salón</p>
-                <q-input v-model="nuevoContacto.telefono_cont"  :rules="[val => !!val || 'Digite el teléfono']" label="Teléfono del contacto" filled type="tel" />
+                <q-input v-model="nuevoContacto.telefono_cont" :rules="[val => !!val || 'Digite el teléfono']"
+                  label="Teléfono del contacto" filled type="tel" />
               </div>
 
               <div class="form-group">

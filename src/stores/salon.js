@@ -94,6 +94,19 @@ export const useStoreSalon = defineStore(
       }
     };
 
+    const getSalonDestacado = async () => {
+      try {
+        const response = await axios.get(
+          `${modelo}/salones-destacados`
+        );
+        estatus.value = response.status;
+        return response.data;
+      } catch (error) {
+        console.log(error);
+        estatus.value = error.response.status;
+      }
+    };
+
     const registro = async (data) => {
       try {
         const response = await axios.post(`${modelo}/registro`, data);
@@ -182,6 +195,7 @@ export const useStoreSalon = defineStore(
       getSalonesFiltrados,
       getPorId,
       getPorCiudad,
+      getSalonDestacado,
       registro,
       editar,
       activar,
