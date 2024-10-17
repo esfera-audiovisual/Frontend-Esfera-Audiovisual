@@ -13,6 +13,7 @@ const useSalon = useStoreSalon();
 const useUsuario = useStoreUsuarios();
 const router = useRouter();
 const isCleaning = ref(false);
+const loading = ref(false);
 const msgValidacion = ref("");
 const $q = useQuasar();
 
@@ -25,6 +26,7 @@ function notificar(tipo, msg) {
 }
 
 const login = async () => {
+    loading.value = true;
     const data = {
         cedula: cedula.value,
         password: password.value,
@@ -43,6 +45,8 @@ const login = async () => {
     } catch (error) {
         console.log(error);
         notificar('negative', 'Usuario o contraseña incorrectos');
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -90,7 +94,8 @@ function limpiar() {
                     </q-input>
                 </div>
                 <div class="q-pt-md">
-                    <q-btn type="submit" color="primary" class="submit">Ingresar</q-btn>
+                    <q-btn type="submit" color="primary" class="submit" :loading="loading"
+                        :disable="loading">Ingresar</q-btn>
                 </div>
             </q-form>
             <p class="signup-link">
@@ -189,4 +194,3 @@ function limpiar() {
     }
 }
 </style>
-
