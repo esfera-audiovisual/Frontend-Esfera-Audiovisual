@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 const useSalon = useStoreSalon();
 const router = useRouter();
 const salones = ref([]);
+const autoplay = true;
 const salonesNuevos = ref([]);
 const loading = ref(false);
 const imageIndices = ref({});
@@ -102,8 +103,9 @@ onMounted(() => {
             </div>
             <div v-else-if="salonesDestacados.length > 0">
                 <!-- Componente QCarousel de Quasar mostrando solo salones destacados -->
-                <q-carousel animated v-model="slide" navigation infinite arrows height="500px" color="black"
-                    transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados">
+                <q-carousel animated v-model="slide" :autoplay="autoplay" navigation infinite arrows height="500px" color="black"
+                    transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados" @mouseenter="autoplay = false"
+                    @mouseleave="autoplay = true">
                     <!-- Iterar sobre los salonesDestacados -->
                     <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id" :name="salon.posicion_banner"
                         :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[1].url : ''" class="carousel-slide"
