@@ -324,6 +324,13 @@ onMounted(async () => {
     </q-card>
 
 
+    <div class="text-center">
+        <iframe :src="detalleSalon.video360" width="80%" height="570px" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen class="q-mt-lg">
+        </iframe>
+    </div>
+
     <!-- Diálogo con formulario -->
     <q-dialog v-model="dialogoAbierto" persistent>
       <q-card style="min-width: 400px">

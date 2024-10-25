@@ -21,11 +21,16 @@ const ambiente = ref("");
 const showLoadingModal = ref(false);
 const isCleaning = ref(false);
 const showProfileModal = ref(false);
-const isNavModalOpen = ref(false);  // Control para abrir/cerrar el modal de navegación
+const isNavModalOpen = ref(false);
+const showSocialButtons = ref(true);
 const windowWidth = ref(window.innerWidth);
 
 function checkWindowSize() {
   windowWidth.value = window.innerWidth;
+}
+
+function toggleSocialButtons() {
+  showSocialButtons.value = !showSocialButtons.value;
 }
 
 async function contactarnos() {
@@ -114,8 +119,6 @@ const getCiudadesFiltradas = (ciudades) => {
 
   return opciones.slice(0, 5); // Puedes ajustar el número de resultados según tus necesidades
 };
-
-
 
 const getAmbientesFiltrados = (ambientes) => {
   return ambientes
@@ -219,11 +222,6 @@ const filtrarSalones = async () => {
   }
 };
 
-
-
-
-
-
 function limpiar() {
   // Desactivar temporalmente los watchers
   isCleaning.value = true;
@@ -253,8 +251,8 @@ function limpiar() {
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
   if (isCleaning && ciudad?.value?.value && ciudad.value?.value?._id) {
-/*     console.log("detalle ciudad", ciudad.value?.value.latitud)
-    console.log("detalle ciudad", ciudad.value?.value.longitud) */
+    /*     console.log("detalle ciudad", ciudad.value?.value.latitud)
+        console.log("detalle ciudad", ciudad.value?.value.longitud) */
     useSalon.salonFiltroCiudad = ciudad.value?.value?._id;
     useSalon.salonFiltroCiudadNombre = ciudad.value?.label;
     useSalon.salonCiudLatitud = ciudad.value?.value.latitud;
@@ -284,6 +282,22 @@ watch(fecha, () => {
     filtrarSalones();
   }
 });
+
+function goInstagram() {
+  window.open('https://www.instagram.com/esferaaudiovisual?igsh=Y3Q5NGc5b2l1aWQ1', '_blank');
+}
+
+function goFacebook() {
+  window.open('https://www.facebook.com/share/maby2cr2Jq7ib9Gp/', '_blank');
+}
+
+function goTikTok() {
+  window.open('https://www.tiktok.com/@esferaaudiovisual?_t=8qqk2E6JjWA&_r=1', '_blank');
+}
+
+function goYoutube (){
+  window.open('https://www.youtube.com/@ProductoraEsferaAudiovisual', '_blank');
+}
 
 onMounted(() => {
   window.addEventListener('resize', checkWindowSize);
@@ -319,11 +333,14 @@ onUnmounted(() => {
     <!-- Cabecera / Navbar -->
     <q-header elevated>
       <q-toolbar class="custom-toolbar">
-        <div class="logo-container q-pa-xl" @click="limpiar">
+        <div class="logo-container" @click="limpiar">
           <router-link to="/home" style="text-decoration: none;">
             <q-btn flat round icon="public" class="right-btn bg-primary" />
-            <span class="logo-title text-h6">Esfera Audiovisual</span>
+            <span class="logo-title text-uppercase">Esfera Audiovisual</span>
           </router-link>
+        </div>
+
+        <div>
           <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary"
             @click="toggleNavModal" />
         </div>
@@ -346,8 +363,7 @@ onUnmounted(() => {
           <q-btn flat round icon="search" class="search-btn bg-primary" @click="filtrarSalones" />
         </div>
 
-        <!-- Botones del lado derecho (ocultos en pantallas pequeñas) -->
-        <q-space />
+
         <div class="right-side d-none d-lg-flex"> <!-- Ocultar en pantallas menores de 984px -->
           <q-btn v-if="!useUsuario.token" flat label="Contáctanos" class="right-btn bg-primary" @click="contactarnos" />
           <q-btn v-if="useUsuario.token" flat label="Administrar salones" class="right-btn bg-primary"
@@ -426,24 +442,51 @@ onUnmounted(() => {
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <div class="arrow-up" v-if="!useUsuario.token" @click="toggleSocialButtons"></div>
+    <!-- Botón de WhatsApp (siempre visible) -->
+    <q-btn v-if="!useUsuario.token" fab class="whatsapp-btn" @click="contactarnos">
+      <i class="fa-brands fa-whatsapp"></i>
+    </q-btn>
+
+    <!-- Botones de redes sociales (mostrar/ocultar según showSocialButtons) -->
+    <q-btn v-if="showSocialButtons && !useUsuario.token" fab class="youtube-btn" @click="goYoutube">
+      <i class="fa-brands fa-youtube"></i>
+    </q-btn>
+
+    <q-btn v-if="showSocialButtons && !useUsuario.token" fab class="tiktok-btn" @click="goTikTok">
+      <i class="fa-brands fa-tiktok"></i>
+    </q-btn>
+
+    <q-btn v-if="showSocialButtons && !useUsuario.token" fab class="facebook-btn" @click="goFacebook">
+      <i class="fa-brands fa-facebook"></i>
+    </q-btn>
+
+    <q-btn v-if="showSocialButtons && !useUsuario.token" fab class="instagram-btn" @click="goInstagram">
+      <i class="fa-brands fa-instagram"></i>
+    </q-btn>
+
   </q-layout>
 </template>
 
 <style scoped>
 .custom-toolbar {
   background-color: #ffffff;
+  gap: 20px;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
+  padding: 40px;
 }
 
 .logo-title {
   color: black;
   font-weight: bold;
   margin-left: 10px;
+  font-size: 1.3rem;
 }
 
 .inputs-container {
@@ -502,17 +545,129 @@ onUnmounted(() => {
   padding: 20px;
 }
 
+.whatsapp-btn,
+.facebook-btn,
+.instagram-btn,
+.tiktok-btn,
+.youtube-btn {
+  position: fixed;
+  right: 20px;
+  z-index: 100;
+  color: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px;
+  padding: 0;
+}
+
+.whatsapp-btn {
+  background-color: #25D366;
+  bottom: 20px;
+}
+
+.facebook-btn {
+  background-color: #1877F2;
+  bottom: 165px;
+}
+
+.instagram-btn {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  bottom: 105px;
+}
+
+.tiktok-btn {
+  background-color: black;
+  bottom: 225px;
+}
+
+.youtube-btn {
+  background-color: rgb(255, 0, 0);
+  bottom: 285px;
+}
+
+.facebook-btn:hover {
+  background-color: #145dbf;
+}
+
+.instagram-btn:hover {
+  background: linear-gradient(45deg, #f9d423, #ff4e50, #e73c7e, #d84a91, #c13584);
+}
+
+.tiktok-btn:hover {
+  background: gray;
+}
+
+.whatsapp-btn:hover {
+  background-color: #128C7E;
+}
+
+.youtube-btn:hover {
+  background-color: #ea2a37;
+}
+
+.arrow-up {
+  display: block;
+  position: fixed;
+  bottom: 80px;
+  right: 38px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 15px solid #000000;
+  z-index: 100;
+  cursor: pointer;
+}
+
+
 @media (max-width: 621px) {
+  .logo-container {
+    padding: 20px;
+  }
+
+  .logo-title {
+    font-size: 1.4rem;
+  }
+
   .custom-toolbar {
-    width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
   }
 
   .right-side {
+    display: flex;
+    flex-direction: column;
     margin-bottom: 20px;
   }
 
+  .whatsapp-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 25px;
+  }
+
+  /* Ubicación ajustada de los botones de redes sociales en pantallas móviles */
+  .youtube-btn {
+    bottom: 285px;
+    right: 20px;
+  }
+
+  .tiktok-btn {
+    bottom: 225px;
+    right: 20px;
+  }
+
+  .facebook-btn {
+    bottom: 165px;
+    right: 20px;
+  }
+
+  .instagram-btn {
+    bottom: 105px;
+    right: 20px;
+  }
 }
 </style>
