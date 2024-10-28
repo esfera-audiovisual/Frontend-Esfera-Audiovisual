@@ -291,7 +291,6 @@ function limpiar() {
 
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
-  console.log(ciudad)
   if (isCleaning && ciudad?.value?.value && ciudad.value?.value?._id) {
     /*     console.log("detalle ciudad", ciudad.value?.value.latitud)
         console.log("detalle ciudad", ciudad.value?.value.longitud) */
@@ -387,11 +386,7 @@ onMounted(async () => {
   c_personas.value = useSalon.salonFiltroPersona;
   fecha.value = useSalon.salonFiltroFecha;
 
-  // Llama a getSalonesDestacados después de asignar ciudad/departamento y ambiente
-  getSalonesDestacados();
 });
-
-
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkWindowSize);

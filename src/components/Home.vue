@@ -57,9 +57,21 @@ async function getSalonesDestacados() {
 
 function irDetalleSalon(salon) {
     useSalon.detalleSalon = salon;
-    useSalon.devolverHomeDetalle = true;
-    const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
-    window.open(url, '_blank');
+  /* console.log(useSalon.detalleSalon) */
+  useSalon.salonFiltroCiudadNombre = "";
+  useSalon.salonFiltroCiudad = "";
+  useSalon.salonFiltroAmbienteNombre = "";
+  useSalon.salonFiltroAmbiente = "";
+  useSalon.salonFiltroPersona = "";
+  useSalon.salonFiltroFecha = "";
+  useSalon.salonFiltroPrecio = "";
+  useSalon.salonFiltroEspacio = [];
+  useSalon.salonFiltroServicio = [];
+  useSalon.salonFiltroTipo = [];
+  useSalon.salonFiltroUbicacion = [];
+  useSalon.idSalonSelec = salon._id;
+  const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
+  window.open(url, '_blank');
 }
 
 function nextImage(salonId) {

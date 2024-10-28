@@ -330,13 +330,6 @@ function verDetalleSalon(salon) {
   window.open(url, '_blank');
 }
 
-function irDetalleSalon(salon) {
-  useSalon.detalleSalon = salon;
-  useSalon.devolverHomeDetalle = true;
-  const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
-  window.open(url, '_blank');
-}
-
 const filtrarSalones = async () => {
   showLoadingModal.value = true;
   loading.value = true;
@@ -445,8 +438,6 @@ onMounted(() => {
   servicioselec.value = useSalon.salonFiltroServicio;
   tiposelec.value = useSalon.salonFiltroTipo;
   ubicacionselec.value = useSalon.salonFiltroUbicacion;
-
-  console.log("recarga", salonesDestacados)
 
   getSalones();
   getEspacios();
@@ -758,7 +749,7 @@ onMounted(() => {
                 <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id"
                   :name="salon.posicion_banner_ubicacion"
                   :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[2].url : ''" class="carousel-slide"
-                  @click="irDetalleSalon(salon)" style="background-size: cover; background-position: center;" />
+                  @click="verDetalleSalon(salon)" style="background-size: cover; background-position: center;" />
               </q-carousel>
             </div>
             <div style="width: 100%; height: 100%; display: flex; justify-content: center;">
