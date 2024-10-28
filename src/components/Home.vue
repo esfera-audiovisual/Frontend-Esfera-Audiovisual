@@ -57,21 +57,21 @@ async function getSalonesDestacados() {
 
 function irDetalleSalon(salon) {
     useSalon.detalleSalon = salon;
-  /* console.log(useSalon.detalleSalon) */
-  useSalon.salonFiltroCiudadNombre = "";
-  useSalon.salonFiltroCiudad = "";
-  useSalon.salonFiltroAmbienteNombre = "";
-  useSalon.salonFiltroAmbiente = "";
-  useSalon.salonFiltroPersona = "";
-  useSalon.salonFiltroFecha = "";
-  useSalon.salonFiltroPrecio = "";
-  useSalon.salonFiltroEspacio = [];
-  useSalon.salonFiltroServicio = [];
-  useSalon.salonFiltroTipo = [];
-  useSalon.salonFiltroUbicacion = [];
-  useSalon.idSalonSelec = salon._id;
-  const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
-  window.open(url, '_blank');
+    /* console.log(useSalon.detalleSalon) */
+    useSalon.salonFiltroCiudadNombre = "";
+    useSalon.salonFiltroCiudad = "";
+    useSalon.salonFiltroAmbienteNombre = "";
+    useSalon.salonFiltroAmbiente = "";
+    useSalon.salonFiltroPersona = "";
+    useSalon.salonFiltroFecha = "";
+    useSalon.salonFiltroPrecio = "";
+    useSalon.salonFiltroEspacio = [];
+    useSalon.salonFiltroServicio = [];
+    useSalon.salonFiltroTipo = [];
+    useSalon.salonFiltroUbicacion = [];
+    useSalon.idSalonSelec = salon._id;
+    const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
+    window.open(url, '_blank');
 }
 
 function nextImage(salonId) {
@@ -96,6 +96,17 @@ function formatPrice(price) {
 }
 
 onMounted(() => {
+    useSalon.salonFiltroCiudadNombre = "";
+    useSalon.salonFiltroCiudad = "";
+    useSalon.salonFiltroAmbienteNombre = "";
+    useSalon.salonFiltroAmbiente = "";
+    useSalon.salonFiltroPersona = "";
+    useSalon.salonFiltroFecha = "";
+    useSalon.salonFiltroPrecio = "";
+    useSalon.salonFiltroEspacio = [];
+    useSalon.salonFiltroServicio = [];
+    useSalon.salonFiltroTipo = [];
+    useSalon.salonFiltroUbicacion = [];
     getSalones();
     getSalonesDestacados();
 });
@@ -115,9 +126,9 @@ onMounted(() => {
             </div>
             <div v-else-if="salonesDestacados.length > 0">
                 <!-- Componente QCarousel de Quasar mostrando solo salones destacados -->
-                <q-carousel animated v-model="slide" :autoplay="autoplay" navigation infinite arrows height="500px" color="black"
-                    transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados" @mouseenter="autoplay = false"
-                    @mouseleave="autoplay = true">
+                <q-carousel animated v-model="slide" :autoplay="autoplay" navigation infinite arrows height="500px"
+                    color="black" transition-prev="slide-right" transition-next="slide-left" class="carousel-destacados"
+                    @mouseenter="autoplay = false" @mouseleave="autoplay = true">
                     <!-- Iterar sobre los salonesDestacados -->
                     <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id" :name="salon.posicion_banner"
                         :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[1].url : ''" class="carousel-slide"

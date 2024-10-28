@@ -74,7 +74,7 @@ async function getSalonesDestacados() {
         useSalon.salonesDestacadosByUbicacion.value = response.filter(salon =>
           salon.estado === true && salon.idCiudSalonEvento.idDepart._id === departamentoId
         );
-        console.log("Salones destacados filtrados por departamento:", useSalon.salonesDestacadosByUbicacion.value);
+        /* console.log("Salones destacados filtrados por departamento:", useSalon.salonesDestacadosByUbicacion.value); */
 
       } else if (ciudad.value?.value?._id) {
         // Caso: Filtrar por ciudad
@@ -82,7 +82,7 @@ async function getSalonesDestacados() {
         useSalon.salonesDestacadosByUbicacion.value = response.filter(salon =>
           salon.estado === true && salon.idCiudSalonEvento._id === ciudadId
         );
-        console.log("Salones destacados filtrados por ciudad:", useSalon.salonesDestacadosByUbicacion.value);
+        /* console.log("Salones destacados filtrados por ciudad:", useSalon.salonesDestacadosByUbicacion.value); */
 
       } else {
         console.log("No se seleccionó una ciudad o departamento válido.");
