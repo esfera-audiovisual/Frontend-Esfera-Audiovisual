@@ -24,6 +24,7 @@ const invitados = ref('');
 const minDate = ref(getCurrentDate());
 const salonId = ref('');
 const modal360 = ref(false);
+const showLoadingModal = ref(false);
 
 function notificar(tipo, msg, posicion = "top") {
   $q.notify({
@@ -47,6 +48,7 @@ function formatPrice(price) {
 
 async function cargarSalon(id) {
   try {
+    showLoadingModal.value = true;
     const response = await useSalon.getPorId(id);
     /* console.log("datos salonnn", response) */
     if (response) {
@@ -55,6 +57,8 @@ async function cargarSalon(id) {
   } catch (error) {
     notificar('negative', 'Error al cargar los datos del salón.');
     console.error('Error al cargar salón:', error);
+  } finally{
+    showLoadingModal.value = false;
   }
 }
 
@@ -134,7 +138,7 @@ function recorrido360() {
   modal360.value = true;
 }
 
-function cerrar360(){
+function cerrar360() {
   modal360.value = false;
 }
 
@@ -162,6 +166,14 @@ onMounted(async () => {
 
 <template>
   <q-page class="detalle-salon">
+    <q-dialog v-model="showLoadingModal" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-spinner color="primary" size="30px" />
+          <span class="q-ml-sm">Cargando...</span>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-card class="my-card" style="margin-left: 50px;" flat>
       <q-card-section class="q-pa-md">
         <!-- Encabezado con botón de regreso -->

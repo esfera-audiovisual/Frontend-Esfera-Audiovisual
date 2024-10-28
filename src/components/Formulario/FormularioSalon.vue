@@ -45,6 +45,7 @@ const searchQuery = ref('');
 const salonId = ref(null);  // Guardar el id del salón
 const editMode = ref(false);  // Modo edición
 const loadingSalon = ref(false);
+const showLoadingModal = ref(false);
 
 function notificar(tipo, msg) {
   $q.notify({
@@ -117,7 +118,7 @@ async function subirFotosSalon(files) {
 
 // Function to handle file input change event
 function onFileChange(event) {
- /*  console.log("soy event", event) */
+  /*  console.log("soy event", event) */
   const files = event.target.files;
   subirFotosSalon(files);
 }
@@ -145,6 +146,7 @@ function removeImage(publicId) {
 
 async function cargarSalon(id) {
   try {
+    showLoadingModal.value = true;
     const response = await useSalonEvento.getPorId(id);
     if (response) {
       data.value = {
@@ -163,6 +165,8 @@ async function cargarSalon(id) {
   } catch (error) {
     notificar('negative', 'Error al cargar los datos del salón.');
     console.error('Error al cargar salón:', error);
+  } finally {
+    showLoadingModal.value = false;
   }
 }
 
@@ -378,8 +382,8 @@ async function getServicios() {
   try {
     const response = await useServicio.getAll();
     servicio.value = response;
-/*     console.log("servicios", servicio)
-    console.log(response); */
+    /*     console.log("servicios", servicio)
+        console.log(response); */
   } catch (error) {
     console.error('Error al obtener servicios:', error);
   }
@@ -632,6 +636,15 @@ onMounted(async () => {
   <div class="formulario-salon">
     <q-card class="q-pa-md" style="margin: 30px 0;">
       <q-card-section>
+
+        <q-dialog v-model="showLoadingModal" persistent>
+          <q-card>
+            <q-card-section class="row items-center">
+              <q-spinner color="primary" size="30px" />
+              <span class="q-ml-sm">Cargando...</span>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
         <!-- 1. Ciudad del salón -->
         <div class="form-group">
           <p>Seleccione la ciudad del salón:</p>
@@ -649,7 +662,9 @@ onMounted(async () => {
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
-          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB, la primera foto subida será utilizada como foto principal, la segunda foto se usará para el banner principal y la tercera foto se usará para el banner por ubicación si es el caso)</p>
+          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB, la primera foto
+            subida será utilizada como foto principal, la segunda foto se usará para el banner principal y la tercera
+            foto se usará para el banner por ubicación si es el caso)</p>
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->
@@ -758,7 +773,8 @@ onMounted(async () => {
 
         <div class="form-group" v-if="editMode">
           <p>Asignar posición en el banner por ubicacion:</p>
-          <q-input v-model="data.posicion_banner_ubicacion" label="Digite la posición en el banner por ubicacion (1,2,3)" filled />
+          <q-input v-model="data.posicion_banner_ubicacion"
+            label="Digite la posición en el banner por ubicacion (1,2,3)" filled />
         </div>
       </q-card-section>
 

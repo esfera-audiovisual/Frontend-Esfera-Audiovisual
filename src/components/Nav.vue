@@ -409,7 +409,7 @@ onUnmounted(() => {
     <q-header elevated>
       <q-toolbar class="custom-toolbar">
         <div class="logo-container" @click="limpiar">
-          <router-link to="/home" style="text-decoration: none;">
+          <router-link to="/home" class="router" style="text-decoration: none;">
             <q-img :src="logoEsfera" width="80px"></q-img>
             <span class="logo-title text-uppercase">Esfera Audiovisual</span>
           </router-link>
@@ -701,14 +701,19 @@ onUnmounted(() => {
 
 
 @media (max-width: 1201px) and (min-width: 622px) {
+
   .logo-container {
     width: 100%;
   }
 
+  .logo-title{
+    font-size: 150%;
+  }
 
   .right-side {
     display: flex;
     justify-content: end;
+    margin-right: 30px;
     width: 100%;
   }
 }
@@ -716,7 +721,15 @@ onUnmounted(() => {
 
 @media (max-width: 621px) {
   .logo-container {
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .router {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
   .logo-title {
