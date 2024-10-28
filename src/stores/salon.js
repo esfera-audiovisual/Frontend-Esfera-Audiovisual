@@ -30,7 +30,7 @@ const salonCiudLongitud = ref("");
 const devolverHomeDetalle = ref(false);
 const loading = ref(false);
 const idSalonSelec = ref('');
-
+const salonesDestacadosByUbicacion = ref([]);
 
 export const useStoreSalon = defineStore(
   modelo,
@@ -98,6 +98,19 @@ export const useStoreSalon = defineStore(
       try {
         const response = await axios.get(
           `${modelo}/salones-destacados`
+        );
+        estatus.value = response.status;
+        return response.data;
+      } catch (error) {
+        console.log(error);
+        estatus.value = error.response.status;
+      }
+    };
+  
+    const getSalonDestacadoByUbicacion = async () => {
+      try {
+        const response = await axios.get(
+          `${modelo}/salones-destacados-ubicacion`
         );
         estatus.value = response.status;
         return response.data;
@@ -196,6 +209,7 @@ export const useStoreSalon = defineStore(
       getPorId,
       getPorCiudad,
       getSalonDestacado,
+      getSalonDestacadoByUbicacion,
       registro,
       editar,
       activar,
@@ -228,6 +242,7 @@ export const useStoreSalon = defineStore(
       urlImagen,
       publicImagen,
       idSalonSelec,
+      salonesDestacadosByUbicacion,
     };
   },
   {

@@ -6,6 +6,7 @@ import { useStoreSalon } from '../stores/salon.js';
 import { useStoreReserva } from '../stores/reserva.js';
 import { useStoreUsuarios } from '../stores/usuario.js';
 import { router } from '../routes/routes.js';
+import logoEsfera from '../assets/logoesfera.png';
 
 const useCiudad = useStoreCiudad();
 const useAmbiente = useStoreAmbienteSalon();
@@ -58,6 +59,46 @@ function cerrarSesion() {
   useUsuario.id = '';
   router.push("/home")
 }
+
+async function getSalonesDestacados() {
+  try {
+    // Obtenemos todos los salones destacados
+    showLoadingModal.value = true;
+    const response = await useSalon.getSalonDestacadoByUbicacion();
+
+    if (useSalon.estatus === 200) {
+      // Verificamos si la selección es de una ciudad o un departamento
+      if (ciudad.value?.value?.tipo === "departamento") {
+        // Caso: Filtrar por departamento
+        const departamentoId = ciudad.value?.value?._id;
+        useSalon.salonesDestacadosByUbicacion.value = response.filter(salon =>
+          salon.estado === true && salon.idCiudSalonEvento.idDepart._id === departamentoId
+        );
+        console.log("Salones destacados filtrados por departamento:", useSalon.salonesDestacadosByUbicacion.value);
+
+      } else if (ciudad.value?.value?._id) {
+        // Caso: Filtrar por ciudad
+        const ciudadId = ciudad.value?.value?._id;
+        useSalon.salonesDestacadosByUbicacion.value = response.filter(salon =>
+          salon.estado === true && salon.idCiudSalonEvento._id === ciudadId
+        );
+        console.log("Salones destacados filtrados por ciudad:", useSalon.salonesDestacadosByUbicacion.value);
+
+      } else {
+        console.log("No se seleccionó una ciudad o departamento válido.");
+      }
+
+    } else {
+      console.warn("Error en la respuesta al obtener salones destacados:", useSalon.estatus);
+    }
+
+  } catch (error) {
+    console.error("Error al obtener salones destacados:", error);
+  } finally {
+    showLoadingModal.value = false;
+  }
+}
+
 
 async function getCiudades() {
   try {
@@ -250,6 +291,7 @@ function limpiar() {
 
 // Modificar los watchers para evitar ejecutar filtrarSalones durante la limpieza
 watch(ciudad, () => {
+  console.log(ciudad)
   if (isCleaning && ciudad?.value?.value && ciudad.value?.value?._id) {
     /*     console.log("detalle ciudad", ciudad.value?.value.latitud)
         console.log("detalle ciudad", ciudad.value?.value.longitud) */
@@ -258,6 +300,7 @@ watch(ciudad, () => {
     useSalon.salonCiudLatitud = ciudad.value?.value.latitud;
     useSalon.salonCiudLongitud = ciudad.value?.value.longitud;
     filtrarSalones();
+    getSalonesDestacados();
   }
 });
 
@@ -295,27 +338,64 @@ function goTikTok() {
   window.open('https://www.tiktok.com/@esferaaudiovisual?_t=8qqk2E6JjWA&_r=1', '_blank');
 }
 
-function goYoutube (){
+function goYoutube() {
   window.open('https://www.youtube.com/@ProductoraEsferaAudiovisual', '_blank');
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', checkWindowSize);
 
-  ciudad.value = useSalon.salonFiltroCiudadNombre;
+  // Espera a cargar ciudades y ambientes
+  await getCiudades();
+  await getAmbientes();
+
+  // Verificar si es un departamento o ciudad basado en el `salonFiltroCiudad`
+  if (useSalon.salonFiltroCiudad) {
+    // Primero, busca si es una ciudad guardada
+    const ciudadGuardada = ciudades.value.find(c => c._id === useSalon.salonFiltroCiudad);
+
+    if (ciudadGuardada) {
+      // Es una ciudad, asignamos el objeto completo
+      ciudad.value = {
+        label: `${ciudadGuardada.nombre_ciud}, ${ciudadGuardada.idDepart.nombre_depart}`,
+        value: ciudadGuardada
+      };
+    } else {
+      // Si no es una ciudad, buscar como departamento
+      const departamentoGuardado = ciudades.value.find(
+        c => c.idDepart && c.idDepart._id === useSalon.salonFiltroCiudad
+      );
+
+      if (departamentoGuardado) {
+        // Es un departamento, asignamos el objeto completo del departamento
+        ciudad.value = {
+          label: departamentoGuardado.idDepart.nombre_depart,
+          value: {
+            tipo: "departamento",
+            _id: departamentoGuardado.idDepart._id,
+            nombre_depart: departamentoGuardado.idDepart.nombre_depart,
+            latitud: departamentoGuardado.idDepart.latitud,
+            longitud: departamentoGuardado.idDepart.longitud
+          }
+        };
+      }
+    }
+  }
+
+  // Asignar los otros filtros guardados
   ambiente.value = useSalon.salonFiltroAmbienteNombre;
   c_personas.value = useSalon.salonFiltroPersona;
   fecha.value = useSalon.salonFiltroFecha;
 
+  // Llama a getSalonesDestacados después de asignar ciudad/departamento y ambiente
+  getSalonesDestacados();
+});
 
-  getCiudades();
-  getAmbientes();
-})
+
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkWindowSize);
 });
-
 </script>
 
 <template>
@@ -335,15 +415,12 @@ onUnmounted(() => {
       <q-toolbar class="custom-toolbar">
         <div class="logo-container" @click="limpiar">
           <router-link to="/home" style="text-decoration: none;">
-            <q-btn flat round icon="public" class="right-btn bg-primary" />
+            <q-img :src="logoEsfera" width="80px"></q-img>
             <span class="logo-title text-uppercase">Esfera Audiovisual</span>
           </router-link>
         </div>
 
-        <div>
-          <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary"
-            @click="toggleNavModal" />
-        </div>
+
 
         <!-- Contenido de la barra de navegación visible en pantallas grandes (más de 984px) -->
         <div v-if="windowWidth > 1201" class="inputs-container">
@@ -365,6 +442,11 @@ onUnmounted(() => {
 
 
         <div class="right-side d-none d-lg-flex"> <!-- Ocultar en pantallas menores de 984px -->
+          <div>
+            <q-btn v-if="windowWidth <= 1200" flat icon="menu" label="Filtros" class="bg-primary filtros"
+              @click="toggleNavModal" />
+          </div>
+
           <q-btn v-if="!useUsuario.token" flat label="Contáctanos" class="right-btn bg-primary" @click="contactarnos" />
           <q-btn v-if="useUsuario.token" flat label="Administrar salones" class="right-btn bg-primary"
             @click="router.push('/panel-admin')" />
@@ -620,6 +702,20 @@ onUnmounted(() => {
   border-bottom: 15px solid #000000;
   z-index: 100;
   cursor: pointer;
+}
+
+
+@media (max-width: 1201px) and (min-width: 622px) {
+  .logo-container {
+    width: 100%;
+  }
+
+
+  .right-side {
+    display: flex;
+    justify-content: end;
+    width: 100%;
+  }
 }
 
 

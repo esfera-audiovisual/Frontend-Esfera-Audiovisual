@@ -37,8 +37,17 @@ const debounceTimeout = ref(null);
 const showLoadingModal = ref(false);
 const map = ref(null);  // Referencia para el mapa
 const markers = ref([]);
+const autoplay = true;
+const slide = ref(1);
+const salonesDestacadosKey = ref(0);
 
+const salonesDestacados = computed(() => {
+  return useSalon.salonesDestacadosByUbicacion.value;
+});
 
+watch(() => useSalon.salonesDestacadosByUbicacion.value, () => {
+  salonesDestacadosKey.value++; // Incrementa la clave para forzar actualización del carrusel
+});
 
 function debounce(fn, delay) {
   return (...args) => {
@@ -252,7 +261,7 @@ const getUbicacionesSalon = async () => {
           value: ubicacion._id,
         }));
     }
-   /*  console.log(response); */
+    /*  console.log(response); */
   } catch (error) {
     console.log(error);
   } finally {
@@ -319,7 +328,13 @@ function verDetalleSalon(salon) {
   useSalon.idSalonSelec = salon._id;
   const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
   window.open(url, '_blank');
+}
 
+function irDetalleSalon(salon) {
+  useSalon.detalleSalon = salon;
+  useSalon.devolverHomeDetalle = true;
+  const url = router.resolve({ path: '/detalle-salon', query: { id: salon._id } }).href;
+  window.open(url, '_blank');
 }
 
 const filtrarSalones = async () => {
@@ -430,6 +445,8 @@ onMounted(() => {
   servicioselec.value = useSalon.salonFiltroServicio;
   tiposelec.value = useSalon.salonFiltroTipo;
   ubicacionselec.value = useSalon.salonFiltroUbicacion;
+
+  console.log("recarga", salonesDestacados)
 
   getSalones();
   getEspacios();
@@ -732,7 +749,21 @@ onMounted(() => {
 
           <!-- Columna derecha: Mapa -->
           <div class="map-container">
-            <div id="map" style="width: 100%; height: 100%;"></div>
+            <div v-if="salonesDestacados && salonesDestacados.length > 0" style="padding: 20px;">
+              <!-- Clave dinámica añadida al componente QCarousel para forzar la actualización -->
+              <q-carousel :key="salonesDestacadosKey" animated v-model="slide" :autoplay="autoplay" navigation infinite
+                arrows height="250px" color="black" transition-prev="slide-right" transition-next="slide-left"
+                class="carousel-destacados" @mouseenter="autoplay = false" @mouseleave="autoplay = true">
+                <!-- Iterar sobre los salonesDestacados -->
+                <q-carousel-slide v-for="salon in salonesDestacados" :key="salon._id"
+                  :name="salon.posicion_banner_ubicacion"
+                  :img-src="salon.galeria_sal.length > 0 ? salon.galeria_sal[2].url : ''" class="carousel-slide"
+                  @click="irDetalleSalon(salon)" style="background-size: cover; background-position: center;" />
+              </q-carousel>
+            </div>
+            <div style="width: 100%; height: 100%; display: flex; justify-content: center;">
+              <div id="map" style="width: 95%; height: 70%; margin-top: 10px;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -760,21 +791,20 @@ onMounted(() => {
 
 .map-container {
   flex: 1;
-  /* Esto permitirá que el mapa ocupe el espacio restante */
   height: 100%;
 }
 
 .salon-card {
   margin-bottom: 25px;
+  background-color: cadetblue;
 }
 
 .salones-container {
   flex: 1;
-  /* Esto permitirá que el contenedor de salones ocupe la mitad o más del espacio disponible */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  /* Hacer scroll si hay muchas cards */
+  margin-top: 20px;
 }
 
 .salones-container::-webkit-scrollbar {
@@ -782,12 +812,13 @@ onMounted(() => {
 }
 
 .salones-container::-webkit-scrollbar-thumb {
-  background-color: gray; 
+  background-color: gray;
   border-radius: 10px;
 }
 
 .salones-container::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(0, 0, 0); /* Color cuando pasa el cursor */
+  background-color: rgb(0, 0, 0);
+  /* Color cuando pasa el cursor */
 }
 
 .salones-container::-webkit-scrollbar-track {
@@ -854,6 +885,13 @@ onMounted(() => {
   justify-content: space-between;
 }
 
+.carousel-slide {
+  /* Usamos object-fit: cover para asegurar que la imagen ocupe todo el espacio disponible */
+  object-position: center;
+  width: 100%;
+  height: 100%;
+}
+
 /* Media query para pantallas menores o iguales a 775px */
 @media (max-width: 775px) {
   .card-content {
@@ -891,12 +929,10 @@ onMounted(() => {
   padding-left: 20px;
 }
 
-
-
 .filtros {
   display: flex;
   flex-direction: column;
-  margin-top: 80px;
+  margin-top: 30px;
 }
 
 .filtroprecio,

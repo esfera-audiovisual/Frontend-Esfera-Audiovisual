@@ -22,7 +22,8 @@ const telefono = ref('');
 const fecha = ref('');
 const invitados = ref('');
 const minDate = ref(getCurrentDate());
-const salonId = ref('')
+const salonId = ref('');
+const modal360 = ref(false);
 
 function notificar(tipo, msg, posicion = "top") {
   $q.notify({
@@ -129,10 +130,12 @@ const enviarFormulario = async () => {
   }
 };
 
-async function recorrido360() {
-  const enlaceRecorrido = detalleSalon.value.video360
-  /* console.log(enlaceRecorrido) */
-  window.open(enlaceRecorrido, '_blank');
+function recorrido360() {
+  modal360.value = true;
+}
+
+function cerrar360(){
+  modal360.value = false;
 }
 
 function getCurrentDate() {
@@ -324,12 +327,6 @@ onMounted(async () => {
     </q-card>
 
 
-    <div class="text-center">
-        <iframe :src="detalleSalon.video360" width="80%" height="570px" frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen class="q-mt-lg">
-        </iframe>
-    </div>
 
     <!-- Diálogo con formulario -->
     <q-dialog v-model="dialogoAbierto" persistent>
@@ -380,6 +377,31 @@ onMounted(async () => {
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="modal360" persistent>
+      <q-card style="min-width: 80%">
+        <q-card-section class="text-h6 text-center text-bold text-uppercase">
+          Recorrido Virtual 360 - {{ detalleSalon.nombre_sal }}
+        </q-card-section>
+
+        <q-card-section>
+
+          <div class="text-center">
+            <iframe :src="detalleSalon.video360" width="80%" height="570px" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen class="q-mt-lg">
+            </iframe>
+          </div>
+
+        </q-card-section>
+
+        <!-- Botones del diálogo -->
+        <q-card-actions align="right">
+          <q-btn flat label="Cerrar" color="primary" @click="cerrar360()" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 

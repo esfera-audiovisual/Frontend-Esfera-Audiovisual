@@ -59,7 +59,7 @@ function cambiarContraseña() {
             <h4>Editar Perfil</h4>
             <q-input v-model="userData.nombre" label="Nombre"  style="width: 300px;" />
             <q-input v-model="userData.apellido" label="Apellido"  style="width: 300px;" />
-            <q-input v-model="userData.cedula" label="Identificación" readonly style="width: 300px;" />
+            <q-input v-model="userData.cedula" label="Identificación"  style="width: 300px;" />
             <q-input v-model="userData.correo" label="Correo" style="width: 300px;" />
             <q-input v-model="userData.telefono" label="Teléfono" style="width: 300px;" />
             <q-btn @click="guardarCambios" class="bg-primary" style="margin-top: 20px; color: white">

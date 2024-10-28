@@ -649,7 +649,7 @@ onMounted(async () => {
         </div>
         <!-- 2. Seleccionar imágenes del salón -->
         <div class="form-group">
-          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB, la primera foto subida será utilizada como foto principal y la segunda foto se usará para el banner si es el caso)</p>
+          <p>Seleccione las imágenes del salón (mínimo 4 fotos, cada foto debe pesar menos de 10MB, la primera foto subida será utilizada como foto principal, la segunda foto se usará para el banner principal y la tercera foto se usará para el banner por ubicación si es el caso)</p>
           <input type="file" @change="onFileChange" multiple accept="image/*" />
         </div>
         <!-- Show uploaded images with a delete option -->
@@ -752,8 +752,13 @@ onMounted(async () => {
         </div>
 
         <div class="form-group" v-if="editMode">
-          <p>Asignar posición en el banner:</p>
+          <p>Asignar posición en el banner principal:</p>
           <q-input v-model="data.posicion_banner" label="Digite la posición en el banner (1,2,3)" filled />
+        </div>
+
+        <div class="form-group" v-if="editMode">
+          <p>Asignar posición en el banner por ubicacion:</p>
+          <q-input v-model="data.posicion_banner_ubicacion" label="Digite la posición en el banner por ubicacion (1,2,3)" filled />
         </div>
       </q-card-section>
 
@@ -880,7 +885,7 @@ onMounted(async () => {
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="modalGaleriaVisible" full-width full-height>
+    <q-dialog v-model="modalGaleriaVisible" full-width>
       <q-card style="display: flex; flex-direction: column;">
         <!-- Título fijo -->
         <q-card-section class="sticky-title">
@@ -925,13 +930,8 @@ q-btn {
 }
 
 .sticky-title {
-  position: sticky;
   display: flex;
   justify-content: center;
-  top: 0;
-  background-color: white;
-  /* Aseguramos que el título tenga un fondo visible */
-  z-index: 1;
   padding-top: 10px;
   padding-bottom: 10px;
 }
