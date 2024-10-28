@@ -5,6 +5,7 @@ import { useStoreSalon } from '../stores/salon.js';
 import { useStoreUsuarios } from '../stores/usuario.js'
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import logoEsfera from '../assets/logoesfera.png';
 
 const cedula = ref("");
 const password = ref("");
@@ -77,7 +78,10 @@ function limpiar() {
             <q-img :src="Login" class="login-img"></q-img>
         </div>
         <div class="login-form">
-            <h2 class="site-title text-uppercase text-bold text-center" @click="limpiar">Esfera Audiovisual</h2>
+            <div class="logo-container">
+                <q-img :src="logoEsfera" class="logo-login" width="80px" @click="limpiar"></q-img>
+                <p class="site-title text-uppercase text-bold text-center" @click="limpiar">Esfera Audiovisual</p>
+            </div>
             <q-form class="form" @submit.prevent="login">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
                 <div class="input-container">
@@ -126,6 +130,15 @@ function limpiar() {
     object-fit: cover;
 }
 
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+    cursor: pointer;
+}
+
 .login-form {
     width: 50%;
     padding: 2rem;
@@ -134,9 +147,13 @@ function limpiar() {
     align-items: center;
 }
 
+.logo-login {
+    margin-bottom: 20px;
+}
+
 .site-title {
     margin-bottom: 1rem;
-    font-size: 2rem;
+    font-size: 1.9rem;
     color: #333;
     cursor: pointer;
 }
@@ -191,6 +208,16 @@ function limpiar() {
 
     .login-form {
         width: 100%;
+    }
+
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+    }
+
+    .logo-login {
+        margin: 0px
     }
 }
 </style>
