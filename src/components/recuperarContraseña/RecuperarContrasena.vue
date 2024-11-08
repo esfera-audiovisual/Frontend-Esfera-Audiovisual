@@ -4,7 +4,7 @@ import { useStoreUsuarios } from "../../stores/usuario.js";
 import VerificarCodigo from "./validarCodigo.vue";
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import logoEsfera from '../../assets/logoesfera.png';
+import logoEsfera from '../../assets/logo-con-nombre.png';
 
 const router = useRouter();
 const useUsuario = useStoreUsuarios();
@@ -71,9 +71,8 @@ async function enviarCodigo() {
     <div style="width: 100%;">
       <div class="logo-container">
         <router-link to="/login">
-          <q-img :src="logoEsfera" width="80px"></q-img>
+          <q-img :src="logoEsfera" width="300px"></q-img>
         </router-link>
-        <h6 class="logo-title text-uppercase text-bold">Esfera Audiovisual</h6>
       </div>
     </div>
 

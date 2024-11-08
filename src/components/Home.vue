@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useStoreSalon } from '../stores/salon.js';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
+
 
 const useSalon = useStoreSalon();
 const router = useRouter();
@@ -117,7 +118,7 @@ onMounted(() => {
         <!-- Sección de Salones Destacados -->
         <section class="featured-salons">
             <div class="bg-primary-deg">
-                <h2>Salones Destacados</h2>
+                <h2 id="h2">Salones Destacados</h2>
             </div>
 
             <div v-if="loading" class="loading-container">
@@ -142,7 +143,7 @@ onMounted(() => {
 
         <section class="gallery-section">
             <div class="bg-primary-deg">
-                <h2>Salones Recientes</h2>
+                <h2 id="h2">Salones Recientes</h2>
             </div>
             <div v-if="loading" class="loading-container">
                 <q-spinner color="dark" size="2em" />
@@ -185,7 +186,7 @@ onMounted(() => {
         <!-- Sección de Testimonios -->
         <section class="testimonials-section">
             <div class="bg-primary-deg">
-                <h2>Testimonios de clientes</h2>
+                <h2 id="h2">Testimonios de clientes</h2>
             </div>
             <div class="testimonials-container">
                 <q-card class="testimonial-card">
@@ -241,11 +242,19 @@ onMounted(() => {
     border-radius: 10px;
 }
 
-h2 {
-    color: rgb(255, 255, 255);
-    margin: 0;
-    font-weight: bolder;
-    font-family: 'Times New Roman', Times, serif;
+@font-face {
+  font-family: 'LEMONMILK-Medium';
+  src: url('../assets/fuentes/LEMONMILK-Medium.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+#h2 {
+  font-family: 'LEMONMILK-Medium', sans-serif;
+  color: white;  /* Puedes ajustar el color a tu preferencia */
+  font-weight: normal;  /* Ajusta el peso si es necesario */
+  font-size: 3rem;
+  margin: 10px;
 }
 
 .image-carousel {

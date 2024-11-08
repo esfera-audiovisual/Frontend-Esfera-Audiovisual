@@ -25,6 +25,9 @@ const minDate = ref(getCurrentDate());
 const salonId = ref('');
 const modal360 = ref(false);
 const showLoadingModal = ref(false);
+const loadingReserva = ref(false);
+
+
 
 function notificar(tipo, msg, posicion = "top") {
   $q.notify({
@@ -94,6 +97,9 @@ const cerrarFormulario = () => {
 }
 
 const enviarFormulario = async () => {
+  loadingReserva.value = true;
+
+
   const data = {
     mensaje_res: mensaje.value,
     nombre_cliente: nombre.value,
@@ -121,6 +127,7 @@ const enviarFormulario = async () => {
 
     if (useReserva.estatus === 200) {
       notificar('positive', "Reserva enviada con éxito, por favor revise su correo");
+      loadingReserva.value = false;
       limpiar();
     } else if (useReserva.estatus === 400) {
       notificar('negative', useReserva.validacion
@@ -131,6 +138,8 @@ const enviarFormulario = async () => {
     console.log(error);
     loadingNotify();
     notificar('negative', 'Error al enviar la reserva. Intenta nuevamente.');
+  } finally{
+    loadingReserva.value = false;
   }
 };
 
@@ -384,8 +393,8 @@ onMounted(async () => {
 
         <!-- Botones del diálogo -->
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="primary" @click="cerrarFormulario" />
-          <q-btn label="Enviar" color="primary" @click="enviarFormulario" />
+          <q-btn flat label="Cancelar" color="primary" @click="cerrarFormulario" :disabled="loadingReserva"/>
+          <q-btn label="Enviar" color="primary" @click="enviarFormulario" :disabled="loadingReserva"/>
         </q-card-actions>
       </q-card>
     </q-dialog>

@@ -6,7 +6,8 @@ import { useStoreSalon } from '../stores/salon.js';
 import { useStoreReserva } from '../stores/reserva.js';
 import { useStoreUsuarios } from '../stores/usuario.js';
 import { router } from '../routes/routes.js';
-import logoEsfera from '../assets/logoesfera.png';
+import logoEsfera from '../assets/logo-con-nombre.png';
+
 
 const useCiudad = useStoreCiudad();
 const useAmbiente = useStoreAmbienteSalon();
@@ -410,8 +411,7 @@ onUnmounted(() => {
       <q-toolbar class="custom-toolbar">
         <div class="logo-container" @click="limpiar">
           <router-link to="/home" class="router" style="text-decoration: none;">
-            <q-img :src="logoEsfera" width="80px"></q-img>
-            <span class="logo-title text-uppercase">Esfera Audiovisual</span>
+            <q-img :src="logoEsfera" width="300px"></q-img>
           </router-link>
         </div>
 
@@ -706,7 +706,7 @@ onUnmounted(() => {
     width: 100%;
   }
 
-  .logo-title{
+  .logo-title {
     font-size: 150%;
   }
 

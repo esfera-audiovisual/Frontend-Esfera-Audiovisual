@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue';
-import Login from '../assets/login.jpg';
+import Login from '../assets/imagen-administrador.png';
 import { useStoreSalon } from '../stores/salon.js';
 import { useStoreUsuarios } from '../stores/usuario.js'
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import logoEsfera from '../assets/logoesfera.png';
+import logoEsfera from '../assets/logo-con-nombre.png';
 
 const cedula = ref("");
 const password = ref("");
@@ -79,8 +79,7 @@ function limpiar() {
         </div>
         <div class="login-form">
             <div class="logo-container">
-                <q-img :src="logoEsfera" class="logo-login" width="80px" @click="limpiar"></q-img>
-                <p class="site-title text-uppercase text-bold text-center" @click="limpiar">Esfera Audiovisual</p>
+                <q-img :src="logoEsfera" class="logo-login" width="400px" @click="limpiar"></q-img>
             </div>
             <q-form class="form" @submit.prevent="login">
                 <p class="form-title">Inicia sesión con tu cuenta</p>
