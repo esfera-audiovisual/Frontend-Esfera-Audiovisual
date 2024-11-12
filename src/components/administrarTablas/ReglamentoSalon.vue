@@ -44,12 +44,19 @@ const columns = [
 
 const rows = ref([]);
 
-// Obtener salones
 async function getSalones() {
     try {
-        const response = await useSalon.getAll(); // Asumiendo que este método obtiene los salones
+        const response = await useSalon.getAll();
         if (response && !response.error) {
-            salones.value = response; // Guardamos la lista de salones
+            // Crear un conjunto con solo los IDs de salones que ya tienen un reglamento
+            const salonesConReglamentoIds = new Set(
+                rows.value
+                    .filter(reglamento => reglamento.idSalonEvento) // Filtra reglamentos válidos
+                    .map(reglamento => reglamento.idSalonEvento._id) // Accede al campo _id del salón
+            );
+
+            // Filtrar solo los salones que no están en `salonesConReglamentoIds`
+            salones.value = response.filter(salon => !salonesConReglamentoIds.has(salon._id));
         } else {
             notificar('negative', 'Error al obtener los salones');
         }
@@ -57,6 +64,7 @@ async function getSalones() {
         console.log(error);
     }
 }
+
 
 // Obtener reglamentos
 async function getInfo() {

@@ -26,7 +26,7 @@ const salonId = ref('');
 const modal360 = ref(false);
 const showLoadingModal = ref(false);
 const loadingReserva = ref(false);
-
+const imagenSeleccionada = ref(null);
 
 
 function notificar(tipo, msg, posicion = "top") {
@@ -60,7 +60,7 @@ async function cargarSalon(id) {
   } catch (error) {
     notificar('negative', 'Error al cargar los datos del salón.');
     console.error('Error al cargar salón:', error);
-  } finally{
+  } finally {
     showLoadingModal.value = false;
   }
 }
@@ -138,7 +138,7 @@ const enviarFormulario = async () => {
     console.log(error);
     loadingNotify();
     notificar('negative', 'Error al enviar la reserva. Intenta nuevamente.');
-  } finally{
+  } finally {
     loadingReserva.value = false;
   }
 };
@@ -158,8 +158,19 @@ function getCurrentDate() {
 
 const galleryOpen = ref(false);
 
-function openGallery() {
+function openGallery(image) {
   galleryOpen.value = true;
+  imagenSeleccionada.value = image; // Selecciona la primera imagen
+  console.log(image.url)
+}
+
+function openGalleryPrin() {
+  galleryOpen.value = true;
+  imagenSeleccionada.value = detalleSalon.value.galeria_sal[0]; // Selecciona la primera imagen
+}
+
+function seleccionarImagen(image) {
+  imagenSeleccionada.value = image; // Actualiza la imagen seleccionada al hacer clic
 }
 
 onMounted(async () => {
@@ -192,13 +203,13 @@ onMounted(async () => {
             <div class="gallery">
               <!-- Imagen principal -->
               <q-img v-if="detalleSalon.galeria_sal[0]" :src="detalleSalon.galeria_sal[0].url"
-                class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" @click="openGallery" />
+                class="gallery-image-large" :alt="detalleSalon.nombre_sal" :ratio="16 / 9" @click="openGalleryPrin()" />
 
               <!-- Galería secundaria -->
               <div class="gallery-column">
                 <q-img v-for="(image, index) in detalleSalon.galeria_sal.slice(1, 4)" :key="image.publicId"
                   :src="image.url" class="gallery-image-small" :alt="detalleSalon.nombre_sal" :ratio="16 / 9"
-                  @click="openGallery">
+                  @click="openGallery(image)">
 
                   <!-- Verificar si es la última imagen de la galería con slice -->
                   <template v-if="index === detalleSalon.galeria_sal.slice(1, 4).length - 1">
@@ -217,14 +228,21 @@ onMounted(async () => {
                 <!-- Botón de cerrar -->
                 <q-btn flat round icon="close" @click="galleryOpen = false" class="absolute-top-right" />
 
-                <!-- Galería de imágenes dentro del modal -->
-                <div class="gallery-normal">
+                <!-- Imagen principal seleccionada -->
+                <div class="gallery-main">
+                  <img :src="imagenSeleccionada.url" class="gallery-main-item" :alt="detalleSalon.nombre_sal" />
+                </div>
+
+                <!-- Galería de miniaturas -->
+                <div class="gallery-thumbnails">
                   <q-img v-for="(image, index) in detalleSalon.galeria_sal" :key="index" :src="image.url"
-                    class="gallery-normal-item" :alt="detalleSalon.nombre_sal" />
+                    :alt="detalleSalon.nombre_sal" class="gallery-thumbnail-item" @click="seleccionarImagen(image)"
+                    :class="{ 'active-thumbnail': imagenSeleccionada.url === image.url }" />
                 </div>
               </q-card-section>
             </q-card>
           </q-dialog>
+
 
 
 
@@ -393,8 +411,8 @@ onMounted(async () => {
 
         <!-- Botones del diálogo -->
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="primary" @click="cerrarFormulario" :disabled="loadingReserva"/>
-          <q-btn label="Enviar" color="primary" @click="enviarFormulario" :disabled="loadingReserva"/>
+          <q-btn flat label="Cancelar" color="primary" @click="cerrarFormulario" :disabled="loadingReserva" />
+          <q-btn label="Enviar" color="primary" @click="enviarFormulario" :disabled="loadingReserva" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -432,6 +450,59 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   font-size: 1rem;
+}
+
+.gallery-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90vw;          /* Máximo ancho de la imagen principal en relación con la ventana */
+  height: 80vh;         /* Máximo alto del contenedor de la imagen principal */
+  max-height: 80vh;     /* Limita la altura máxima del contenedor */
+  overflow: hidden;     /* Evita que las imágenes más grandes se desborden */
+  padding: 20px;
+  box-sizing: border-box;  /* Asegura que el padding no afecte el tamaño del contenedor */
+}
+
+.gallery-main-item {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo para la galería de miniaturas en el modal */
+.gallery-thumbnails {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.gallery-thumbnail-item {
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+}
+
+.gallery-thumbnail-item:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Indicador de miniatura activa */
+.active-thumbnail {
+  border: 2px solid #007bff;
+  opacity: 1;
 }
 
 .detalle-salon {
