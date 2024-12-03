@@ -170,7 +170,7 @@ function openGalleryPrin() {
 }
 
 function seleccionarImagen(image) {
-  imagenSeleccionada.value = image; // Actualiza la imagen seleccionada al hacer clic
+  imagenSeleccionada.value = image; // Actualiza la imagen seleccionada al hacer click
 }
 
 onMounted(async () => {
