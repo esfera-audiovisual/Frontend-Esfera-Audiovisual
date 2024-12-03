@@ -160,7 +160,7 @@ const galleryOpen = ref(false);
 
 function openGallery(image) {
   galleryOpen.value = true;
-  imagenSeleccionada.value = image; // Selecciona la primera imagen
+  imagenSeleccionada.value = image; // Selecciona la primera imagenn
   console.log(image.url)
 }
 
